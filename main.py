@@ -32,5 +32,6 @@ while InGame :
         if event.type == pygame.KEYDOWN :
             if event.unicode == 'q' :
                 InGame = False
+    pygame.display.update()
     clock.tick(FPS)
 pygame.quit()
