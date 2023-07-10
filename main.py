@@ -1,10 +1,14 @@
 import pygame
 import copy
 
+from pygame.locals import *
+
 # pygame init
 pygame.init()
-screen=pygame.display.set_mode((1000,600))
-screen.fill((255,255,255))
+flags = FULLSCREEN | DOUBLEBUF
+resolution = (1980, 1080)
+screen = pygame.display.set_mode(resolution, flags, 16)
+screen.fill((255, 255, 255))
 pygame.display.set_caption("Basic TD Game")
 font=pygame.font.SysFont('microsoftjhenghei',50)
 
