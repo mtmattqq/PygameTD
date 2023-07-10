@@ -1,6 +1,6 @@
 import math
 
 class vec2D :
-    def __init__(self) :
-        x = 0
-        y = 0
+    def __init__(self, _x = 0, _y = 0) :
+        self.x = _x
+        self.y = _y
