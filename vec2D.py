@@ -8,7 +8,7 @@ class vec2D :
         self.x = dx
         self.y = dy
     
-    def __copy__(self) :
+    def copy(self) :
         return vec2D(self.x, self.y)
 
     def set(self,dx,dy,length=0):

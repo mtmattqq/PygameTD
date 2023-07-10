@@ -1,7 +1,8 @@
 import pygame
 import copy
 from pygame.locals import *
-from AppData import vec2D as vec
+from vec2D import vec2D
+from button import button
 
 # pygame init
 pygame.init()
@@ -19,7 +20,7 @@ pygame.event.set_allowed([
 
 # variables
 FPS=60
-relative_pos = vec.vec2D(0, 0)
+relative_pos = vec2D(0, 0)
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     text=font.render(text, True, color)
@@ -28,6 +29,7 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     screen.blit(text, textRect)
 
 def main_page() :
+    start_button = button('Start', vec2D(300, 300), [0, 0, 0], 500, 300, ['hit_bar.png'])
     InGame=True
     while InGame :
         # event in pygame
@@ -37,6 +39,7 @@ def main_page() :
             if event.type == pygame.KEYDOWN :
                 if event.unicode == 'q' :
                     InGame = False
+        start_button.display(screen)
         pygame.display.update()
         clock.tick(FPS)
     return
