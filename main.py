@@ -12,7 +12,10 @@ screen.fill((255, 255, 255))
 clock=pygame.time.Clock()
 pygame.display.set_caption("Basic TD Game")
 font=pygame.font.SysFont('microsoftjhenghei',50)
-pygame.event.set_allowed([QUIT, KEYDOWN, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, MOUSEWHEEL])
+pygame.event.set_allowed([
+    QUIT, KEYDOWN, KEYUP, 
+    MOUSEBUTTONDOWN, MOUSEBUTTONUP, 
+    MOUSEMOTION, MOUSEWHEEL])
 
 # variables
 FPS=60
