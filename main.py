@@ -1,11 +1,11 @@
 import pygame
 import copy
-
 from pygame.locals import *
+from AppData import vec2D as vec
 
 # pygame init
 pygame.init()
-flags = FULLSCREEN | DOUBLEBUF
+flags = FULLSCREEN | DOUBLEBUF | SCALED
 resolution = (1980, 1080)
 screen = pygame.display.set_mode(resolution, flags, 16)
 screen.fill((255, 255, 255))
@@ -15,9 +15,9 @@ font=pygame.font.SysFont('microsoftjhenghei',50)
 
 # variables
 FPS=60
-relative_pos = vec2D(0, 0)
+relative_pos = vec.vec2D(0, 0)
 
-def show_text(text = '', x = 0, y = 0, color = (0, 0, 0)) :
+def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     text=font.render(text, True, color)
     textRect=text.get_rect()
     textRect.topleft=(x+relative_pos.x-10, y+relative_pos.y-20)
