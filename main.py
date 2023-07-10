@@ -27,15 +27,19 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     textRect.topleft=(x+relative_pos.x-10, y+relative_pos.y-20)
     screen.blit(text, textRect)
 
-InGame=True
-while InGame :
-    # event in pygame
-    for event in pygame.event.get() :
-        if event.type == pygame.QUIT :
-            InGame = False
-        if event.type == pygame.KEYDOWN :
-            if event.unicode == 'q' :
+def main_page() :
+    InGame=True
+    while InGame :
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
                 InGame = False
-    pygame.display.update()
-    clock.tick(FPS)
+            if event.type == pygame.KEYDOWN :
+                if event.unicode == 'q' :
+                    InGame = False
+        pygame.display.update()
+        clock.tick(FPS)
+    return
+
+main_page()
 pygame.quit()
