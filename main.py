@@ -29,7 +29,7 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     screen.blit(text, textRect)
 
 def main_page() :
-    start_button = button('Start', vec2D(300, 300), [0, 0, 0], 500, 300, ['hit_bar.png'])
+    start_button = button('Start', vec2D(300, 300), [0, 0, 0],256, 256, ['hit_bar.png'])
     InGame=True
     while InGame :
         # event in pygame

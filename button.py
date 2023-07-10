@@ -21,13 +21,10 @@ class button(pygame.sprite.Sprite) :
         self.action_highlight = action_highlight
         self.images = []
         for picture in pictures :
-            self.images.append(pygame.image.load(
-                os.path.join(os.getcwd(),'AppData',picture)))
-        for image in self.images :
-            tp = pygame.transform.scale(image,(width,hight))
-            image = tp
+            self.images.append(pygame.transform.scale(pygame.image.load(
+                os.path.join(os.getcwd(),'AppData',picture)), (width,hight)))
         self.state = 0
-        self.image = self.images[self.state]
+        # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
         
