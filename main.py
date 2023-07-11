@@ -6,13 +6,13 @@ from button import button
 
 # pygame init
 pygame.init()
-flags = FULLSCREEN | DOUBLEBUF | SCALED
-resolution = (1980, 1080)
+flags = DOUBLEBUF | SCALED | FULLSCREEN
+resolution = (1024, 576)
 screen = pygame.display.set_mode(resolution, flags, 16)
-screen.fill((255, 255, 255))
-clock=pygame.time.Clock()
+screen.fill((245, 245, 245))
+clock = pygame.time.Clock()
 pygame.display.set_caption("Basic TD Game")
-font=pygame.font.SysFont('microsoftjhenghei',50)
+font = 'unifont'
 pygame.event.set_allowed([
     QUIT, KEYDOWN, KEYUP, 
     MOUSEBUTTONDOWN, MOUSEBUTTONUP, 
@@ -23,23 +23,69 @@ FPS=60
 relative_pos = vec2D(0, 0)
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
+    font=pygame.font.SysFont('unifont', size)
     text=font.render(text, True, color)
     textRect=text.get_rect()
     textRect.topleft=(x+relative_pos.x-10, y+relative_pos.y-20)
     screen.blit(text, textRect)
 
-def main_page() :
-    start_button = button('Start', vec2D(300, 300), [0, 0, 0],256, 256, ['hit_bar.png'])
-    InGame=True
-    while InGame :
+def level() :
+    in_game=True
+    while in_game :
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
+
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                InGame = False
+                in_game = False
             if event.type == pygame.KEYDOWN :
                 if event.unicode == 'q' :
-                    InGame = False
+                    in_game = False
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                a=0
+            if event.type == pygame.MOUSEBUTTONUP :
+                a=0
+        
+        # display
+        screen.fill((50, 50, 50))
+        pygame.display.update()
+        clock.tick(FPS)
+    return
+
+def main_page() :
+    def click_start_button() :
+        return True
+    start_button = button('Start', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
+                          [0, 0, 0], 128, 128, 
+                          ['start_button.png'], click_start_button)
+    start_button.pos = vec2D(
+        resolution[0]/2-start_button.width/2, 
+        resolution[1]/2-start_button.hight/2+50)
+    title = 'Basic TD'
+
+    in_game=True
+    while in_game :
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
+
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                in_game = False
+            if event.type == pygame.KEYDOWN :
+                if event.unicode == 'q' :
+                    in_game = False
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                start_button.detect(pos = mouse_pos+relative_pos)
+            if event.type == pygame.MOUSEBUTTONUP :
+                if start_button.click(mouse_pos+relative_pos) :
+                    level()
+        
+        # display
+        screen.fill((245, 245, 245))
         start_button.display(screen)
+        show_text(title, 300, 175, (0, 0, 0), 108)
         pygame.display.update()
         clock.tick(FPS)
     return

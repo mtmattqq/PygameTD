@@ -19,6 +19,7 @@ class button(pygame.sprite.Sprite) :
         self.width = width
         self.action_onclick = action_onclick
         self.action_highlight = action_highlight
+        self.highlight = False
         self.images = []
         for picture in pictures :
             self.images.append(pygame.transform.scale(pygame.image.load(
@@ -28,19 +29,18 @@ class button(pygame.sprite.Sprite) :
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
         
-    def detect(self, pos = vec2D(0, 0), **info) :
+    def detect(self, pos = vec2D(0, 0)) :
         if(     pos.x<self.pos.x+self.width and 
-                pos.x>self.pos.x and pos.y<self.hight and 
+                pos.x>self.pos.x and pos.y<self.pos.y+self.hight and 
                 pos.y>self.pos.y) :
-            if info == None :
-                return True
-            self.action_highlight(info)
+            if self.action_highlight != None:
+                self.action_highlight()
             return True
         return False
     
-    def click(self, pos = vec2D(0, 0), **info) :
-        if(self.detect(pos, None)) :
-            self.action_onclick(info)
+    def click(self, pos = vec2D(0, 0)) :
+        if(self.detect(pos)) :
+            return self.action_onclick()
 
     def display(self, screen) :
         screen.blit(self.images[self.state], self.pos.get_tuple())
