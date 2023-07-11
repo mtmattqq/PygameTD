@@ -1,6 +1,8 @@
 from vec2D import vec2D
 import pygame
 import os
+from tile import TILE_SIZE
+import math
 
 def do_nothing() :
     return
@@ -10,7 +12,8 @@ class tower(pygame.sprite.Sprite) :
         self, pos = vec2D(0, 0),
         width = 0, hight = 0, 
         pictures = [''],
-        damage = 0, reload = 0
+        damage = 0, reload = 0,
+        range = 0, bullet_speed = 0
     ) :
         pygame.sprite.Sprite.__init__(self)
         self.pos = pos
@@ -18,6 +21,10 @@ class tower(pygame.sprite.Sprite) :
         self.width = width
         self.placed = False
         self.selected = False
+        self.damage = damage
+        self.reload = reload
+        self.range = range
+        self.bullet_speed = bullet_speed
         self.images = []
         for picture in pictures :
             self.images.append(pygame.transform.scale(pygame.image.load(
@@ -28,11 +35,12 @@ class tower(pygame.sprite.Sprite) :
         # self.rect.topleft = pos
         
     def detect(self, pos = vec2D(0, 0)) :
+        self_pos = self.pos*TILE_SIZE
         if(
-            pos.x<self.pos.x+self.width and 
-            pos.x>self.pos.x and 
-            pos.y<self.pos.y+self.hight and 
-            pos.y>self.pos.y
+            pos.x<self_pos.x+self.width and 
+            pos.x>self_pos.x and 
+            pos.y<self_pos.y+self.hight and 
+            pos.y>self_pos.y
         ) :
             return True
         return False
@@ -51,8 +59,37 @@ class tower(pygame.sprite.Sprite) :
         self.placed = True
 
     def display(self, screen) :
-        screen.blit(self.images[self.state], self.pos.get_tuple())
+        screen.blit(
+            self.images[self.state], 
+            (self.pos*TILE_SIZE).get_tuple()
+        )
 
 class basic_tower(tower) :
-    def __init__() :
-        tower.__init__()
+    def __init__(
+        self, pos = vec2D(0, 0),
+        width = TILE_SIZE, hight = TILE_SIZE, 
+        pictures = ['basic_tower16.png', 'basic_tower_barrel.png'],
+        damage = 1, reload = 1,
+        range = 1.5, bullet_speed = 1
+    ) :
+        
+        super().__init__(
+            pos, width, hight, 
+            pictures,
+            damage, reload,
+            range, bullet_speed
+        )
+        self.aim = vec2D(0, 1)
+        self.angle = 0
+    def display(self, screen):
+        super().display(screen)
+        barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
+        rotated_rect = barrel.get_rect(center = (self.pos*TILE_SIZE).get_tuple())
+        dw = rotated_rect.width - self.images[0].get_rect().width
+        dw /= 2
+        rotated_rect.centerx -= dw
+        rotated_rect.centery -= dw
+        screen.blit(
+            barrel, 
+            rotated_rect.center
+        )

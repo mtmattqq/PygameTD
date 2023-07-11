@@ -6,6 +6,7 @@ from button import button
 import tile
 import json
 import os
+import tower
 
 # pygame init
 pygame.init()
@@ -51,6 +52,9 @@ def level() :
     level_map.load(level_info['map'])
     level_map.render()
 
+    # testing 
+    t1 = tower.basic_tower(vec2D(4, 5))
+
     in_game=True
     while in_game :
         mouse_pos = pygame.mouse.get_pos()
@@ -71,6 +75,8 @@ def level() :
         # display
         screen.fill((245, 245, 245))
         screen.blit(level_map.image, level_map.rect)
+        t1.angle += 1
+        t1.display(screen)
         # rect = tile_set.tiles[1].get_rect()
         # rect.topleft = (100, 100)
         # screen.blit(tile_set.tiles[1], rect)
