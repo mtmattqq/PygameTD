@@ -11,7 +11,7 @@ def do_nothing() :
 class tower(pygame.sprite.Sprite) :
     def __init__(
         self, pos = vec2D(0, 0),
-        width = 0, hight = 0, 
+        width = TILE_SIZE, hight = TILE_SIZE, 
         pictures = [''],
         damage = 0, reload = 0,
         range = 0, bullet_speed = 0
@@ -26,6 +26,7 @@ class tower(pygame.sprite.Sprite) :
         self.reload = reload
         self.range = range
         self.bullet_speed = bullet_speed
+        self.time_to_fire = 0
         self.images = []
         for picture in pictures :
             self.images.append(pygame.transform.scale(pygame.image.load(
@@ -103,12 +104,15 @@ class basic_tower(tower) :
             rotated_rect.center
         )
 
+    def location(self) :
+        return self.pos*TILE_SIZE + vec2D(TILE_SIZE/2, TILE_SIZE/2)
+
     def aim_first(self, enemys = []) :
         first_enemy = enemys[0]
         for enemy in enemys :
             if enemy.progress > first_enemy.progress :
                 first_enemy = enemy
-        relation = first_enemy.pos - (self.pos*TILE_SIZE + vec2D(TILE_SIZE/2, TILE_SIZE/2))
+        relation = first_enemy.pos - self.location()
         self.angle = math.atan2(relation.y/relation.x)
     
     def shoot_first(self, enemys = []) :
@@ -116,3 +120,7 @@ class basic_tower(tower) :
         bullet = self.bullet()
         bullet.velocity = vec2D(0, 0).set_angle(self.angle, self.bullet_speed)
         self.bullets.append(bullet)
+    
+    def update_time_to_fire(self, delta_time = 0) :
+        self.time_to_fire -= delta_time
+        self.time_to_fire = max(0, self.time_to_fire)
