@@ -18,6 +18,7 @@ class tower(pygame.sprite.Sprite) :
     ) :
         pygame.sprite.Sprite.__init__(self)
         self.pos = pos
+        self.location = self.pos*TILE_SIZE + vec2D(TILE_SIZE/2, TILE_SIZE/2)
         self.hight = hight
         self.width = width
         self.placed = False
@@ -79,7 +80,7 @@ class basic_tower(tower) :
         width = TILE_SIZE, hight = TILE_SIZE, 
         pictures = ['basic_tower16.png', 'basic_tower_barrel.png'],
         damage = 1, reload = 3,
-        range = 1.5, bullet_speed = 1
+        range = 1.5*TILE_SIZE, bullet_speed = 1
     ) :
         
         super().__init__(
@@ -104,15 +105,12 @@ class basic_tower(tower) :
             rotated_rect.center
         )
 
-    def location(self) :
-        return self.pos*TILE_SIZE + vec2D(TILE_SIZE/2, TILE_SIZE/2)
-
     def aim_first(self, enemys = []) :
         first_enemy = enemys[0]
         for enemy in enemys :
             if enemy.progress > first_enemy.progress :
                 first_enemy = enemy
-        relation = first_enemy.pos - self.location()
+        relation = first_enemy.pos - self.location
         self.angle = math.atan2(relation.y/relation.x)
     
     def shoot_first(self, enemys = []) :
