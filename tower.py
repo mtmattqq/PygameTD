@@ -3,6 +3,7 @@ import pygame
 import os
 from tile import TILE_SIZE
 import math
+import enemy
 
 def do_nothing() :
     return
@@ -69,7 +70,7 @@ class basic_tower(tower) :
         self, pos = vec2D(0, 0),
         width = TILE_SIZE, hight = TILE_SIZE, 
         pictures = ['basic_tower16.png', 'basic_tower_barrel.png'],
-        damage = 1, reload = 1,
+        damage = 1, reload = 3,
         range = 1.5, bullet_speed = 1
     ) :
         
@@ -93,3 +94,11 @@ class basic_tower(tower) :
             barrel, 
             rotated_rect.center
         )
+
+    def aim_first(self, enemys = []) :
+        first_enemy = enemys[0]
+        for enemy in enemys :
+            if enemy.progress > first_enemy.progress :
+                first_enemy = enemy
+        relation = first_enemy.pos - (self.pos*TILE_SIZE + vec2D(TILE_SIZE/2,TILE_SIZE/2))
+        self.angle = math.atan2(relation.y/relation.x)
