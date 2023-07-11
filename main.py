@@ -3,6 +3,9 @@ import copy
 from pygame.locals import *
 from vec2D import vec2D
 from button import button
+import tile
+import json
+import os
 
 # pygame init
 pygame.init()
@@ -30,6 +33,20 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     screen.blit(text, textRect)
 
 def level() :
+    tile_set = tile.tileset([
+        'white.png'
+        'main_tower.png',
+        'enemy_sourse.png',
+        'road.png'
+    ])
+    level_info_file = open(os.path.join(os.getcwd(), 'AppData', 'basic_level.json'), 'r')
+    level_info = level_info_file.read()
+    # print(level_info)
+    level_info = json.loads(level_info)
+    level_info_file.close()
+
+    level_map = tile.tilemap(tile_set, level_info['map_size'])
+    level_map.map
     in_game=True
     while in_game :
         mouse_pos = pygame.mouse.get_pos()
@@ -48,7 +65,7 @@ def level() :
                 a=0
         
         # display
-        screen.fill((50, 50, 50))
+        screen.fill((245, 245, 245))
         pygame.display.update()
         clock.tick(FPS)
     return

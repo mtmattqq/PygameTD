@@ -7,10 +7,11 @@ def do_nothing() :
 
 class button(pygame.sprite.Sprite) :
     def __init__(
-            self, text = "click me", pos = vec2D(0, 0),
-            color = [0,0,0], hight = 0, width = 0, 
-            pictures = [''], action_onclick = do_nothing(), 
-            action_highlight = do_nothing()) :
+        self, text = "click me", pos = vec2D(0, 0),
+        color = [0,0,0], width = 0, hight = 0, 
+        pictures = [''], action_onclick = do_nothing(), 
+        action_highlight = do_nothing()
+    ) :
         pygame.sprite.Sprite.__init__(self)
         self.text = text
         self.pos = pos
@@ -24,7 +25,7 @@ class button(pygame.sprite.Sprite) :
         self.images = []
         for picture in pictures :
             self.images.append(pygame.transform.scale(pygame.image.load(
-                os.path.join(os.getcwd(),'AppData',picture)), (width,hight)))
+                os.path.join(os.getcwd(),'AppData',picture)).convert_alpha(), (width,hight)))
         self.state = 0
         # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
