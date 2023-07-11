@@ -5,6 +5,8 @@ import os
 def do_nothing() :
     return
 
+# For class button, the pos is the position on screen
+
 class button(pygame.sprite.Sprite) :
     def __init__(
         self, text = "click me", pos = vec2D(0, 0),

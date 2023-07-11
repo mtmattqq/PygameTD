@@ -65,3 +65,6 @@ def dis(a,b):
 
 def dot(a,b):
     return a.x*b.x+a.y*b.y
+
+def transform(vec, tile_size) :
+    vec = vec*tile_size + vec2D(1, 1)*tile_size/2

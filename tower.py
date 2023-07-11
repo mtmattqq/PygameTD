@@ -66,6 +66,13 @@ class tower(pygame.sprite.Sprite) :
         )
 
 class basic_tower(tower) :
+    class bullet :
+        def __init__(self, velocity = vec2D(0, 0)) :
+            self.pierce = 1
+            self.pos = vec2D(0, 0)
+            self.velocity = velocity
+
+        
     def __init__(
         self, pos = vec2D(0, 0),
         width = TILE_SIZE, hight = TILE_SIZE, 
@@ -82,6 +89,7 @@ class basic_tower(tower) :
         )
         self.aim = vec2D(0, 1)
         self.angle = 0
+        self.bullets = []
     def display(self, screen):
         super().display(screen)
         barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
@@ -100,5 +108,11 @@ class basic_tower(tower) :
         for enemy in enemys :
             if enemy.progress > first_enemy.progress :
                 first_enemy = enemy
-        relation = first_enemy.pos - (self.pos*TILE_SIZE + vec2D(TILE_SIZE/2,TILE_SIZE/2))
+        relation = first_enemy.pos - (self.pos*TILE_SIZE + vec2D(TILE_SIZE/2, TILE_SIZE/2))
         self.angle = math.atan2(relation.y/relation.x)
+    
+    def shoot_first(self, enemys = []) :
+        self.aim_first(enemys)
+        bullet = self.bullet()
+        bullet.velocity = vec2D(0, 0).set_angle(self.angle, self.bullet_speed)
+        self.bullets.append(bullet)
