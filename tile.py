@@ -44,7 +44,7 @@ class tilemap:
         self.map = np.zeros(size, dtype=int)
 
         h, w = self.size
-        self.image = pygame.Surface((32*w, 32*h))
+        self.image = pygame.Surface((TILE_SIZE*w, TILE_SIZE*h))
         if rect:
             self.rect = pygame.Rect(rect)
         else:
@@ -55,7 +55,7 @@ class tilemap:
         for i in range(m):
             for j in range(n):
                 tile = self.tileset.tiles[self.map[i, j]]
-                self.image.blit(tile, (j*32, i*32))
+                self.image.blit(tile, (j*TILE_SIZE, i*TILE_SIZE))
 
     def set_zero(self):
         self.map = np.zeros(self.size, dtype=int)

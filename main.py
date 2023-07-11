@@ -34,19 +34,23 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
 
 def level() :
     tile_set = tile.tileset([
-        'white.png'
+        'white.png',
         'main_tower.png',
         'enemy_sourse.png',
         'road.png'
-    ])
+    ], 64, 64)
     level_info_file = open(os.path.join(os.getcwd(), 'AppData', 'basic_level.json'), 'r')
     level_info = level_info_file.read()
     # print(level_info)
     level_info = json.loads(level_info)
     level_info_file.close()
 
+    print(level_info['map_size'])
+
     level_map = tile.tilemap(tile_set, level_info['map_size'])
-    level_map.map
+    level_map.load(level_info['map'])
+    level_map.render()
+
     in_game=True
     while in_game :
         mouse_pos = pygame.mouse.get_pos()
@@ -66,6 +70,10 @@ def level() :
         
         # display
         screen.fill((245, 245, 245))
+        screen.blit(level_map.image, level_map.rect)
+        # rect = tile_set.tiles[1].get_rect()
+        # rect.topleft = (100, 100)
+        # screen.blit(tile_set.tiles[1], rect)
         pygame.display.update()
         clock.tick(FPS)
     return
