@@ -1,4 +1,5 @@
 from vec2D import vec2D
+from vec2D import dis
 import pygame
 import os
 from tile import TILE_SIZE
@@ -11,7 +12,8 @@ class enemy :
         width = 0, height = 0, 
         pictures = [''],
         hit = 0, armor = 0,
-        shield = 0, move_speed = 0
+        shield = 0, move_speed = 0,
+        path = []
     ) :
         # pygame.sprite.Sprite.__init__(self)
         self.pos = pos
@@ -24,6 +26,8 @@ class enemy :
         self.velocity = vec2D(0, 0)
         self.progress = 0
         self.alive = True
+        self.path = path
+        self.max_progress = len(path)
         self.images = []
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.rect.width = width
@@ -61,16 +65,33 @@ class enemy :
     def check_state(self) :
         if self.hit <= 0 :
             self.alive = False
+    
+    def move(self, delta_time) :
+        if self.progress >= self.max_progress-1 :
+            # deal damage to player's main tower
+            return
+        self.velocity = self.path[self.progress + 1] - self.path[self.progress]
+        self.velocity.change_mod(self.move_speed)
+        print(self.velocity.get_tuple())
+        if(
+            dis(self.path[self.progress + 1] - self.pos, vec2D(0, 0)) <= 
+            dis(self.velocity * (delta_time/1000), vec2D(0, 0))
+        ) :
+            self.pos = self.path[self.progress + 1]
+            self.progress += 1
+        else :
+            self.pos += self.velocity * (delta_time/1000)
 
 class basic_enemy(enemy) :
     def __init__(
         self, pos = vec2D(0, 0),
         hit = 0, armor = 0,
         shield = 0, move_speed = 0,
+        path = []
     ) :
-        size = TILE_SIZE/4
-        width = TILE_SIZE/4
-        height = TILE_SIZE/4
+        size = TILE_SIZE/2
+        width = TILE_SIZE/2
+        height = TILE_SIZE/2
         pictures = [
             'basic_enemy16.png', 
             'hit_bar_red.png', 
@@ -81,14 +102,15 @@ class basic_enemy(enemy) :
             pos, width, height, 
             pictures,
             hit, armor,
-            shield, move_speed
+            shield, move_speed,
+            path
         )
 
         self.size = size
     def display(self, screen):
         super().display(screen)
-        # if self.hit == self.max_hit :
-        #     return
+        if self.hit == self.max_hit :
+            return
         hit_bar_rect = self.rect.copy()
         hit_bar_rect.centery -= self.size/2
         screen.blit(

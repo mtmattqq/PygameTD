@@ -27,7 +27,7 @@ pygame.event.set_allowed([
 # variables
 FPS=60
 relative_pos = vec2D(0, 0)
-MOVEMENT = [[1, 0, -1, 0], [0, 1, 0, -1]]
+MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     font=pygame.font.SysFont('unifont', size)
@@ -56,12 +56,18 @@ def find_path(map = [[]]) :
 
     path = []
     pos_now = enemy_source
+    ct = 0
     while pos_now != main_tower :
+        ct += 1 
+        if ct > 1000 :
+            return path
         isv[pos_now[0]][pos_now[1]] = True
-        path.append(transform(vec2D(pos_now[0], pos_now[1]), tile.TILE_SIZE))
+        path.append(transform(vec2D(pos_now[1], pos_now[0]), tile.TILE_SIZE))
         for d in MOVEMENT :
             next_stap = [pos_now[0] + d[0], pos_now[1] + d[1]]
             if(
+                next_stap[0] >= 0 and next_stap[1] >= 0 and
+                next_stap[0] < m and next_stap[1] < n and
                 (map[next_stap[0]][next_stap[1]] == 3 or
                  map[next_stap[0]][next_stap[1]] == 1) and 
                 not isv[next_stap[0]][next_stap[1]]
@@ -71,6 +77,7 @@ def find_path(map = [[]]) :
     return path
 
 def level() :
+    global enemy
     tile_set = tile.tileset([
         'white.png',
         'main_tower.png',
@@ -90,18 +97,31 @@ def level() :
     level_map.load(level_info['map'])
     level_map.render()
     level_path = find_path(level_info['map'])
-    print(level_path)
+    
+    # for pos in level_path :
+    #     print(pos.get_tuple())
 
     # testing 
     t1 = tower.basic_tower(vec2D(4, 5))
-    e1 = enemy.basic_enemy(vec2D(200, 300), 100)
+    e1 = enemy.basic_enemy(level_path[0], 100, 0, 0, 20, level_path)
+
+    enemys = [e1]
 
     time_previous = 0
+    game_timer = 0
     in_game = True
     while in_game :
         time_now = pygame.time.get_ticks()
         delta_time = time_now - time_previous
         time_previous = time_now
+        game_timer += delta_time
+
+        t1.shoot(enemys)
+        t1.update(delta_time, enemys)
+        for en in enemys :
+            if en.hit <= 0 :
+                enemys.remove(en)
+            en.move(delta_time)
 
         mouse_pos = pygame.mouse.get_pos()
         mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
@@ -118,16 +138,14 @@ def level() :
             if event.type == pygame.MOUSEBUTTONUP :
                 a=0
         
-        t1.shoot([e1])
-        t1.update(delta_time, [e1])
-        e1.pos.x += 0.5
+        
 
         # display
         screen.fill((245, 245, 245))
         screen.blit(level_map.image, level_map.rect)
         t1.display(screen)
-        if e1.alive :
-            e1.display(screen)
+        for en in enemys :
+            en.display(screen)
         # rect = tile_set.tiles[1].get_rect()
         # rect.topleft = (100, 100)
         # screen.blit(tile_set.tiles[1], rect)

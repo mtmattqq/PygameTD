@@ -22,9 +22,13 @@ class vec2D :
         self.x=l*dx
         self.y=l*dy
     
-    def set_angle(self, a, length = 0):
+    def set_angle(self, a, length = 0) :
         self.x = length*math.cos(math.radians(-a))
         self.y = length*math.sin(math.radians(-a))
+
+    def change_mod(self, length) :
+        self *= 1.0/dis(vec2D(0, 0), self)
+        self *= length
 
     def __iadd__(self,other):
         self.x += other.x

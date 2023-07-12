@@ -8,6 +8,10 @@ import math
 
 # print(math.atan2(-52, 12))
 
-v3 = vec2D(0, 0)
-v3.set_angle(90, 10)
-print(v3.get_tuple())
+# v3 = vec2D(0, 0)
+# v3.set_angle(90, 10)
+# print(v3.get_tuple())
+
+# v4 = vec2D(1, 0)
+# v4.change_mod(100)
+# print(v4.get_tuple())
