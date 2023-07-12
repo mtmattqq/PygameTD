@@ -71,7 +71,7 @@ class tower(pygame.sprite.Sprite) :
 
 class basic_tower(tower) :
     class bullet :
-        def __init__(self, pos = vec2D(0, 0), velocity = vec2D(0, 0), images = []) :
+        def __init__(self, pos = vec2D(0, 0), velocity = vec2D(0, 0), damage = 0, images = []) :
             self.pierce = 1
             self.pos = pos
             self.velocity = velocity
@@ -82,6 +82,7 @@ class basic_tower(tower) :
             self.rect.center = self.pos.get_tuple()
             self.state = 0
             self.size = TILE_SIZE/8
+            self.damage = damage
         def move(self, delta_time) :
             self.pos += self.velocity * (delta_time/1000.0)
         def display(self, screen) :
@@ -90,10 +91,19 @@ class basic_tower(tower) :
                 self.images[self.state], 
                 self.rect
             )
+
+        def deal_damage(self, enemy) :
+            self.pierce -= 1
+            # damage dealing formula hasn't finished
+            enemy.hit -= self.damage
+            enemy.check_state()
         def detect(self, enemys = []) :
             for enemy in enemys :
+                if self.pierce <= 0 :
+                    break
                 if dis(enemy.pos, self.pos) < self.size :
-                    a=0
+                    self.deal_damage(enemy)
+                    
         
     def __init__(
         self, pos = vec2D(0, 0)
@@ -151,9 +161,9 @@ class basic_tower(tower) :
     def shoot_first(self, enemys = []) :
         if not self.aim_first(enemys) : 
             return False
-        bullet = self.bullet(self.location.copy(), vec2D(0, 0), [self.images[2]])
+        bullet = self.bullet(self.location.copy(), vec2D(0, 0), 10, [self.images[2]])
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
-        print(bullet.velocity.get_tuple())
+        # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return True
     
@@ -173,3 +183,7 @@ class basic_tower(tower) :
         for bullet in self.bullets :
             bullet.move(delta_time)
             bullet.detect(enemys)
+        for bullet in self.bullets :
+            if bullet.pierce <= 0 :
+                self.bullets.remove(bullet)
+        

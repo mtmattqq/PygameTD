@@ -26,6 +26,7 @@ pygame.event.set_allowed([
 # variables
 FPS=60
 relative_pos = vec2D(0, 0)
+MOVEMENT = [[1, 0, -1, 0], [0, 1, 0, -1]]
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     font=pygame.font.SysFont('unifont', size)
@@ -33,6 +34,38 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     textRect=text.get_rect()
     textRect.topleft=(x+relative_pos.x-10, y+relative_pos.y-20)
     screen.blit(text, textRect)
+
+def find_path(map = [[]]) :
+    m = len(map)
+    n = len(map[0])
+    enemy_source = []
+    main_tower = []
+    for i in range(m) :
+        for j in range(n) :
+            if map[i][j] == 1 :
+                main_tower = [i, j]
+            elif map[i][j] == 2 :
+                enemy_source = [i, j]
+    isv = []
+    for i in range(m) :
+        line = []
+        for j in range(n) :
+            line.append(False)
+        isv.append(line)
+
+    path = []
+    pos_now = enemy_source
+    while pos_now != main_tower :
+        path.append(pos_now)
+        for d in MOVEMENT :
+            next_stap = [enemy_source[0] + d[0], enemy_source[1] + d[1]]
+            if(
+                map[next_stap[0]][next_stap[1]] == 3 and 
+                not isv[next_stap[0]][next_stap[1]]
+            ) :
+                pos_now = next_stap
+                break
+    return path
 
 def level() :
     tile_set = tile.tileset([
@@ -47,16 +80,17 @@ def level() :
     level_info = json.loads(level_info)
     level_info_file.close()
 
-    print(level_info['map_size'])
+    # print(level_info['map_size'])
 
     level_map = tile.tilemap(tile_set, level_info['map_size'])
     level_map.set_zero()
     level_map.load(level_info['map'])
     level_map.render()
+    # level_path = find_path(level_info['map'])
 
     # testing 
     t1 = tower.basic_tower(vec2D(4, 5))
-    e1 = enemy.basic_enemy(vec2D(200, 300))
+    e1 = enemy.basic_enemy(vec2D(200, 300), 100)
 
     time_previous = 0
     in_game = True
@@ -88,7 +122,8 @@ def level() :
         screen.fill((245, 245, 245))
         screen.blit(level_map.image, level_map.rect)
         t1.display(screen)
-        e1.display(screen)
+        if e1.alive :
+            e1.display(screen)
         # rect = tile_set.tiles[1].get_rect()
         # rect.topleft = (100, 100)
         # screen.blit(tile_set.tiles[1], rect)

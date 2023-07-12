@@ -59,8 +59,8 @@ class tilemap:
 
     def set_zero(self):
         self.map = np.zeros(self.size, dtype=int)
-        print(self.map)
-        print(self.map.shape)
+        # print(self.map)
+        # print(self.map.shape)
         self.render()
 
     def set_random(self):
