@@ -50,6 +50,7 @@ def level() :
     print(level_info['map_size'])
 
     level_map = tile.tilemap(tile_set, level_info['map_size'])
+    level_map.set_zero()
     level_map.load(level_info['map'])
     level_map.render()
 
@@ -58,7 +59,7 @@ def level() :
     e1 = enemy.basic_enemy(vec2D(200, 300))
 
     time_previous = 0
-    in_game=True
+    in_game = True
     while in_game :
         time_now = pygame.time.get_ticks()
         delta_time = time_now - time_previous
