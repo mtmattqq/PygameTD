@@ -2,6 +2,7 @@ import pygame
 import copy
 from pygame.locals import *
 from vec2D import vec2D
+from vec2D import transform
 from button import button
 import tile
 import json
@@ -56,11 +57,13 @@ def find_path(map = [[]]) :
     path = []
     pos_now = enemy_source
     while pos_now != main_tower :
-        path.append(pos_now)
+        isv[pos_now[0]][pos_now[1]] = True
+        path.append(transform(vec2D(pos_now[0], pos_now[1]), tile.TILE_SIZE))
         for d in MOVEMENT :
-            next_stap = [enemy_source[0] + d[0], enemy_source[1] + d[1]]
+            next_stap = [pos_now[0] + d[0], pos_now[1] + d[1]]
             if(
-                map[next_stap[0]][next_stap[1]] == 3 and 
+                (map[next_stap[0]][next_stap[1]] == 3 or
+                 map[next_stap[0]][next_stap[1]] == 1) and 
                 not isv[next_stap[0]][next_stap[1]]
             ) :
                 pos_now = next_stap
@@ -86,7 +89,8 @@ def level() :
     level_map.set_zero()
     level_map.load(level_info['map'])
     level_map.render()
-    # level_path = find_path(level_info['map'])
+    level_path = find_path(level_info['map'])
+    print(level_path)
 
     # testing 
     t1 = tower.basic_tower(vec2D(4, 5))
