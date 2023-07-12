@@ -23,8 +23,8 @@ class vec2D :
         self.y=l*dy
     
     def set_angle(self, a, length = 0):
-        self._x = length*math.cos(a/180*PI)
-        self._y = length*math.sin(a/180*PI)
+        self.x = length*math.cos(math.radians(-a))
+        self.y = length*math.sin(math.radians(-a))
 
     def __iadd__(self,other):
         self.x += other.x
@@ -40,13 +40,11 @@ class vec2D :
         return self
     def __add__(a,b):
         ret = vec2D(float(a.x),float(a.y))
-        ret.x += b.x
-        ret.x += b.y
+        ret += b
         return ret
     def __sub__(a,b):
         ret = vec2D(float(a.x),float(a.y))
-        ret.x -= b.x
-        ret.x -= b.y
+        ret -= b
         return ret
     def __mul__(a,b):
         ret = vec2D(float(a.x),float(a.y))

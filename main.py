@@ -7,6 +7,7 @@ import tile
 import json
 import os
 import tower
+import enemy
 
 # pygame init
 pygame.init()
@@ -54,9 +55,15 @@ def level() :
 
     # testing 
     t1 = tower.basic_tower(vec2D(4, 5))
+    e1 = enemy.basic_enemy(vec2D(200, 300))
 
+    time_previous = 0
     in_game=True
     while in_game :
+        time_now = pygame.time.get_ticks()
+        delta_time = time_now - time_previous
+        time_previous = time_now
+
         mouse_pos = pygame.mouse.get_pos()
         mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
 
@@ -72,11 +79,15 @@ def level() :
             if event.type == pygame.MOUSEBUTTONUP :
                 a=0
         
+        t1.shoot([e1])
+        t1.update(delta_time, [e1])
+        e1.pos.x += 0.5
+
         # display
         screen.fill((245, 245, 245))
         screen.blit(level_map.image, level_map.rect)
-        t1.angle += 1
         t1.display(screen)
+        e1.display(screen)
         # rect = tile_set.tiles[1].get_rect()
         # rect.topleft = (100, 100)
         # screen.blit(tile_set.tiles[1], rect)
@@ -92,7 +103,7 @@ def main_page() :
                           ['start_button.png'], click_start_button)
     start_button.pos = vec2D(
         resolution[0]/2-start_button.width/2, 
-        resolution[1]/2-start_button.hight/2+50)
+        resolution[1]/2-start_button.height/2+50)
     title = 'Basic TD'
 
     in_game=True
