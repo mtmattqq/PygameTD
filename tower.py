@@ -148,7 +148,6 @@ class basic_tower(tower) :
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    
     def shoot_first(self, enemys = []) :
         if not self.aim_first(enemys) : 
             return False
