@@ -7,14 +7,14 @@ def do_nothing() :
 
 # For class button, the pos is the position on screen
 
-class button(pygame.sprite.Sprite) :
+class button :
     def __init__(
         self, text = "click me", pos = vec2D(0, 0),
         color = [0,0,0], width = 0, height = 0, 
         pictures = [''], action_onclick = do_nothing(), 
         action_highlight = do_nothing()
     ) :
-        pygame.sprite.Sprite.__init__(self)
+        # pygame.sprite.Sprite.__init__(self)
         self.text = text
         self.pos = pos
         self.color = color

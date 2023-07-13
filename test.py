@@ -15,3 +15,8 @@ import math
 # v4 = vec2D(1, 0)
 # v4.change_mod(100)
 # print(v4.get_tuple())
+
+v5 = vec2D(100, 0)
+v6 = v5.copy()
+v6 - vec2D(-100, 100)
+print(v5.get_tuple())

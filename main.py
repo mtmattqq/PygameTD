@@ -26,14 +26,13 @@ pygame.event.set_allowed([
 
 # variables
 FPS=60
-relative_pos = vec2D(0, 0)
 MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     font=pygame.font.SysFont('unifont', size)
     text=font.render(text, True, color)
     textRect=text.get_rect()
-    textRect.topleft=(x+relative_pos.x-10, y+relative_pos.y-20)
+    textRect.topleft=(x-10, y-20)
     screen.blit(text, textRect)
 
 def find_path(map = [[]]) :
@@ -77,7 +76,6 @@ def find_path(map = [[]]) :
     return path
 
 def level() :
-    global enemy
     tile_set = tile.tileset([
         'white.png',
         'main_tower.png',
@@ -102,13 +100,35 @@ def level() :
     #     print(pos.get_tuple())
 
     # testing 
-    t1 = tower.basic_tower(vec2D(4, 5))
-    e1 = enemy.basic_enemy(level_path[0], 100, 0, 0, 20, level_path)
+    t1 = tower.basic_tower(vec2D(4, 4))
+    t2 = tower.basic_tower(vec2D(4, 3))
+    # e1 = enemy.basic_enemy(level_path[0], 100, 0, 0, 20, level_path)
 
-    enemys = [e1]
+    towers = [t1, t2]
+    enemys = []
 
     time_previous = 0
     game_timer = 0
+
+    wave = 0
+    wave_interval = 5000
+    send_next_wave = 1000
+    send_this_wave = 0
+    sending_wave = False
+    send_next_enemy = 0
+    enemy_dencity = 1000
+    sent_enemy = 0
+
+    # money
+    natural_ingot = 100
+    natural_ingot_button = button(
+        'Natural Ingot', vec2D(785, 16), 
+        [0, 0, 0], 32, 32, ['natural_ingot16.png']
+    )
+
+    # row col -> y, x
+    selected_tile = [0, 0]
+
     in_game = True
     while in_game :
         time_now = pygame.time.get_ticks()
@@ -116,11 +136,28 @@ def level() :
         time_previous = time_now
         game_timer += delta_time
 
-        t1.shoot(enemys)
-        t1.update(delta_time, enemys)
+        if game_timer > send_next_wave :
+            wave += 1
+            send_this_wave = send_next_wave
+            send_next_wave += wave_interval
+            sending_wave = True
+            sent_enemy += wave
+            send_next_enemy = 0
+
+        if sending_wave and game_timer >= send_next_enemy+send_this_wave :
+            send_next_enemy += enemy_dencity
+            nen = enemy.basic_enemy(level_path[0].copy(), wave*10, 0, 0, 20, level_path)
+            enemys.append(nen)
+            sent_enemy -= 1
+            if sent_enemy == 0 :
+                sending_wave = False
+
+        for tow in towers :
+            tow.update(delta_time, enemys)
         for en in enemys :
-            if en.hit <= 0 :
+            if not en.alive :
                 enemys.remove(en)
+                natural_ingot += 10
             en.move(delta_time)
 
         mouse_pos = pygame.mouse.get_pos()
@@ -136,19 +173,24 @@ def level() :
             if event.type == pygame.MOUSEBUTTONDOWN :
                 a=0
             if event.type == pygame.MOUSEBUTTONUP :
-                a=0
+                for tow in towers :
+                    tow.detect(mouse_pos)
+                tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
+                if tile_pos[0] < 9 and tile_pos[1] < 12 :
+                    selected_tile = tile_pos
         
         
 
         # display
         screen.fill((245, 245, 245))
         screen.blit(level_map.image, level_map.rect)
-        t1.display(screen)
+        for tow in towers :
+            tow.display(screen)
         for en in enemys :
             en.display(screen)
-        # rect = tile_set.tiles[1].get_rect()
-        # rect.topleft = (100, 100)
-        # screen.blit(tile_set.tiles[1], rect)
+        show_text('Next wave in {:.2f} second'.format((send_next_wave - game_timer)/1000), 785, 550, (0, 0, 0), 20)
+        natural_ingot_button.display(screen)
+        show_text(str(natural_ingot), 850, 40, (0, 0, 0), 20)
         pygame.display.update()
         clock.tick(FPS)
     return
@@ -177,9 +219,9 @@ def main_page() :
                 if event.unicode == 'q' :
                     in_game = False
             if event.type == pygame.MOUSEBUTTONDOWN :
-                start_button.detect(pos = mouse_pos+relative_pos)
+                start_button.detect(pos = mouse_pos)
             if event.type == pygame.MOUSEBUTTONUP :
-                if start_button.click(mouse_pos+relative_pos) :
+                if start_button.click(mouse_pos) :
                     level()
         
         # display

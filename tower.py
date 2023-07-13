@@ -103,6 +103,13 @@ class basic_tower(tower) :
                     break
                 if dis(enemy.pos, self.pos) < self.size :
                     self.deal_damage(enemy)
+            if(
+                self.pos.x < 0 or
+                self.pos.y < 0 or
+                self.pos.x > TILE_SIZE*12 or
+                self.pos.y > TILE_SIZE*9
+            ) :
+                self.pierce = 0
                     
         
     def __init__(
@@ -180,6 +187,7 @@ class basic_tower(tower) :
                 self.aim_first(enemys)
     def update(self, delta_time, enemys = []) :
         self.update_time_to_fire(delta_time)
+        self.shoot(enemys)
         for bullet in self.bullets :
             bullet.move(delta_time)
             bullet.detect(enemys)

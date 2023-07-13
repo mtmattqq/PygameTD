@@ -13,5 +13,6 @@
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ],
 
-    "difficulty" : 100
+    "difficulty" : 100,
+    "start_wave" : 0
 }

@@ -52,9 +52,6 @@ class enemy :
             return True
         return False
 
-    def move(self, pos = vec2D(0, 0)) :
-        self.pos += pos
-
     def display(self, screen) :
         self.rect.center = self.pos.get_tuple()
         screen.blit(
@@ -65,19 +62,21 @@ class enemy :
     def check_state(self) :
         if self.hit <= 0 :
             self.alive = False
+        return self.alive
     
     def move(self, delta_time) :
         if self.progress >= self.max_progress-1 :
             # deal damage to player's main tower
+            self.alive = False
             return
         self.velocity = self.path[self.progress + 1] - self.path[self.progress]
         self.velocity.change_mod(self.move_speed)
-        print(self.velocity.get_tuple())
+        # print(self.velocity.get_tuple())
         if(
             dis(self.path[self.progress + 1] - self.pos, vec2D(0, 0)) <= 
             dis(self.velocity * (delta_time/1000), vec2D(0, 0))
         ) :
-            self.pos = self.path[self.progress + 1]
+            self.pos = self.path[self.progress + 1].copy()
             self.progress += 1
         else :
             self.pos += self.velocity * (delta_time/1000)
