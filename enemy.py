@@ -127,4 +127,3 @@ class basic_enemy(enemy) :
             self.images[2], 
             hit_bar_rect
         )   
-        

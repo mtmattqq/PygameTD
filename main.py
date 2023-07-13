@@ -172,6 +172,13 @@ def level() :
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'basic_tower32.png'], 
             buy_tower_buttons_onclick
+        ),
+
+        button(
+            80, vec2D(845, 48), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'sniper_tower32.png'], 
+            buy_tower_buttons_onclick
         )
     ]
 
@@ -192,7 +199,7 @@ def level() :
             sending_wave = True
             sent_enemy += wave
             send_next_enemy = 0
-            enemy_dencity = max(10, 1000-10*wave)
+            enemy_dencity = max(100, 1000-10*wave)
 
         if sending_wave and game_timer >= send_next_enemy+send_this_wave :
             send_next_enemy += enemy_dencity
@@ -232,6 +239,8 @@ def level() :
                         new_tower = None
                         if ct == 1 :
                             new_tower = tower.basic_tower(vec2D(selected_tile[1], selected_tile[0]))
+                        elif ct == 2 :
+                            new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]))
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
