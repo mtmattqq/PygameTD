@@ -39,7 +39,7 @@ class tower(pygame.sprite.Sprite) :
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
         
-    def detect(self, pos = vec2D(0, 0)) :
+    def detect_mouse(self, pos = vec2D(0, 0)) :
         self_pos = self.pos*TILE_SIZE
         if(
             pos.x<self_pos.x+self.width and 
@@ -101,7 +101,7 @@ class basic_tower(tower) :
             for enemy in enemys :
                 if self.pierce <= 0 :
                     break
-                if dis(enemy.pos, self.pos) < self.size :
+                if dis(enemy.pos, self.pos) < (self.size+enemy.size)/2 :
                     self.deal_damage(enemy)
             if(
                 self.pos.x < 0 or

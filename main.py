@@ -9,6 +9,7 @@ import json
 import os
 import tower
 import enemy
+import numpy as np
 
 # pygame init
 pygame.init()
@@ -75,6 +76,32 @@ def find_path(map = [[]]) :
                 break
     return path
 
+def select_tile(mouse_pos, tower_info, towers, map_info) :
+    tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
+    selected_tile = 0
+    show_buy_tower = False
+    show_tower_info = False
+
+    if(
+        tile_pos[0] < 9 and 
+        tile_pos[1] < 12 and 
+        map_info[tile_pos[0]][tile_pos[1]] != 1 and
+        map_info[tile_pos[0]][tile_pos[1]] != 2 and
+        map_info[tile_pos[0]][tile_pos[1]] != 3
+    ) :
+        selected_tile = tile_pos
+        if tower_info[tile_pos[0], tile_pos[1]] == 0 :
+            show_buy_tower = True
+            show_tower_info = False
+        else :
+            show_buy_tower = False
+            show_tower_info = True
+    selected_tower = None
+    for tow in towers :
+        if tow.detect_mouse(mouse_pos) :
+            selected_tower = tow
+    return (selected_tile, show_buy_tower, show_tower_info, selected_tower)
+
 def level() :
     tile_set = tile.tileset([
         'white.png',
@@ -102,15 +129,18 @@ def level() :
     # testing 
     t1 = tower.basic_tower(vec2D(4, 4))
     t2 = tower.basic_tower(vec2D(4, 3))
-    # e1 = enemy.basic_enemy(level_path[0], 100, 0, 0, 20, level_path)
 
     towers = [t1, t2]
+    tower_info = np.zeros(level_info['map_size'], dtype=int)
+    tower_info[t1.pos.y, t1.pos.x] = 1
+    tower_info[t2.pos.y, t2.pos.x] = 1
+    show_tower_info = False
     enemys = []
 
     time_previous = 0
     game_timer = 0
 
-    wave = 0
+    wave = level_info['start_wave']
     wave_interval = 5000
     send_next_wave = 1000
     send_this_wave = 0
@@ -128,6 +158,16 @@ def level() :
 
     # row col -> y, x
     selected_tile = [0, 0]
+
+    # buy tower button
+    show_buy_tower = False
+    buy_tower_buttons = [
+        button(
+            80, vec2D(785, 48), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'basic_tower32.png']
+        )
+    ]
 
     in_game = True
     while in_game :
@@ -173,13 +213,9 @@ def level() :
             if event.type == pygame.MOUSEBUTTONDOWN :
                 a=0
             if event.type == pygame.MOUSEBUTTONUP :
-                for tow in towers :
-                    tow.detect(mouse_pos)
-                tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
-                if tile_pos[0] < 9 and tile_pos[1] < 12 :
-                    selected_tile = tile_pos
-        
-        
+                selected_tile, show_buy_tower, show_tower_info, selected_tower = select_tile(
+                    mouse_pos, tower_info, towers, level_info['map']
+                )
 
         # display
         screen.fill((245, 245, 245))
@@ -188,10 +224,29 @@ def level() :
             tow.display(screen)
         for en in enemys :
             en.display(screen)
-        show_text('Next wave in {:.2f} second'.format((send_next_wave - game_timer)/1000), 785, 550, (0, 0, 0), 20)
+        show_text('Next wave in {:.2f} s.'.format((send_next_wave - game_timer)/1000), 785, 550, (0, 0, 0), 20)
         natural_ingot_button.display(screen)
         show_text(str(natural_ingot), 850, 40, (0, 0, 0), 20)
+        if show_buy_tower :
+            for buy_tower in buy_tower_buttons :
+                if buy_tower.text > natural_ingot :
+                    buy_tower.state = 1
+                    buy_tower.display(screen)
+                else :
+                    buy_tower.state = 0
+                    buy_tower.display(screen)
+                buy_tower.state = 2
+                buy_tower.display(screen)
+        elif show_tower_info :
+            color = pygame.Color(30, 30, 30, a=100)
+            pygame.draw.circle(
+                screen, color, 
+                selected_tower.location.get_tuple(), 
+                selected_tower.range,
+                3
+            )
         pygame.display.update()
+
         clock.tick(FPS)
     return
 
