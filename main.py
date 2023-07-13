@@ -135,6 +135,7 @@ def level() :
     tower_info[t1.pos.y, t1.pos.x] = 1
     tower_info[t2.pos.y, t2.pos.x] = 1
     show_tower_info = False
+    selected_tower = None
     enemys = []
 
     time_previous = 0
@@ -142,7 +143,7 @@ def level() :
 
     wave = level_info['start_wave']
     wave_interval = 5000
-    send_next_wave = 1000
+    send_next_wave = 10000
     send_this_wave = 0
     sending_wave = False
     send_next_enemy = 0
@@ -150,7 +151,7 @@ def level() :
     sent_enemy = 0
 
     # money
-    natural_ingot = 100
+    natural_ingot = level_info['start_money']
     natural_ingot_button = button(
         'Natural Ingot', vec2D(785, 16), 
         [0, 0, 0], 32, 32, ['natural_ingot16.png']
@@ -191,6 +192,7 @@ def level() :
             sending_wave = True
             sent_enemy += wave
             send_next_enemy = 0
+            enemy_dencity = max(10, 1000-10*wave)
 
         if sending_wave and game_timer >= send_next_enemy+send_this_wave :
             send_next_enemy += enemy_dencity
@@ -205,7 +207,7 @@ def level() :
         for en in enemys :
             if not en.alive :
                 enemys.remove(en)
-                natural_ingot += 10
+                natural_ingot += en.max_hit/10
             en.move(delta_time)
 
         # event in pygame
@@ -233,6 +235,13 @@ def level() :
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
+                
+                if selected_tower != None :
+                    clicked_upgrade, natural_ingot = selected_tower.upgrade(
+                        mouse_pos, natural_ingot
+                    )
+                    if clicked_upgrade :
+                        continue
 
                 selected_tile, show_buy_tower, show_tower_info, selected_tower = select_tile(
                     mouse_pos, tower_info, towers, level_info['map']
@@ -256,12 +265,19 @@ def level() :
         
         for tow in towers :
             tow.display(screen)
+        for tow in towers :
+            tow.display_bullets(screen)
         for en in enemys :
             en.display(screen)
         show_text(
             'Next wave in {:.2f} s.'.format((send_next_wave - game_timer)/1000), 
-            790, 550, (0, 0, 0), 20
+            790, 545, (0, 0, 0), 20
         )
+        show_text(
+            'Wave : {}'.format(wave), 
+            790, 570, (0, 0, 0), 20
+        )
+        
         natural_ingot_button.display(screen)
         show_text(str(natural_ingot), 850, 40, (0, 0, 0), 20)
         if show_buy_tower :
@@ -284,7 +300,10 @@ def level() :
                 3
             )
 
-            selected_tower.display_info(screen)
+            selected_tower.display_info(screen, natural_ingot)
+        
+        if not show_tower_info :
+            selected_tower = None
         
         pygame.display.update()
 

@@ -65,7 +65,7 @@ class enemy :
         return self.alive
     
     def move(self, delta_time) :
-        if self.progress >= self.max_progress :
+        if self.progress >= self.max_progress-1 :
             # deal damage to player's main tower
             self.alive = False
             return

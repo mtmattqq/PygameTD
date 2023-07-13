@@ -43,6 +43,26 @@ class tower(pygame.sprite.Sprite) :
             self.images.append(pygame.transform.scale(pygame.image.load(
                 os.path.join(os.getcwd(),'AppData',picture)).convert_alpha(), (width,height)))
         self.state = 0
+        self.upgrade_damage = button(
+            'damage', vec2D(950, 84), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_range = button(
+            'range', vec2D(950, 109), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_reload = button(
+            'reload', vec2D(950, 134), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_bullet_speed = button(
+            'bullet_speed', vec2D(950, 159), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.damage_level = 0
+        self.range_level = 0
+        self.reload_level = 0
+        self.bullet_speed_level = 0
         # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
@@ -76,6 +96,8 @@ class tower(pygame.sprite.Sprite) :
             self.images[self.state], 
             (self.pos*TILE_SIZE).get_tuple()
         )
+
+
 
 class basic_tower(tower) :
     class bullet :
@@ -139,32 +161,6 @@ class basic_tower(tower) :
         self.angle = 0
         self.bullets = []
         self.target = 'first'
-        self.upgrade_damage = button(
-            'upgrade button', vec2D(950, 84), [0, 0, 0], 
-            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
-        )
-        self.upgrade_range = button(
-            'upgrade button', vec2D(950, 109), [0, 0, 0], 
-            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
-        )
-        self.upgrade_reload = button(
-            'upgrade button', vec2D(950, 134), [0, 0, 0], 
-            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
-        )
-        self.upgrade_bullet_speed = button(
-            'upgrade button', vec2D(950, 159), [0, 0, 0], 
-            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
-        )
-        self.upgrade_buttons = [
-            self.upgrade_damage,
-            self.upgrade_range,
-            self.upgrade_reload,
-            self.upgrade_bullet_speed
-        ]
-        self.damage_level = 0
-        self.range_level = 0
-        self.reload_level = 0
-        self.bullet_speed_level = 0
         
     def display(self, screen):
         super().display(screen)
@@ -178,7 +174,7 @@ class basic_tower(tower) :
             barrel, 
             rotated_rect.center
         )
-
+    def display_bullets(self, screen) :
         for bullet in self.bullets :
             bullet.display(screen)
 
@@ -232,27 +228,115 @@ class basic_tower(tower) :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
         
-    def display_info(self, screen, natural_ingot = 0) :
+    def display_info(self, screen, natural_ingot) :
         show_text(
             screen, 
-            'Damage : {:.1f}'.format(self.damage), 
+            'Damage : {:.2f}'.format(self.damage), 
             790, 100, [0, 0, 0], 20
         )
         show_text(
             screen, 
-            'Range  : {:.1f}'.format(self.range/TILE_SIZE), 
+            'Range  : {:.5f}'.format(self.range/TILE_SIZE), 
             790, 125, [0, 0, 0], 20
         )
         show_text(
             screen, 
-            'Reload : {:.1f}'.format(self.reload), 
+            'Reload : {:.2f}'.format(self.reload), 
             790, 150, [0, 0, 0], 20
         )
         show_text(
             screen, 
-            'Bspeed : {:.1f}'.format(self.bullet_speed), 
+            'Bspeed : {:.5f}'.format(self.bullet_speed/TILE_SIZE), 
             790, 175, [0, 0, 0], 20
         )
 
-        for upb in self.upgrade_buttons :
-            upb.display(screen)
+        show_text(
+            screen, 
+            'Level', 
+            790, 220, [0, 0, 0], 20
+        )
+
+        show_text(
+            screen, 
+            'Damage : {}'.format(self.damage_level), 
+            790, 250, [0, 0, 0], 20
+        )
+        if self.range_level > 1e15 :
+            text = 'Range : max'
+        else :
+            text = 'Range : {}'.format(self.range_level)
+        show_text(
+            screen, text, 
+            790, 275, [0, 0, 0], 20
+        )
+        if self.reload_level > 1e15 :
+            text = 'Reload : max'
+        else :
+            text = 'Reload : {}'.format(self.reload_level)
+        show_text(
+            screen, text, 
+            790, 300, [0, 0, 0], 20
+        )
+        if self.bullet_speed_level > 1e15 :
+            text = 'Bullet Speed : max'
+        else :
+            text = 'Bullet Speed : {}'.format(self.bullet_speed_level)
+        show_text(
+            screen, text, 
+            790, 325, [0, 0, 0], 20
+        )
+
+
+        if natural_ingot >= 50 + (self.damage_level+1)*10 :
+            self.upgrade_damage.state = 0
+        else :
+            self.upgrade_damage.state = 1
+        self.upgrade_damage.display(screen)
+        if natural_ingot >= 50 + (self.range_level+1)*10 :
+            self.upgrade_range.state = 0
+        else :
+            self.upgrade_range.state = 1
+        self.upgrade_range.display(screen)
+        if natural_ingot >= 50 + (self.reload_level+1)*10 :
+            self.upgrade_reload.state = 0
+        else :
+            self.upgrade_reload.state = 1
+        self.upgrade_reload.display(screen)
+        if natural_ingot >= 50 + (self.bullet_speed_level+1)*10 :
+            self.upgrade_bullet_speed.state = 0
+        else :
+            self.upgrade_bullet_speed.state = 1
+        self.upgrade_bullet_speed.display(screen)
+    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+        if self.upgrade_damage.click(mouse_pos) :
+            if natural_ingot >= 50 + (self.damage_level+1)*10 :
+                self.damage_level += 1
+                natural_ingot -= 50 + self.damage_level*10
+                self.damage += 10.0 * math.sqrt(self.damage_level)
+        elif self.upgrade_range.click(mouse_pos) :
+            if natural_ingot >= 50 + (self.range_level+1)*10 :
+                self.range_level += 1
+                natural_ingot -= 50 + self.range_level*10
+                self.range += TILE_SIZE/2 * 1/self.range_level
+                if self.range > 5 * TILE_SIZE :
+                    self.range = 5 * TILE_SIZE
+                    self.range_level = 1e20
+        elif self.upgrade_reload.click(mouse_pos) :
+            if natural_ingot >= 50 + (self.reload_level+1)*10 :
+                self.reload_level += 1
+                natural_ingot -= 50 + self.reload_level*10
+                self.reload += 3 * math.log10(self.reload_level*2)
+                if self.reload > 60 :
+                    self.reload = 60
+                    self.reload_level = 1e20
+        elif self.upgrade_bullet_speed.click(mouse_pos) :
+            if natural_ingot >= 50 + (self.bullet_speed_level+1)*10 :
+                self.bullet_speed_level += 1
+                natural_ingot -= 50 + self.bullet_speed_level*10
+                self.bullet_speed += TILE_SIZE * 1/self.bullet_speed_level
+                if self.bullet_speed > 10 * TILE_SIZE :
+                    self.bullet_speed = 10 * TILE_SIZE
+                    self.bullet_speed_level = 1e20
+        else :
+            return [False, natural_ingot]
+        return [True, natural_ingot]
