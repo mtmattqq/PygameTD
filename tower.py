@@ -139,6 +139,33 @@ class basic_tower(tower) :
         self.angle = 0
         self.bullets = []
         self.target = 'first'
+        self.upgrade_damage = button(
+            'upgrade button', vec2D(950, 84), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_range = button(
+            'upgrade button', vec2D(950, 109), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_reload = button(
+            'upgrade button', vec2D(950, 134), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_bullet_speed = button(
+            'upgrade button', vec2D(950, 159), [0, 0, 0], 
+            TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
+        )
+        self.upgrade_buttons = [
+            self.upgrade_damage,
+            self.upgrade_range,
+            self.upgrade_reload,
+            self.upgrade_bullet_speed
+        ]
+        self.damage_level = 0
+        self.range_level = 0
+        self.reload_level = 0
+        self.bullet_speed_level = 0
+        
     def display(self, screen):
         super().display(screen)
         barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
@@ -205,7 +232,7 @@ class basic_tower(tower) :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
         
-    def display_info(self, screen) :
+    def display_info(self, screen, natural_ingot = 0) :
         show_text(
             screen, 
             'Damage : {:.1f}'.format(self.damage), 
@@ -226,3 +253,6 @@ class basic_tower(tower) :
             'Bspeed : {:.1f}'.format(self.bullet_speed), 
             790, 175, [0, 0, 0], 20
         )
+
+        for upb in self.upgrade_buttons :
+            upb.display(screen)

@@ -16,7 +16,19 @@ import math
 # v4.change_mod(100)
 # print(v4.get_tuple())
 
-v5 = vec2D(100, 0)
-v6 = v5.copy()
-v6 - vec2D(-100, 100)
-print(v5.get_tuple())
+# v5 = vec2D(100, 0)
+# v6 = v5.copy()
+# v6 - vec2D(-100, 100)
+# print(v5.get_tuple())
+
+# def f(a = 0) :
+#     a += 100
+# n = 0
+# f(n)
+# print(n)
+
+# v7 = vec2D(0, 0)
+# def f2(vec = vec2D(0, 0)) :
+#     vec += vec2D(10, 10)
+# f2(v7)
+# print(v7.get_tuple())
