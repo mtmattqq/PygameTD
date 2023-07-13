@@ -6,9 +6,17 @@ import os
 from tile import TILE_SIZE
 import math
 import enemy
+from button import button
 
 def do_nothing() :
     return
+
+def show_text(screen, text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
+    font=pygame.font.SysFont('unifont', size)
+    text=font.render(text, True, color)
+    textRect=text.get_rect()
+    textRect.topleft=(x-10, y-20)
+    screen.blit(text, textRect)
 
 class tower(pygame.sprite.Sprite) :
     def __init__(
@@ -110,15 +118,14 @@ class basic_tower(tower) :
                 self.pos.y > TILE_SIZE*9
             ) :
                 self.pierce = 0
-                    
-        
+
     def __init__(
         self, pos = vec2D(0, 0)
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['basic_tower16.png', 'basic_tower_barrel.png', 'basic_tower_bullet.png']
-        damage = 1
+        damage = 10
         reload = 3
         range = 1.5*TILE_SIZE
         bullet_speed = 4*TILE_SIZE
@@ -168,7 +175,10 @@ class basic_tower(tower) :
     def shoot_first(self, enemys = []) :
         if not self.aim_first(enemys) : 
             return False
-        bullet = self.bullet(self.location.copy(), vec2D(0, 0), 10, [self.images[2]])
+        bullet = self.bullet(
+            self.location.copy(), vec2D(0, 0), 
+            self.damage, [self.images[2]]
+        )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
@@ -195,3 +205,24 @@ class basic_tower(tower) :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
         
+    def display_info(self, screen) :
+        show_text(
+            screen, 
+            'Damage : {:.1f}'.format(self.damage), 
+            790, 100, [0, 0, 0], 20
+        )
+        show_text(
+            screen, 
+            'Range  : {:.1f}'.format(self.range/TILE_SIZE), 
+            790, 125, [0, 0, 0], 20
+        )
+        show_text(
+            screen, 
+            'Reload : {:.1f}'.format(self.reload), 
+            790, 150, [0, 0, 0], 20
+        )
+        show_text(
+            screen, 
+            'Bspeed : {:.1f}'.format(self.bullet_speed), 
+            790, 175, [0, 0, 0], 20
+        )
