@@ -33,7 +33,7 @@ import math
 # f2(v7)
 # print(v7.get_tuple())
 
-a = 0 
-for i in range(10, 1000, 10) :
-    a = 1/i
-    print(a)
+# a = 0 
+# for i in range(10, 1000, 10) :
+#     a = 1/i
+#     print(a)

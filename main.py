@@ -11,6 +11,7 @@ import tower
 import enemy
 import numpy as np
 import math
+import random
 
 # pygame init
 pygame.init()
@@ -116,8 +117,6 @@ def level() :
     level_info = json.loads(level_info)
     level_info_file.close()
 
-    # print(level_info['map_size'])
-
     level_map = tile.tilemap(tile_set, level_info['map_size'])
     level_map.set_zero()
     level_map.load(level_info['map'])
@@ -127,22 +126,34 @@ def level() :
     # for pos in level_path :
     #     print(pos.get_tuple())
 
-    # testing 
-    t1 = tower.basic_tower(vec2D(8, 7))
-    t2 = tower.basic_tower(vec2D(8, 8))
 
-    towers = [t1, t2]
+    towers = []
     tower_info = np.zeros(level_info['map_size'], dtype=int)
-    tower_info[t1.pos.y, t1.pos.x] = 1
-    tower_info[t2.pos.y, t2.pos.x] = 1
     show_tower_info = False
     selected_tower = None
+
+    ENEMY_TYPE = 2
     enemys = []
+    enemy_types = [
+        enemy.basic_enemy(level_path[0].copy(), 0, 0, 0, 20, level_path),
+        enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 25, level_path)
+    ]
+    enemy_level = [
+        0, 0
+    ]
+    enemy_base_info = [
+        [[30, 0, 0, 20], [1, 0, 0, 0]], 
+        [[10, 5, 20, 25], [0.5, 0, 0.1, 0]]
+    ]
+    enemy_type_this_wave = 0
+    enemy_type_next_wave = 0
 
     time_previous = 0
     game_timer = 0
 
     wave = level_info['start_wave']
+    for i in range(ENEMY_TYPE) :
+        enemy_level[i] = math.ceil(wave / ENEMY_TYPE)
     wave_interval = 5000
     send_next_wave = 10000
     send_this_wave = 0
@@ -210,17 +221,28 @@ def level() :
 
         if game_timer > send_next_wave :
             wave += 1
+            enemy_level[enemy_type_this_wave] += 1
             send_this_wave = send_next_wave
-            wave_interval += math.floor((math.sqrt(wave) - math.sqrt(wave-1))* 300) 
+            enemy_type_this_wave = enemy_type_next_wave
+            enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
+            enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
+            wave_interval = math.ceil(math.sqrt(enemy_level[enemy_type_this_wave]) * enemy_dencity) + 5000
             send_next_wave += wave_interval
             sending_wave = True
-            sent_enemy += math.floor(math.sqrt(wave)) + 1
+            sent_enemy += math.floor(math.sqrt(enemy_level[enemy_type_this_wave])) + 1
             send_next_enemy = 0
-            enemy_dencity = max(300, 1000-10*wave)
+            
 
         if sending_wave and game_timer >= send_next_enemy+send_this_wave :
             send_next_enemy += enemy_dencity
-            nen = enemy.basic_enemy(level_path[0].copy(), 30 + wave**2, 0, 0, 20, level_path)
+            nen = enemy_types[enemy_type_this_wave].copy()
+            nen.__init__(
+                level_path[0].copy(), 
+                enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2), 
+                enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * (enemy_level[enemy_type_this_wave]**2), 
+                enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2),
+                enemy_base_info[enemy_type_this_wave][0][3], level_path
+            )
             enemys.append(nen)
             sent_enemy -= 1
             if sent_enemy == 0 :
@@ -232,7 +254,7 @@ def level() :
             if not en.alive :
                 enemys.remove(en)
                 natural_ingot += en.max_hit/10
-            en.move(delta_time)
+            en.update(delta_time)
 
         # event in pygame
         for event in pygame.event.get() :
@@ -252,18 +274,22 @@ def level() :
                 if sent_next_wave_button.click(mouse_pos) :
                     for i in range(10000) :
                         wave += 1
+                        enemy_level[enemy_type_this_wave] += 1
                         send_this_wave = send_next_wave
-                        wave_interval += 300
+                        enemy_type_this_wave = enemy_type_next_wave
+                        enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
+                        enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
+                        wave_interval = math.ceil(math.sqrt(enemy_level[enemy_type_this_wave]) * enemy_dencity) + 3000 
                         send_next_wave += wave_interval
                         sending_wave = True
-                        sent_enemy += wave // 2 + 1
+                        sent_enemy += math.floor(enemy_level[enemy_type_this_wave]) + 1
                         send_next_enemy = 0
-                        enemy_dencity = max(300, 1000-10*wave)
                     game_timer = send_next_wave
                         
-            if event.type == pygame.MOUSEBUTTONDOWN :
-                a=0
-            if event.type == pygame.MOUSEBUTTONUP :
+            if event.type == pygame.MOUSEBUTTONDOWN : 
+                mouse = pygame.mouse.get_pressed()
+            if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
+                mouse = [False, False, False]
                 ct = 1
                 for buy_tower in buy_tower_buttons :
                     if(
@@ -375,7 +401,7 @@ def main_page() :
     in_game=True
     while in_game :
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
+        mouse_pos = vec2D(mouse_pos[0], mouse_pos[1])
 
         # event in pygame
         for event in pygame.event.get() :

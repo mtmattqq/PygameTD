@@ -22,9 +22,12 @@ class enemy :
         self.location = pos + self.relative_pos
         self.height = height
         self.width = width
-        self.hit = self.max_hit = hit
+        self.hit = hit
+        self.max_hit = hit
         self.armor = armor
-        self.shield = self.max_shield = shield
+        self.shield = shield
+        self.max_shield = shield
+        self.regenerate_shield_time = 0
         self.move_speed = move_speed
         self.velocity = vec2D(0, 0)
         self.progress = 0
@@ -32,6 +35,7 @@ class enemy :
         self.path = path
         self.max_progress = len(path)
         self.images = []
+        self.pictures = pictures
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.rect.width = width
         self.rect.height = height
@@ -43,7 +47,16 @@ class enemy :
         # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
-        
+
+    def copy(self) :
+        ret = enemy(
+            self.pos, self.width, 
+            self.height, self.pictures, 
+            self.hit, self.armor, 
+            self.shield, self.move_speed, 
+            self.path
+        )
+        return ret
     def detect(self, pos = vec2D(0, 0)) :
         self_pos = self.pos*TILE_SIZE
         if(
@@ -71,7 +84,7 @@ class enemy :
         if self.progress >= self.max_progress-1 :
             # deal damage to player's main tower
             self.alive = False
-            return
+            return True
         self.velocity = self.path[self.progress + 1] - self.path[self.progress]
         self.velocity.change_mod(self.move_speed)
         # print(self.velocity.get_tuple())
@@ -84,6 +97,17 @@ class enemy :
         else :
             self.pos += self.velocity * (delta_time/1000)
         self.location = self.pos + self.relative_pos
+        return False
+    
+    def update(self, delta_time) :
+        self.move(delta_time)
+        if self.regenerate_shield_time > 0 :
+            self.regenerate_shield_time -= delta_time
+        if self.regenerate_shield_time <= 0 and self.shield < self.max_shield:
+            self.shield = min(self.shield + 0.1 * self.max_shield, self.max_shield)
+            self.regenerate_shield_time += 1000
+        
+
 class basic_enemy(enemy) :
     def __init__(
         self, pos = vec2D(0, 0),
@@ -109,6 +133,14 @@ class basic_enemy(enemy) :
         )
 
         self.size = size
+    def copy(self) :
+        ret = basic_enemy()
+        ret.__init__(
+            self.pos, self.hit, 
+            self.armor, self.shield, 
+            self.move_speed, self.path
+        )
+        return ret
     def display(self, screen):
         super().display(screen)
         if self.hit == self.max_hit :
@@ -129,4 +161,81 @@ class basic_enemy(enemy) :
         screen.blit(
             self.images[2], 
             hit_bar_rect
-        )   
+        )
+
+class evil_eye(enemy) :
+    def __init__(
+        self, pos = vec2D(0, 0),
+        hit = 0, armor = 0,
+        shield = 0, move_speed = 0,
+        path = []
+    ) :
+        size = TILE_SIZE/2
+        width = TILE_SIZE/2
+        height = TILE_SIZE/2
+        pictures = [
+            'evil_eye16.png', 
+            'hit_bar_red.png', 
+            'hit_bar_green.png',
+            'hit_bar_blue.png',
+        ]
+
+        super().__init__(
+            pos, width, height, 
+            pictures,
+            hit, armor,
+            shield, move_speed,
+            path
+        )
+        self.size = size
+
+    def copy(self) :
+        ret = evil_eye()
+        ret.__init__(
+            self.pos, self.hit, 
+            self.armor, self.shield, 
+            self.move_speed, self.path
+        )
+        return ret
+    def display(self, screen) :
+        super().display(screen)
+        if self.hit == self.max_hit and self.shield == self.max_shield :
+            return
+        hit_bar_rect = self.rect.copy()
+        hit_bar_rect.centery -= self.size/2
+        screen.blit(
+            self.images[1], 
+            hit_bar_rect
+        )
+
+        self.hit = max(self.hit, 0)
+        hit_bar_green = pygame.transform.scale(
+            self.images[2], 
+            (self.size * (self.hit / self.max_hit), self.size/2)
+        )
+
+        hit_bar_rect.centery += 9
+
+        screen.blit(
+            hit_bar_green, 
+            hit_bar_rect
+        )
+
+        self.shield = max(self.shield, 0)
+        hit_bar_blue = pygame.transform.scale(
+            self.images[3], 
+            (self.size * (self.shield / self.max_shield), self.size/2)
+        )
+
+        hit_bar_rect.centery -= TILE_SIZE/32
+
+        screen.blit(
+            hit_bar_blue, 
+            hit_bar_rect
+        )
+    def check_state(self) :
+        return super().check_state()
+
+
+
+
