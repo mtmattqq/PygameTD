@@ -10,6 +10,7 @@ import os
 import tower
 import enemy
 import numpy as np
+import math
 
 # pygame init
 pygame.init()
@@ -127,8 +128,8 @@ def level() :
     #     print(pos.get_tuple())
 
     # testing 
-    t1 = tower.basic_tower(vec2D(4, 4))
-    t2 = tower.basic_tower(vec2D(4, 3))
+    t1 = tower.basic_tower(vec2D(8, 7))
+    t2 = tower.basic_tower(vec2D(8, 8))
 
     towers = [t1, t2]
     tower_info = np.zeros(level_info['map_size'], dtype=int)
@@ -175,12 +176,27 @@ def level() :
         ),
 
         button(
-            80, vec2D(845, 48), 
+            150, vec2D(845, 48), 
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'sniper_tower32.png'], 
             buy_tower_buttons_onclick
+        ),
+
+        button(
+            300, vec2D(905, 48), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'cannon_tower32.png'], 
+            buy_tower_buttons_onclick
         )
     ]
+
+    # sent next wave
+    sent_next_wave_button = button(
+        'sent_next_wave', vec2D(775, 490), 
+        [0, 0, 0], 32, 32, 
+        ['start_button.png'], 
+        buy_tower_buttons_onclick
+    )
 
     in_game = True
     while in_game :
@@ -195,15 +211,16 @@ def level() :
         if game_timer > send_next_wave :
             wave += 1
             send_this_wave = send_next_wave
+            wave_interval += math.floor((math.sqrt(wave) - math.sqrt(wave-1))* 300) 
             send_next_wave += wave_interval
             sending_wave = True
-            sent_enemy += wave
+            sent_enemy += math.floor(math.sqrt(wave)) + 1
             send_next_enemy = 0
-            enemy_dencity = max(100, 1000-10*wave)
+            enemy_dencity = max(300, 1000-10*wave)
 
         if sending_wave and game_timer >= send_next_enemy+send_this_wave :
             send_next_enemy += enemy_dencity
-            nen = enemy.basic_enemy(level_path[0].copy(), wave*10, 0, 0, 20, level_path)
+            nen = enemy.basic_enemy(level_path[0].copy(), 30 + wave**2, 0, 0, 20, level_path)
             enemys.append(nen)
             sent_enemy -= 1
             if sent_enemy == 0 :
@@ -224,6 +241,26 @@ def level() :
             if event.type == pygame.KEYDOWN :
                 if event.unicode == 'q' :
                     in_game = False
+                if event.unicode == 'u' :
+                    if selected_tower != None :
+                        for i in range(100000) :
+                            clicked_upgrade, natural_ingot = selected_tower.upgrade(
+                                mouse_pos, natural_ingot
+                            )
+                            if clicked_upgrade :
+                                continue
+                if sent_next_wave_button.click(mouse_pos) :
+                    for i in range(10000) :
+                        wave += 1
+                        send_this_wave = send_next_wave
+                        wave_interval += 300
+                        send_next_wave += wave_interval
+                        sending_wave = True
+                        sent_enemy += wave // 2 + 1
+                        send_next_enemy = 0
+                        enemy_dencity = max(300, 1000-10*wave)
+                    game_timer = send_next_wave
+                        
             if event.type == pygame.MOUSEBUTTONDOWN :
                 a=0
             if event.type == pygame.MOUSEBUTTONUP :
@@ -241,6 +278,8 @@ def level() :
                             new_tower = tower.basic_tower(vec2D(selected_tile[1], selected_tile[0]))
                         elif ct == 2 :
                             new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]))
+                        elif ct == 3 :
+                            new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]))
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
@@ -252,6 +291,8 @@ def level() :
                     if clicked_upgrade :
                         continue
 
+                if sent_next_wave_button.click(mouse_pos) :
+                    send_next_wave = game_timer
                 selected_tile, show_buy_tower, show_tower_info, selected_tower = select_tile(
                     mouse_pos, tower_info, towers, level_info['map']
                 )
@@ -278,6 +319,7 @@ def level() :
             tow.display_bullets(screen)
         for en in enemys :
             en.display(screen)
+        sent_next_wave_button.display(screen)
         show_text(
             'Next wave in {:.2f} s.'.format((send_next_wave - game_timer)/1000), 
             790, 545, (0, 0, 0), 20

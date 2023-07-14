@@ -5,6 +5,7 @@ import os
 from tile import TILE_SIZE
 import math
 import enemy
+import random
 
 class enemy :
     def __init__(
@@ -17,6 +18,8 @@ class enemy :
     ) :
         # pygame.sprite.Sprite.__init__(self)
         self.pos = pos
+        self.relative_pos = vec2D(random.randint(-15, 15), random.randint(-15, 15))
+        self.location = pos + self.relative_pos
         self.height = height
         self.width = width
         self.hit = self.max_hit = hit
@@ -53,7 +56,7 @@ class enemy :
         return False
 
     def display(self, screen) :
-        self.rect.center = self.pos.get_tuple()
+        self.rect.center = self.location.get_tuple()
         screen.blit(
             self.images[self.state], 
             self.rect
@@ -80,7 +83,7 @@ class enemy :
             self.progress += 1
         else :
             self.pos += self.velocity * (delta_time/1000)
-
+        self.location = self.pos + self.relative_pos
 class basic_enemy(enemy) :
     def __init__(
         self, pos = vec2D(0, 0),

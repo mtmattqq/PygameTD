@@ -24,3 +24,7 @@ Similarly, there 4 basic type of enemy.
 
 1. Bring the player to the starting room.
 1. If player press the button start, then the game should start.
+
+## Future
+
+1. A type of enemy which can help the enemy in its range avoid cannon attack

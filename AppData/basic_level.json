@@ -14,6 +14,6 @@
     ],
 
     "difficulty" : 100,
-    "start_wave" : 100,
+    "start_wave" : 0,
     "start_money" : 1000000000000
 }
