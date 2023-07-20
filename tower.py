@@ -169,6 +169,9 @@ class basic_tower(tower) :
         self.range_level = 0
         self.reload_level = 0
         self.bullet_speed_level = 0
+        self.fire_sound = pygame.mixer.Sound(
+            os.path.join(os.getcwd(), 'AppData', 'basic_tower_fire.wav')
+        )
         
     def display(self, screen):
         super().display(screen)
@@ -211,6 +214,7 @@ class basic_tower(tower) :
             self.damage, [self.images[2]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
+        
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return True
@@ -220,12 +224,13 @@ class basic_tower(tower) :
             self.time_to_fire -= delta_time
 
     def shoot(self, enemys = []) :
-        if self.target == 'first' :
-            if self.time_to_fire <= 0 :
+        if self.time_to_fire <= 0 :
+            if self.target == 'first' :
                 if self.shoot_first(enemys) :
                     self.time_to_fire += 1000.0/self.reload
-            else :
-                self.aim_first(enemys)
+                    self.fire_sound.play()
+        else :
+            self.aim_first(enemys)
     def update(self, delta_time, enemys = []) :
         self.update_time_to_fire(delta_time)
         self.shoot(enemys)
@@ -463,6 +468,9 @@ class sniper_tower(tower) :
         self.target = 'first'
         self.pierce = 2
         self.hardness = 1
+        self.fire_sound = pygame.mixer.Sound(
+            os.path.join(os.getcwd(), 'AppData', 'sniper_tower_fire.wav')
+        )
 
         self.upgrade_damage = button(
             'damage', vec2D(1000, 84), [0, 0, 0], 
@@ -536,12 +544,14 @@ class sniper_tower(tower) :
             self.time_to_fire -= delta_time
 
     def shoot(self, enemys = []) :
-        if self.target == 'first' :
-            if self.time_to_fire <= 0 :
+        if self.time_to_fire <= 0 :
+            if self.target == 'first' :
                 if self.shoot_first(enemys) :
                     self.time_to_fire += 1000.0/self.reload
-            else :
-                self.aim_first(enemys)
+                    self.fire_sound.play()
+            
+        else :
+            self.aim_first(enemys)
     def update(self, delta_time, enemys = []) :
         self.update_time_to_fire(delta_time)
         self.shoot(enemys)
@@ -657,7 +667,7 @@ class sniper_tower(tower) :
         else :
             self.upgrade_hardness.state = 1
         self.upgrade_hardness.display(screen)
-        if natural_ingot >= 50 + (self.reload_level+1)*10 :
+        if natural_ingot >= 50 + (self.reload_level+1)*50 :
             self.upgrade_reload.state = 0
         else :
             self.upgrade_reload.state = 1
@@ -801,6 +811,12 @@ class cannon_tower(tower) :
         self.explode_range_level = 0
         self.reload_level = 0
         self.bullet_speed_level = 0
+        self.fire_sound = pygame.mixer.Sound(
+            os.path.join(os.getcwd(), 'AppData', 'cannon_tower_fire.wav')
+        )
+        self.explode_sound = pygame.mixer.Sound(
+            os.path.join(os.getcwd(), 'AppData', 'cannon_tower_explode.wav')
+        )
         
     def display(self, screen):
         super().display(screen)
@@ -852,12 +868,14 @@ class cannon_tower(tower) :
             self.time_to_fire -= delta_time
 
     def shoot(self, enemys = []) :
-        if self.target == 'first' :
-            if self.time_to_fire <= 0 :
+        if self.time_to_fire <= 0 :
+            if self.target == 'first' :
                 if self.shoot_first(enemys) :
                     self.time_to_fire += 1000.0/self.reload
-            else :
-                self.aim_first(enemys)
+                    self.fire_sound.play()
+            
+        else :
+            self.aim_first(enemys)
     def update(self, delta_time, enemys = []) :
         self.update_time_to_fire(delta_time)
         self.shoot(enemys)
@@ -867,6 +885,7 @@ class cannon_tower(tower) :
         for bullet in self.bullets :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
+                self.explode_sound.play()
         
     def display_info(self, screen, natural_ingot) :
         super().display_info(screen)

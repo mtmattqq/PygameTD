@@ -15,6 +15,7 @@ import random
 
 # pygame init
 pygame.init()
+pygame.mixer.init()
 flags = DOUBLEBUF | SCALED | FULLSCREEN
 resolution = (1024, 576)
 screen = pygame.display.set_mode(resolution, flags, 16)
@@ -275,7 +276,7 @@ def level(level_now = 'basic_level.json') :
             enemy_level[enemy_type_this_wave] += 1
             send_this_wave = send_next_wave
             enemy_type_this_wave = enemy_type_next_wave
-            enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
+            enemy_type_next_wave = random.randint(0, min(math.floor(wave / 5), ENEMY_TYPE - 1))
             enemy_amount = math.floor(
                 math.sqrt(
                     enemy_level[enemy_type_this_wave] * 
@@ -381,7 +382,9 @@ def level(level_now = 'basic_level.json') :
                     if clicked_upgrade :
                         continue
                     if selected_tower.deconstruct_button.click(mouse_pos) :
+                        tower_info[selected_tower.pos.y][selected_tower.pos.x] = 0
                         towers.remove(selected_tower)
+                        
 
                 if not sending_wave and sent_next_wave_button.click(mouse_pos) :
                     send_next_wave = game_timer
