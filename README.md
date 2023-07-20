@@ -18,7 +18,7 @@ Similarly, there 4 basic type of enemy.
 1. basic
 1. high speed
 1. high armor
-1. high health
+1. high shield
 
 ## Flow
 

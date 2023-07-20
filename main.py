@@ -38,6 +38,43 @@ def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     textRect.topleft=(x-10, y-20)
     screen.blit(text, textRect)
 
+def game_over() :
+    def click_start_button() :
+        return True
+    start_button = button('Start', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
+                          [0, 0, 0], 128, 128, 
+                          ['start_button.png'], click_start_button)
+    start_button.pos = vec2D(
+        resolution[0]/2-start_button.width/2, 
+        resolution[1]/2-start_button.height/2+50)
+    title = 'Game Over'
+
+    in_game=True
+    while in_game :
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0], mouse_pos[1])
+
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                in_game = False
+            if event.type == pygame.KEYDOWN :
+                if event.unicode == 'q' :
+                    in_game = False
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                start_button.detect(pos = mouse_pos)
+            if event.type == pygame.MOUSEBUTTONUP :
+                if start_button.click(mouse_pos) :
+                    in_game = False
+        
+        # display
+        screen.fill((200, 200, 200))
+        start_button.display(screen)
+        show_text(title, 300, 175, (0, 0, 0), 98)
+        pygame.display.update()
+        clock.tick(FPS)
+    return
+
 def find_path(map = [[]]) :
     m = len(map)
     n = len(map[0])
@@ -76,6 +113,7 @@ def find_path(map = [[]]) :
             ) :
                 pos_now = next_stap
                 break
+    path.append(transform(vec2D(main_tower[1], main_tower[0]), tile.TILE_SIZE))
     return path
 
 def select_tile(mouse_pos, tower_info, towers, map_info) :
@@ -104,14 +142,14 @@ def select_tile(mouse_pos, tower_info, towers, map_info) :
             selected_tower = tow
     return (selected_tile, show_buy_tower, show_tower_info, selected_tower)
 
-def level() :
+def level(level_now = 'basic_level.json') :
     tile_set = tile.tileset([
         'white.png',
         'main_tower.png',
         'enemy_sourse.png',
         'road.png'
     ], 64, 64)
-    level_info_file = open(os.path.join(os.getcwd(), 'AppData', 'basic_level.json'), 'r')
+    level_info_file = open(os.path.join(os.getcwd(), 'AppData', level_now), 'r')
     level_info = level_info_file.read()
     # print(level_info)
     level_info = json.loads(level_info)
@@ -132,18 +170,20 @@ def level() :
     show_tower_info = False
     selected_tower = None
 
-    ENEMY_TYPE = 2
+    ENEMY_TYPE = 3
     enemys = []
     enemy_types = [
         enemy.basic_enemy(level_path[0].copy(), 0, 0, 0, 20, level_path),
-        enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 25, level_path)
+        enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 25, level_path), 
+        enemy.high_armor(level_path[0].copy(), 0, 0, 0, 10, level_path)
     ]
     enemy_level = [
-        0, 0
+        0, 0, 0
     ]
     enemy_base_info = [
-        [[30, 0, 0, 20], [1, 0, 0, 0]], 
-        [[10, 5, 20, 25], [0.5, 0, 0.1, 0]]
+        [[30,  0,  0,  30], [1.5,    0,    0, 1]], 
+        [[10,  5, 20,  40], [0.1, 0.05,  1.4, 1]], 
+        [[30, 10,  1,  25], [  5,    1, 0.05, 0.1]],
     ]
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
@@ -169,10 +209,19 @@ def level() :
         [0, 0, 0], 32, 32, ['natural_ingot16.png']
     )
 
+    # player health
+    hit = level_info['start_hit']
+    hit_button = button(
+        'Player Health', vec2D(785, 48), 
+        [0, 0, 0], 32, 32, ['main_tower.png']
+    )
+
     # row col -> y, x
     selected_tile = [0, 0]
 
     tile_rect = pygame.Rect([0, 0], [tile.TILE_SIZE, tile.TILE_SIZE])
+
+    difficulty = level_info['difficulty']
 
     # buy tower button
     show_buy_tower = False
@@ -180,21 +229,21 @@ def level() :
         return True
     buy_tower_buttons = [
         button(
-            80, vec2D(785, 48), 
+            80, vec2D(785, 80), 
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'basic_tower32.png'], 
             buy_tower_buttons_onclick
         ),
 
         button(
-            150, vec2D(845, 48), 
+            150, vec2D(845, 80), 
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'sniper_tower32.png'], 
             buy_tower_buttons_onclick
         ),
 
         button(
-            300, vec2D(905, 48), 
+            300, vec2D(905, 80), 
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'cannon_tower32.png'], 
             buy_tower_buttons_onclick
@@ -208,6 +257,8 @@ def level() :
         ['start_button.png'], 
         buy_tower_buttons_onclick
     )
+
+    is_game_over = False
 
     in_game = True
     while in_game :
@@ -225,22 +276,31 @@ def level() :
             send_this_wave = send_next_wave
             enemy_type_this_wave = enemy_type_next_wave
             enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
+            enemy_amount = math.floor(
+                math.sqrt(
+                    enemy_level[enemy_type_this_wave] * 
+                    enemy_base_info[enemy_type_this_wave][1][3]
+                )
+            ) + 1
             enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
-            wave_interval = math.ceil(math.sqrt(enemy_level[enemy_type_this_wave]) * enemy_dencity) + 5000
+            wave_interval = math.ceil(enemy_amount * enemy_dencity) + 5000
             send_next_wave += wave_interval
             sending_wave = True
-            sent_enemy += math.floor(math.sqrt(enemy_level[enemy_type_this_wave])) + 1
+            sent_enemy += enemy_amount
             send_next_enemy = 0
             
 
         if sending_wave and game_timer >= send_next_enemy+send_this_wave :
             send_next_enemy += enemy_dencity
             nen = enemy_types[enemy_type_this_wave].copy()
+            base_hit = enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2)
+            base_armor = enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * math.sqrt(enemy_level[enemy_type_this_wave])
+            base_shield = enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2)
             nen.__init__(
                 level_path[0].copy(), 
-                enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2), 
-                enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * (enemy_level[enemy_type_this_wave]**2), 
-                enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2),
+                base_hit * difficulty / 100, 
+                base_armor * difficulty / 100,
+                base_shield * difficulty / 100,
                 enemy_base_info[enemy_type_this_wave][0][3], level_path
             )
             enemys.append(nen)
@@ -251,10 +311,14 @@ def level() :
         for tow in towers :
             tow.update(delta_time, enemys)
         for en in enemys :
+            if en.update(delta_time) :
+                hit -= 1
+                if hit <= 0 :
+                    is_game_over = True
+                    in_game = False
             if not en.alive :
                 enemys.remove(en)
-                natural_ingot += en.max_hit/10
-            en.update(delta_time)
+                natural_ingot += math.sqrt(en.max_hit + en.max_shield)
 
         # event in pygame
         for event in pygame.event.get() :
@@ -263,28 +327,28 @@ def level() :
             if event.type == pygame.KEYDOWN :
                 if event.unicode == 'q' :
                     in_game = False
-                if event.unicode == 'u' :
-                    if selected_tower != None :
-                        for i in range(100000) :
-                            clicked_upgrade, natural_ingot = selected_tower.upgrade(
-                                mouse_pos, natural_ingot
-                            )
-                            if clicked_upgrade :
-                                continue
-                if sent_next_wave_button.click(mouse_pos) :
-                    for i in range(10000) :
-                        wave += 1
-                        enemy_level[enemy_type_this_wave] += 1
-                        send_this_wave = send_next_wave
-                        enemy_type_this_wave = enemy_type_next_wave
-                        enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
-                        enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
-                        wave_interval = math.ceil(math.sqrt(enemy_level[enemy_type_this_wave]) * enemy_dencity) + 3000 
-                        send_next_wave += wave_interval
-                        sending_wave = True
-                        sent_enemy += math.floor(enemy_level[enemy_type_this_wave]) + 1
-                        send_next_enemy = 0
-                    game_timer = send_next_wave
+                # if event.unicode == 'u' :
+                #     if selected_tower != None :
+                #         for i in range(100000) :
+                #             clicked_upgrade, natural_ingot = selected_tower.upgrade(
+                #                 mouse_pos, natural_ingot
+                #             )
+                #             if clicked_upgrade :
+                #                 continue
+                # if sent_next_wave_button.click(mouse_pos) :
+                #     for i in range(10000) :
+                #         wave += 1
+                #         enemy_level[enemy_type_this_wave] += 1
+                #         send_this_wave = send_next_wave
+                #         enemy_type_this_wave = enemy_type_next_wave
+                #         enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
+                #         enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
+                #         wave_interval = math.ceil(math.sqrt(enemy_level[enemy_type_this_wave]) * enemy_dencity) + 3000 
+                #         send_next_wave += wave_interval
+                #         sending_wave = True
+                #         sent_enemy += math.floor(enemy_level[enemy_type_this_wave]) + 1
+                #         send_next_enemy = 0
+                #     game_timer = send_next_wave
                         
             if event.type == pygame.MOUSEBUTTONDOWN : 
                 mouse = pygame.mouse.get_pressed()
@@ -316,8 +380,10 @@ def level() :
                     )
                     if clicked_upgrade :
                         continue
+                    if selected_tower.deconstruct_button.click(mouse_pos) :
+                        towers.remove(selected_tower)
 
-                if sent_next_wave_button.click(mouse_pos) :
+                if not sending_wave and sent_next_wave_button.click(mouse_pos) :
                     send_next_wave = game_timer
                 selected_tile, show_buy_tower, show_tower_info, selected_tower = select_tile(
                     mouse_pos, tower_info, towers, level_info['map']
@@ -345,7 +411,8 @@ def level() :
             tow.display_bullets(screen)
         for en in enemys :
             en.display(screen)
-        sent_next_wave_button.display(screen)
+        if not sending_wave :
+            sent_next_wave_button.display(screen)
         show_text(
             'Next wave in {:.2f} s.'.format((send_next_wave - game_timer)/1000), 
             790, 545, (0, 0, 0), 20
@@ -356,7 +423,10 @@ def level() :
         )
         
         natural_ingot_button.display(screen)
-        show_text(str(natural_ingot), 850, 40, (0, 0, 0), 20)
+        show_text(str(math.floor(natural_ingot)), 850, 40, (0, 0, 0), 20)
+        hit_button.display(screen)
+        show_text(str(hit), 850, 72, (0, 0, 0), 20)
+
         if show_buy_tower :
             for buy_tower in buy_tower_buttons :
                 if buy_tower.text > natural_ingot :
@@ -385,7 +455,16 @@ def level() :
         pygame.display.update()
 
         clock.tick(FPS)
+    if is_game_over :
+        game_over()
     return
+
+def level_editor() :
+    a = 0
+
+def select_level() :
+    level_now = 'basic_level.json'
+    level(level_now)
 
 def main_page() :
     def click_start_button() :

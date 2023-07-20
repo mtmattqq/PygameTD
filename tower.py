@@ -43,6 +43,10 @@ class tower(pygame.sprite.Sprite) :
             self.images.append(pygame.transform.scale(pygame.image.load(
                 os.path.join(os.getcwd(),'AppData',picture)).convert_alpha(), (width,height)))
         self.state = 0
+        self.deconstruct_button = button(
+            "decontruct", vec2D(805, 490), [0, 0, 0],
+            32, 32, ['decontruct_button.png']
+        )
         # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
@@ -77,7 +81,8 @@ class tower(pygame.sprite.Sprite) :
             (self.pos*TILE_SIZE).get_tuple()
         )
 
-
+    def display_info(self, screen) :
+        self.deconstruct_button.display(screen)
 
 class basic_tower(tower) :
     class bullet :
@@ -232,6 +237,7 @@ class basic_tower(tower) :
                 self.bullets.remove(bullet)
         
     def display_info(self, screen, natural_ingot) :
+        super().display_info(screen)
         show_text(
             screen, 
             'Damage : {:.2f}'.format(self.damage), 
@@ -303,7 +309,7 @@ class basic_tower(tower) :
         if self.range_level > 1e15 :
             text = 'Range : max'
         else :
-            text = 'Range : {}'.format(50 + 10*self.range_level)
+            text = 'Range : {}'.format(50 + 10*(self.range_level+1))
         show_text(
             screen, text, 
             790, 425, [0, 0, 0], 20
@@ -364,7 +370,7 @@ class basic_tower(tower) :
             if natural_ingot >= 50 + (self.reload_level+1)*10 :
                 self.reload_level += 1
                 natural_ingot -= 50 + self.reload_level*10
-                self.reload += 3 * math.log10(self.reload_level*2)
+                self.reload += 3 * 1/self.reload_level
                 if self.reload > 60 :
                     self.reload = 60
                     self.reload_level = 1e20
@@ -415,7 +421,7 @@ class sniper_tower(tower) :
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
                 return
-            enemy.hit -= self.damage
+            enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.armor -= self.hardness
             enemy.check_state()
         def detect(self, enemys = []) :
@@ -438,7 +444,7 @@ class sniper_tower(tower) :
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['sniper_tower16.png', 'sniper_tower_barrel.png', 'sniper_tower_bullet.png']
-        damage = 100
+        damage = 50
         reload = 0.5
         range = 8*TILE_SIZE
         bullet_speed = 10*TILE_SIZE
@@ -547,6 +553,7 @@ class sniper_tower(tower) :
                 self.bullets.remove(bullet)
         
     def display_info(self, screen, natural_ingot) :
+        super().display_info(screen)
         show_text(
             screen, 
             'Damage   : {:.2f}'.format(self.damage), 
@@ -655,7 +662,7 @@ class sniper_tower(tower) :
         else :
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if (not self.pierce_level > 1e15) and natural_ingot >= 100 * (2 ** self.pierce_level) :
+        if (not self.pierce_level > 1e15) and natural_ingot >= 100 * (2 ** (self.pierce_level+1)) :
             self.upgrade_pierce.state = 0
         else :
             self.upgrade_pierce.state = 1
@@ -665,7 +672,7 @@ class sniper_tower(tower) :
             if natural_ingot >= 50 + (self.damage_level+1)*50 :
                 self.damage_level += 1
                 natural_ingot -= 50 + self.damage_level*50
-                self.damage += 100.0 * math.sqrt(self.damage_level)
+                self.damage += 50.0 * math.sqrt(self.damage_level)
         elif self.upgrade_hardness.click(mouse_pos) :
             if natural_ingot >= 50 + (self.hardness_level+1)*10 :
                 self.hardness_level += 1
@@ -685,7 +692,7 @@ class sniper_tower(tower) :
         elif self.upgrade_pierce.click(mouse_pos) :
             if(
                 self.pierce_level < 1e15 and 
-                natural_ingot >= 100 * (2**self.pierce_level)
+                natural_ingot >= 100 * (2**(self.pierce_level+1))
             ) :
                 self.pierce_level += 1
                 natural_ingot -= 100 * (2**self.pierce_level)
@@ -862,6 +869,7 @@ class cannon_tower(tower) :
                 self.bullets.remove(bullet)
         
     def display_info(self, screen, natural_ingot) :
+        super().display_info(screen)
         show_text(
             screen, 
             'Damage : {:.2f}'.format(self.damage), 
