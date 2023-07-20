@@ -189,7 +189,7 @@ def level(level_now = 'basic_level.json') :
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
 
-    time_previous = 0
+    time_previous = pygame.time.get_ticks()
     game_timer = 0
 
     wave = level_info['start_wave']
