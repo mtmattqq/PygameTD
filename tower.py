@@ -1018,9 +1018,9 @@ class cannon_tower(tower) :
                     self.explode_range = 5 * TILE_SIZE
                     self.explode_range_level = 1e20
         elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.reload_level+1)*10 :
+            if natural_ingot >= 100 + (self.reload_level+1)*100 :
                 self.reload_level += 1
-                natural_ingot -= 50 + self.reload_level*10
+                natural_ingot -= 100 + self.reload_level*100
                 self.reload += 0.5 * math.log10(self.reload_level*2)
                 if self.reload >= 6 :
                     self.reload = 6
