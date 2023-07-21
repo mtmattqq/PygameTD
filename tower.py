@@ -1301,8 +1301,8 @@ class tesla_tower(tower) :
                 self.range_level += 1
                 natural_ingot -= 100 + self.range_level*100
                 self.range += TILE_SIZE/2 * 1/self.range_level
-                self.image[1] = pygame.transform.scale(
-                    self.images[1], [self.range, self.range])
+                self.images[1] = pygame.transform.scale(
+                    self.images[1], [self.range * 2, self.range * 2])
                 if self.range > 5 * TILE_SIZE :
                     self.range = 5 * TILE_SIZE
                     self.range_level = 1e20
