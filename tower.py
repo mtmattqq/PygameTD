@@ -748,7 +748,6 @@ class cannon_tower(tower) :
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
-                return
             enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = []) :
@@ -1008,22 +1007,22 @@ class cannon_tower(tower) :
             if natural_ingot >= 100 + (self.damage_level+1)*100 :
                 self.damage_level += 1
                 natural_ingot -= 100 + self.damage_level*100
-                self.damage += 30.0 * math.sqrt(self.damage_level)
+                self.damage += 100.0 * math.sqrt(self.damage_level)
         elif self.upgrade_explode_range.click(mouse_pos) :
             if natural_ingot >= 100 + (self.explode_range_level+1)*100 :
                 self.explode_range_level += 1
                 natural_ingot -= 100 + self.explode_range_level*100
                 self.explode_range += TILE_SIZE/3 * 1/self.explode_range_level
-                if self.explode_range > 5 * TILE_SIZE :
-                    self.explode_range = 5 * TILE_SIZE
+                if self.explode_range > 3 * TILE_SIZE :
+                    self.explode_range = 3 * TILE_SIZE
                     self.explode_range_level = 1e20
         elif self.upgrade_reload.click(mouse_pos) :
             if natural_ingot >= 100 + (self.reload_level+1)*100 :
                 self.reload_level += 1
                 natural_ingot -= 100 + self.reload_level*100
                 self.reload += 0.5 * math.log10(self.reload_level*2)
-                if self.reload >= 6 :
-                    self.reload = 6
+                if self.reload >= 10 :
+                    self.reload = 10
                     self.reload_level = 1e20
         elif self.upgrade_bullet_speed.click(mouse_pos) :
             if natural_ingot >= 100 + (self.bullet_speed_level+1)*100 :

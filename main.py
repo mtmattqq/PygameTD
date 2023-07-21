@@ -174,12 +174,12 @@ def level(level_now = 'basic_level.json') :
     ENEMY_TYPE = 3
     enemys = []
     enemy_types = [
-        enemy.basic_enemy(level_path[0].copy(), 0, 0, 0, 20, level_path),
-        enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 25, level_path), 
-        enemy.high_armor(level_path[0].copy(), 0, 0, 0, 10, level_path)
+        enemy.basic_enemy(level_path[0].copy(), 0, 0, 0, 0, level_path),
+        enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 0, level_path), 
+        enemy.high_armor(level_path[0].copy(), 0, 0, 0, 0, level_path)
     ]
     enemy_level = [
-        0, 0, 0
+        0, 0, 5
     ]
     enemy_base_info = [
         [[30,  0,  0,  30], [1.5,    0,    0, 1]], 
@@ -189,7 +189,7 @@ def level(level_now = 'basic_level.json') :
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
 
-    time_previous = 0
+    time_previous = pygame.time.get_ticks()
     game_timer = 0
 
     wave = level_info['start_wave']
@@ -273,6 +273,26 @@ def level(level_now = 'basic_level.json') :
 
         if game_timer > send_next_wave :
             wave += 1
+            if wave == 100 :
+                # make basic enemy much stronger
+                enemy_base_info[0][1][0] = 15
+                enemy_base_info[0][1][3] = 3
+                enemy_base_info[0][0][3] = 60
+                enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
+            elif wave == 150 :
+                enemy_base_info[1][1][0] = 0.5
+                enemy_base_info[1][1][1] = 0.25
+                enemy_base_info[1][1][2] = 7
+                enemy_base_info[1][1][3] = 3
+                enemy_base_info[1][0][3] = 80
+                enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
+            elif wave == 200 :
+                enemy_base_info[2][1][0] = 50
+                enemy_base_info[2][1][1] = 10
+                enemy_base_info[2][1][2] = 0.5
+                enemy_base_info[2][1][3] = 0.3
+                enemy_base_info[1][0][3] = 50
+                enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
             enemy_level[enemy_type_this_wave] += 1
             send_this_wave = send_next_wave
             enemy_type_this_wave = enemy_type_next_wave
@@ -336,20 +356,6 @@ def level(level_now = 'basic_level.json') :
                 #             )
                 #             if clicked_upgrade :
                 #                 continue
-                # if sent_next_wave_button.click(mouse_pos) :
-                #     for i in range(10000) :
-                #         wave += 1
-                #         enemy_level[enemy_type_this_wave] += 1
-                #         send_this_wave = send_next_wave
-                #         enemy_type_this_wave = enemy_type_next_wave
-                #         enemy_type_next_wave = random.randint(0, ENEMY_TYPE - 1)
-                #         enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
-                #         wave_interval = math.ceil(math.sqrt(enemy_level[enemy_type_this_wave]) * enemy_dencity) + 3000 
-                #         send_next_wave += wave_interval
-                #         sending_wave = True
-                #         sent_enemy += math.floor(enemy_level[enemy_type_this_wave]) + 1
-                #         send_next_enemy = 0
-                #     game_timer = send_next_wave
                         
             if event.type == pygame.MOUSEBUTTONDOWN : 
                 mouse = pygame.mouse.get_pressed()
