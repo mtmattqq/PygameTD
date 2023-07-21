@@ -1,30 +1,24 @@
-# PygameTD
+# BasicTD
 
-## Game Theme
+## 遊戲特色
 
-I use the geomitric graphics to create this game.
 
-## Game Feature
 
-In this game, there are 4 basic type of tower. 
+## 遊玩方法
 
-1. Fast shooting : tower.
-1. Long range : sniper.
-1. Area attack : cannon.
-1. Attack all enemies in range : flame sprayer.
+按下畫面正中央的按鈕即可開始。進入關卡後，左邊是地圖，右邊是資料面板，資料面板最上方是自然精華碇，也是這個遊戲的主要資源，在他的下方有一個綠色建築，表示玩家的血量。我們可以點擊地圖中的空白區域，此時資料面板會顯示可以建造的防禦塔。如果底色為紅色，表示你無法建造，反之如果是灰色則可以建造。
 
-Similarly, there 4 basic type of enemy.
+點擊你的防禦塔可以進行看到防禦塔的可升級屬性與攻擊範圍。按下加號的按鈕可以升級該屬性。升級會越來越貴，且效果不一定會越來越明顯。
 
-1. basic
-1. high speed
-1. high armor
-1. high shield
+## 防禦塔
 
-## Flow
 
-1. Bring the player to the starting room.
-1. If player press the button start, then the game should start.
 
-## Future
+## 敵人
 
-1. A type of enemy which can help the enemy in its range avoid cannon attack
+
+## Update Log
+
+- 2023/7/21 新增第四個塔 Tesla Tower 專門對付帶盾的敵人，並新增三種新的敵人。
+- 2023/7/20 遊戲封閉測試版 Alpha 0.1 完成。
+- 2023/7/12 啟動開發日

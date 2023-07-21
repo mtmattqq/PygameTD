@@ -12,7 +12,7 @@ def do_nothing() :
     return
 
 def show_text(screen, text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
-    font=pygame.font.SysFont('unifont', size)
+    font=pygame.font.Font(os.path.join(os.getcwd(), 'AppData', 'unifont.ttf'), size)
     text=font.render(text, True, color)
     textRect=text.get_rect()
     textRect.topleft=(x-10, y-20)
@@ -1054,7 +1054,7 @@ class tesla_tower(tower) :
             self.damage = damage
             self.explode_range = explode_range
             self.interference_time = interference_time
-            self.decay_time = 100
+            self.decay_time = 200
 
 
         def display(self, screen) :
@@ -1066,10 +1066,10 @@ class tesla_tower(tower) :
 
         def deal_damage(self, enemy) :
             self.pierce -= 1
-            # damage dealing formula hasn't finished
+            enemy.regenerate_shield_time += self.interference_time
             if enemy.shield > 0 :
-                enemy.shield = max(0, enemy.shield - self.damage * 10)
-                enemy.regenerate_shield_time += self.interference_time
+                enemy.shield = max(0, enemy.shield - self.damage * 2)
+                return
             enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = []) :
@@ -1088,7 +1088,7 @@ class tesla_tower(tower) :
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['tesla_tower16.png', 'tesla_tower_bullet.png']
-        damage = 80
+        damage = 40
         reload = 2
         range = 2*TILE_SIZE
         bullet_speed = 0
@@ -1124,7 +1124,7 @@ class tesla_tower(tower) :
         self.interference_level = 0
         self.interference = 1000
         self.fire_sound = pygame.mixer.Sound(
-            os.path.join(os.getcwd(), 'AppData', 'cannon_tower_fire.wav')
+            os.path.join(os.getcwd(), 'AppData', 'tesla_tower_fire.wav')
         )
 
     def display_bullets(self, screen) :
@@ -1295,7 +1295,7 @@ class tesla_tower(tower) :
             if natural_ingot >= 100 + (self.damage_level+1)*100 :
                 self.damage_level += 1
                 natural_ingot -= 100 + self.damage_level*100
-                self.damage += 100.0 * math.sqrt(self.damage_level)
+                self.damage += 20.0 * math.sqrt(self.damage_level)
         elif self.upgrade_range.click(mouse_pos) :
             if natural_ingot >= 100 + (self.range_level+1)*100 :
                 self.range_level += 1
@@ -1310,7 +1310,7 @@ class tesla_tower(tower) :
             if natural_ingot >= 100 + (self.reload_level+1)*100 :
                 self.reload_level += 1
                 natural_ingot -= 100 + self.reload_level*100
-                self.reload += 0.5 * math.log10(self.reload_level*2)
+                self.reload += 0.3 * math.log10(self.reload_level*2)
                 if self.reload >= 6 :
                     self.reload = 6
                     self.reload_level = 1e20

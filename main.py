@@ -33,7 +33,7 @@ FPS=60
 MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
-    font=pygame.font.SysFont('unifont', size)
+    font=pygame.font.Font(os.path.join(os.getcwd(), 'AppData', 'unifont.ttf'), size)
     text=font.render(text, True, color)
     textRect=text.get_rect()
     textRect.topleft=(x-10, y-20)
@@ -167,9 +167,6 @@ def level(level_now = 'basic_level.json') :
     level_map.load(level_info['map'])
     level_map.render()
     level_path = find_path(level_info['map'])
-    
-    # for pos in level_path :
-    #     print(pos.get_tuple())
 
 
     towers = []
@@ -274,6 +271,27 @@ def level(level_now = 'basic_level.json') :
 
     is_game_over = False
 
+    if wave >= 100 :
+        # make basic enemy much stronger
+        enemy_base_info[0][1][0] = 15
+        enemy_base_info[0][1][3] = 3
+        enemy_base_info[0][0][3] = 60
+        enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
+    if wave >= 150 :
+        enemy_base_info[1][1][0] = 0.5
+        enemy_base_info[1][1][1] = 0.25
+        enemy_base_info[1][1][2] = 7
+        enemy_base_info[1][1][3] = 3
+        enemy_base_info[1][0][3] = 80
+        enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
+    if wave >= 200 :
+        enemy_base_info[2][1][0] = 50
+        enemy_base_info[2][1][1] = 30
+        enemy_base_info[2][1][2] = 0.5
+        enemy_base_info[2][1][3] = 0.3
+        enemy_base_info[2][0][3] = 50
+        enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
+
     in_game = True
     while in_game :
         time_now = pygame.time.get_ticks()
@@ -301,10 +319,10 @@ def level(level_now = 'basic_level.json') :
                 enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
             elif wave == 200 :
                 enemy_base_info[2][1][0] = 50
-                enemy_base_info[2][1][1] = 10
+                enemy_base_info[2][1][1] = 30
                 enemy_base_info[2][1][2] = 0.5
                 enemy_base_info[2][1][3] = 0.3
-                enemy_base_info[1][0][3] = 50
+                enemy_base_info[2][0][3] = 50
                 enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
             enemy_level[enemy_type_this_wave] += 1
             send_this_wave = send_next_wave
