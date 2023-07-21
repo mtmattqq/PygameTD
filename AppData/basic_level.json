@@ -14,7 +14,7 @@
     ],
 
     "difficulty" : 100,
-    "start_wave" : 200,
-    "start_money" : 1500000,
+    "start_wave" : 0,
+    "start_money" : 150,
     "start_hit" : 20
 }
