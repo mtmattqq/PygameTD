@@ -117,11 +117,17 @@ def find_path(map = [[]]) :
     path.append(transform(vec2D(main_tower[1], main_tower[0]), tile.TILE_SIZE))
     return path
 
-def select_tile(mouse_pos, tower_info, towers, map_info) :
+def select_tile(
+    mouse_pos, 
+    tower_info, 
+    towers, 
+    map_info, 
+    show_tower_info, 
+    selected_tile, 
+    selected_tower
+) :
     tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
-    selected_tile = 0
     show_buy_tower = False
-    show_tower_info = False
 
     if(
         tile_pos[0] < 9 and 
@@ -137,7 +143,7 @@ def select_tile(mouse_pos, tower_info, towers, map_info) :
         else :
             show_buy_tower = False
             show_tower_info = True
-    selected_tower = None
+
     for tow in towers :
         if tow.detect_mouse(mouse_pos) :
             selected_tower = tow
@@ -248,7 +254,14 @@ def level(level_now = 'basic_level.json') :
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'cannon_tower32.png'], 
             buy_tower_buttons_onclick
-        )
+        ),
+
+        button(
+            400, vec2D(785, 140), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'tesla_tower32.png'], 
+            buy_tower_buttons_onclick
+        ),
     ]
 
     # sent next wave
@@ -377,6 +390,8 @@ def level(level_now = 'basic_level.json') :
                             new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]))
                         elif ct == 3 :
                             new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]))
+                        elif ct == 4 :
+                            new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]))
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
@@ -395,7 +410,9 @@ def level(level_now = 'basic_level.json') :
                 if not sending_wave and sent_next_wave_button.click(mouse_pos) :
                     send_next_wave = game_timer
                 selected_tile, show_buy_tower, show_tower_info, selected_tower = select_tile(
-                    mouse_pos, tower_info, towers, level_info['map']
+                    mouse_pos, tower_info, towers, 
+                    level_info['map'], show_tower_info, 
+                    selected_tile, selected_tower
                 )
 
 
@@ -502,7 +519,7 @@ def main_page() :
                 start_button.detect(pos = mouse_pos)
             if event.type == pygame.MOUSEBUTTONUP :
                 if start_button.click(mouse_pos) :
-                    level()
+                    select_level()
         
         # display
         screen.fill((245, 245, 245))
