@@ -115,12 +115,22 @@ class basic_tower(tower) :
                 return
             enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
-        def detect(self, enemys = []) :
+        def detect(self, enemys = [], boss = None) :
             for enemy in enemys :
                 if self.pierce <= 0 :
-                    break
+                    return
                 if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
                     self.deal_damage(enemy)
+            if boss != None :
+                if self.pierce <= 0 :
+                    return
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                    self.deal_damage(boss)
+                for enemy in boss.generated_unit :
+                    if self.pierce <= 0 :
+                        return
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                        self.deal_damage(enemy)
             if(
                 self.pos.x < 0 or
                 self.pos.y < 0 or
@@ -189,7 +199,7 @@ class basic_tower(tower) :
         for bullet in self.bullets :
             bullet.display(screen)
 
-    def aim_first(self, enemys = []) :
+    def aim_first(self, enemys = [], boss = None) :
         first_enemy = None
         for enemy in enemys :
             if(
@@ -198,7 +208,20 @@ class basic_tower(tower) :
                 dis(self.location, enemy.location) < self.range
             ) :
                 first_enemy = enemy
-        # print((first_enemy.pos - self.location).get_tuple())
+        if boss != None :
+            for enemy in boss.generated_unit :
+                if(
+                    (first_enemy == None or
+                    enemy.progress > first_enemy.progress) and
+                    dis(self.location, enemy.location) < self.range
+                ) :
+                    first_enemy = enemy
+            if(
+                (first_enemy == None or
+                boss.progress > first_enemy.progress) and
+                dis(self.location, boss.location) < self.range
+            ) :
+                first_enemy = boss
         if first_enemy == None :
             return False
         
@@ -206,8 +229,8 @@ class basic_tower(tower) :
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = []) :
-        if not self.aim_first(enemys) : 
+    def shoot_first(self, enemys = [], boss = None) :
+        if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
             self.location.copy(), vec2D(0, 0), 
@@ -223,20 +246,20 @@ class basic_tower(tower) :
         if self.time_to_fire > 0 :
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = []) :
+    def shoot(self, enemys = [], boss = None) :
         if self.time_to_fire <= 0 :
             if self.target == 'first' :
-                if self.shoot_first(enemys) :
+                if self.shoot_first(enemys, boss) :
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
         else :
-            self.aim_first(enemys)
-    def update(self, delta_time, enemys = []) :
+            self.aim_first(enemys, boss)
+    def update(self, delta_time, enemys = [], boss = None) :
         self.update_time_to_fire(delta_time)
-        self.shoot(enemys)
+        self.shoot(enemys, boss)
         for bullet in self.bullets :
             bullet.move(delta_time)
-            bullet.detect(enemys)
+            bullet.detect(enemys, boss)
         for bullet in self.bullets :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
@@ -429,12 +452,22 @@ class sniper_tower(tower) :
             enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.armor -= self.hardness
             enemy.check_state()
-        def detect(self, enemys = []) :
+        def detect(self, enemys = [], boss = None) :
             for enemy in enemys :
                 if self.pierce <= 0 :
                     break
                 if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
                     self.deal_damage(enemy)
+            if boss != None :
+                if self.pierce <= 0 :
+                    return
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                    self.deal_damage(boss)
+                for enemy in boss.generated_unit :
+                    if self.pierce <= 0 :
+                        return
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                        self.deal_damage(enemy)
             if(
                 self.pos.x < 0 or
                 self.pos.y < 0 or
@@ -452,7 +485,7 @@ class sniper_tower(tower) :
         damage = 50
         reload = 0.5
         range = 8*TILE_SIZE
-        bullet_speed = 10*TILE_SIZE
+        bullet_speed = 12*TILE_SIZE
         
         super().__init__(
             pos, width, height, 
@@ -509,7 +542,7 @@ class sniper_tower(tower) :
         for bullet in self.bullets :
             bullet.display(screen)
 
-    def aim_first(self, enemys = []) :
+    def aim_first(self, enemys = [], boss = None) :
         first_enemy = None
         for enemy in enemys :
             if(
@@ -518,6 +551,20 @@ class sniper_tower(tower) :
                 dis(self.location, enemy.location) < self.range
             ) :
                 first_enemy = enemy
+        if boss != None :
+            for enemy in boss.generated_unit :
+                if(
+                    (first_enemy == None or
+                    enemy.progress > first_enemy.progress) and
+                    dis(self.location, enemy.location) < self.range
+                ) :
+                    first_enemy = enemy
+            if(
+                (first_enemy == None or
+                boss.progress > first_enemy.progress) and
+                dis(self.location, boss.location) < self.range
+            ) :
+                first_enemy = boss
         # print((first_enemy.pos - self.location).get_tuple())
         if first_enemy == None :
             return False
@@ -526,8 +573,8 @@ class sniper_tower(tower) :
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = []) :
-        if not self.aim_first(enemys) : 
+    def shoot_first(self, enemys = [], boss = None) :
+        if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
             self.location.copy(), vec2D(0, 0), 
@@ -543,21 +590,21 @@ class sniper_tower(tower) :
         if self.time_to_fire > 0 :
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = []) :
+    def shoot(self, enemys = [], boss = None) :
         if self.time_to_fire <= 0 :
             if self.target == 'first' :
-                if self.shoot_first(enemys) :
+                if self.shoot_first(enemys, boss) :
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
             
         else :
-            self.aim_first(enemys)
-    def update(self, delta_time, enemys = []) :
+            self.aim_first(enemys, boss)
+    def update(self, delta_time, enemys = [], boss = None) :
         self.update_time_to_fire(delta_time)
-        self.shoot(enemys)
+        self.shoot(enemys, boss)
         for bullet in self.bullets :
             bullet.move(delta_time)
-            bullet.detect(enemys)
+            bullet.detect(enemys, boss)
         for bullet in self.bullets :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
@@ -744,20 +791,38 @@ class cannon_tower(tower) :
             )
 
         def deal_damage(self, enemy) :
-            self.pierce -= 1
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
             enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
-        def detect(self, enemys = []) :
+        def detect(self, enemys = [], boss = None) :
+            crush = False
+            if self.pierce <= 0 :
+                return crush
             for enemy in enemys :
                 if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
-                    for enemy in enemys :
+                    crush = True
+
+            if boss != None :
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                    crush = True
+                for enemy in boss.generated_unit :
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                        crush = True
+
+            if crush :
+                for enemy in enemys :
+                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+                        self.deal_damage(enemy)
+                if boss != None :
+                    if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2 :
+                        crush = True
+                        self.deal_damage(boss)
+                    for enemy in boss.generated_unit :
                         if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
                             self.deal_damage(enemy)
-                if self.pierce <= 0 :
-                    return True
+                self.pierce -= 1
             if(
                 self.pos.x < 0 or
                 self.pos.y < 0 or
@@ -833,7 +898,7 @@ class cannon_tower(tower) :
         for bullet in self.bullets :
             bullet.display(screen)
 
-    def aim_first(self, enemys = []) :
+    def aim_first(self, enemys = [], boss = None) :
         first_enemy = None
         for enemy in enemys :
             if(
@@ -842,6 +907,20 @@ class cannon_tower(tower) :
                 dis(self.location, enemy.location) < self.range
             ) :
                 first_enemy = enemy
+        if boss != None :
+            for enemy in boss.generated_unit :
+                if(
+                    (first_enemy == None or
+                    enemy.progress > first_enemy.progress) and
+                    dis(self.location, enemy.location) < self.range
+                ) :
+                    first_enemy = enemy
+            if(
+                (first_enemy == None or
+                boss.progress > first_enemy.progress) and
+                dis(self.location, boss.location) < self.range
+            ) :
+                first_enemy = boss
         if first_enemy == None :
             return False
         
@@ -849,8 +928,8 @@ class cannon_tower(tower) :
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = []) :
-        if not self.aim_first(enemys) : 
+    def shoot_first(self, enemys = [], boss = None) :
+        if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
             self.location.copy(), vec2D(0, 0), 
@@ -866,21 +945,21 @@ class cannon_tower(tower) :
         if self.time_to_fire > 0 :
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = []) :
+    def shoot(self, enemys = [], boss = None) :
         if self.time_to_fire <= 0 :
             if self.target == 'first' :
-                if self.shoot_first(enemys) :
+                if self.shoot_first(enemys, boss) :
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
             
         else :
-            self.aim_first(enemys)
-    def update(self, delta_time, enemys = []) :
+            self.aim_first(enemys, boss)
+    def update(self, delta_time, enemys = [], boss = None) :
         self.update_time_to_fire(delta_time)
-        self.shoot(enemys)
+        self.shoot(enemys, boss)
         for bullet in self.bullets :
             bullet.move(delta_time)
-            bullet.detect(enemys)
+            bullet.detect(enemys, boss)
         for bullet in self.bullets :
             if bullet.pierce <= 0 :
                 self.bullets.remove(bullet)
@@ -1072,14 +1151,28 @@ class tesla_tower(tower) :
                 return
             enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
-        def detect(self, enemys = []) :
+        def detect(self, enemys = [], boss = None) :
+            if self.pierce <= 0 :
+                return True
+
             for enemy in enemys :
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
-                    for enemy in enemys :
-                        if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
-                            self.deal_damage(enemy)
-                if self.pierce <= 0 :
-                    return True
+                if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+                    self.deal_damage(enemy)
+            if boss != None :
+                if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2 :
+                    self.deal_damage(boss)
+                for enemy in boss.generated_unit :
+                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+                        self.deal_damage(enemy)
+
+            self.pierce -= 1
+            if(
+                self.pos.x < 0 or
+                self.pos.y < 0 or
+                self.pos.x > TILE_SIZE*12 or
+                self.pos.y > TILE_SIZE*9
+            ) :
+                self.pierce = 0
             return False
 
     def __init__(
@@ -1131,18 +1224,19 @@ class tesla_tower(tower) :
         for bullet in self.bullets :
             bullet.display(screen)
 
-    def aim_first(self, enemys = []) :
-        first_enemy = None
+    def aim_first(self, enemys = [], boss = None) :
         for enemy in enemys :
-            if(
-                (first_enemy == None or
-                enemy.progress > first_enemy.progress) and
-                dis(self.location, enemy.location) < self.range
-            ) :
+            if(dis(self.location, enemy.location) < self.range) :
+                return True
+        if boss != None :
+            for enemy in boss.generated_unit :
+                if(dis(self.location, enemy.location) < self.range) :
+                    return True
+            if(dis(self.location, boss.location) < self.range) :
                 return True
         return False
-    def shoot_first(self, enemys = []) :
-        if not self.aim_first(enemys) : 
+    def shoot_first(self, enemys = [], boss = None) :
+        if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
             self.location.copy(), 
@@ -1157,18 +1251,18 @@ class tesla_tower(tower) :
         if self.time_to_fire > 0 :
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = []) :
+    def shoot(self, enemys = [], boss = None) :
         if self.time_to_fire <= 0 :
-            if self.shoot_first(enemys) :
+            if self.shoot_first(enemys, boss) :
                 self.time_to_fire += 1000.0/self.reload
                 self.fire_sound.play()
 
-    def update(self, delta_time, enemys = []) :
+    def update(self, delta_time, enemys = [], boss = None) :
         self.update_time_to_fire(delta_time)
-        self.shoot(enemys)
+        self.shoot(enemys, boss)
         for bullet in self.bullets :
             if bullet.pierce > 0 :
-                bullet.detect(enemys)
+                bullet.detect(enemys, boss)
         for bullet in self.bullets :
             bullet.decay_time -= delta_time
             if bullet.decay_time <= 0 :

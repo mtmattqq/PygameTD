@@ -176,6 +176,7 @@ def level(level_now = 'basic_level.json') :
 
     ENEMY_TYPE = 3
     enemys = []
+    
     enemy_types = [
         enemy.basic_enemy(level_path[0].copy(), 0, 0, 0, 0, level_path),
         enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 0, level_path), 
@@ -185,10 +186,16 @@ def level(level_now = 'basic_level.json') :
         0, 0, 5
     ]
     enemy_base_info = [
-        [[30,  0,  0,  30], [1.5,    0,    0, 1]], 
-        [[10,  5, 20,  40], [0.1, 0.05,  1.4, 1]], 
-        [[30, 10,  1,  25], [  5,    1, 0.05, 0.1]],
+        [[30,  0,  0,  30, 300], [1.5,    0,    0,   1, 30]], 
+        [[10,  5, 20,  40, 300], [0.1, 0.05,  1.4,   1, 30]], 
+        [[30, 10,  1,  25, 300], [  5,    1, 0.05, 0.1, 30]],
     ]
+    
+    boss_types = [
+        enemy.basic_boss(level_path[0].copy(), 0, 0, 0, 10, level_path)
+    ]
+    boss = None
+
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
 
@@ -211,6 +218,15 @@ def level(level_now = 'basic_level.json') :
     natural_ingot_button = button(
         'Natural Ingot', vec2D(785, 16), 
         [0, 0, 0], 32, 32, ['natural_ingot16.png']
+    )
+
+    # bonus
+    give_bonus_rate = 0.05
+    give_bonus_wait_time = 10000
+    give_bonus_time = give_bonus_wait_time
+    give_bonus_bar = button(
+        'Give_Bonus_Bar', vec2D(945, 6), 
+        [0, 0, 0], 48, 48, ['hit_bar_red.png', 'hit_bar_blue.png']
     )
 
     # player health
@@ -277,14 +293,14 @@ def level(level_now = 'basic_level.json') :
         enemy_base_info[0][1][3] = 3
         enemy_base_info[0][0][3] = 60
         enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
-    if wave >= 150 :
+    if wave >= 125 :
         enemy_base_info[1][1][0] = 0.5
         enemy_base_info[1][1][1] = 0.25
         enemy_base_info[1][1][2] = 7
         enemy_base_info[1][1][3] = 3
         enemy_base_info[1][0][3] = 80
         enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
-    if wave >= 200 :
+    if wave >= 150 :
         enemy_base_info[2][1][0] = 50
         enemy_base_info[2][1][1] = 30
         enemy_base_info[2][1][2] = 0.5
@@ -304,26 +320,44 @@ def level(level_now = 'basic_level.json') :
 
         if game_timer > send_next_wave :
             wave += 1
+            # Enhance Enemy
             if wave == 100 :
                 # make basic enemy much stronger
                 enemy_base_info[0][1][0] = 15
                 enemy_base_info[0][1][3] = 3
                 enemy_base_info[0][0][3] = 60
                 enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
-            elif wave == 150 :
-                enemy_base_info[1][1][0] = 0.5
-                enemy_base_info[1][1][1] = 0.25
-                enemy_base_info[1][1][2] = 7
-                enemy_base_info[1][1][3] = 3
+            elif wave == 125 :
+                enemy_base_info[1][1][0] = 2.5
+                enemy_base_info[1][1][1] = 1.25
+                enemy_base_info[1][1][2] = 35
+                enemy_base_info[1][1][3] = 15
                 enemy_base_info[1][0][3] = 80
                 enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
-            elif wave == 200 :
-                enemy_base_info[2][1][0] = 50
-                enemy_base_info[2][1][1] = 30
-                enemy_base_info[2][1][2] = 0.5
-                enemy_base_info[2][1][3] = 0.3
+            elif wave == 150 :
+                enemy_base_info[2][1][0] = 100
+                enemy_base_info[2][1][1] = 40
+                enemy_base_info[2][1][2] = 3
+                enemy_base_info[2][1][3] = 1.5
                 enemy_base_info[2][0][3] = 50
                 enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
+            
+            if wave >= 100 and wave % 25 == 0 :
+                enemy_type_this_wave = 0
+                boss = boss_types[enemy_type_this_wave].copy()
+                base_hit = enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2)
+                base_armor = enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * math.sqrt(enemy_level[enemy_type_this_wave])
+                base_shield = enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2)
+                boss.__init__(
+                    level_path[0].copy(), 
+                    base_hit * (difficulty / 100) * 10, 
+                    base_armor * (difficulty / 100) * 10,
+                    base_shield * (difficulty / 100) * 10,
+                    boss.move_speed, level_path
+                )
+                enemy_level[enemy_type_this_wave] += 20
+
+            # Generate Enemy
             enemy_level[enemy_type_this_wave] += 1
             send_this_wave = send_next_wave
             enemy_type_this_wave = enemy_type_next_wave
@@ -334,14 +368,16 @@ def level(level_now = 'basic_level.json') :
                     enemy_base_info[enemy_type_this_wave][1][3]
                 )
             ) + 1
-            enemy_dencity = max(300, 1000-10*enemy_level[enemy_type_this_wave])
+            enemy_dencity = max(
+                enemy_base_info[enemy_type_this_wave][0][4], 
+                1000-enemy_base_info[enemy_type_this_wave][1][4]*enemy_level[enemy_type_this_wave]
+            )
             wave_interval = math.ceil(enemy_amount * enemy_dencity) + 5000
             send_next_wave += wave_interval
             sending_wave = True
             sent_enemy += enemy_amount
             send_next_enemy = 0
             
-
         if sending_wave and game_timer >= send_next_enemy+send_this_wave :
             send_next_enemy += enemy_dencity
             nen = enemy_types[enemy_type_this_wave].copy()
@@ -361,7 +397,7 @@ def level(level_now = 'basic_level.json') :
                 sending_wave = False
 
         for tow in towers :
-            tow.update(delta_time, enemys)
+            tow.update(delta_time, enemys, boss)
         for en in enemys :
             if en.update(delta_time) :
                 hit -= 1
@@ -371,6 +407,29 @@ def level(level_now = 'basic_level.json') :
             if not en.alive :
                 enemys.remove(en)
                 natural_ingot += math.sqrt(en.max_hit + en.max_shield)
+        if boss != None :
+            if boss.update(delta_time) :
+                hit -= 1
+                if hit <= 0 :
+                    is_game_over = True
+                    in_game = False
+            for en in boss.generated_unit :
+                if en.update(delta_time) :
+                    hit -= 1
+                    if hit <= 0 :
+                        is_game_over = True
+                        in_game = False
+                if not en.alive :
+                    boss.generated_unit.remove(en)
+            if boss.dead :
+                natural_ingot += math.sqrt(boss.max_hit + boss.max_shield)
+                boss = None
+
+        if give_bonus_time > 0 :
+            give_bonus_time -= delta_time
+        else :
+            give_bonus_time += give_bonus_wait_time
+            natural_ingot += natural_ingot * give_bonus_rate
 
         # event in pygame
         for event in pygame.event.get() :
@@ -455,6 +514,8 @@ def level(level_now = 'basic_level.json') :
             tow.display_bullets(screen)
         for en in enemys :
             en.display(screen)
+        if boss != None :
+            boss.display(screen)
         if not sending_wave :
             sent_next_wave_button.display(screen)
         show_text(
@@ -468,6 +529,18 @@ def level(level_now = 'basic_level.json') :
         
         natural_ingot_button.display(screen)
         show_text(str(math.floor(natural_ingot)), 850, 40, (0, 0, 0), 20)
+        # bonus
+        give_bonus_bar.display(screen)
+        bonus_bar_image = pygame.transform.scale(
+            give_bonus_bar.images[1], 
+            (give_bonus_bar.width * (give_bonus_time / give_bonus_wait_time), give_bonus_bar.width)
+        )
+        screen.blit(
+            bonus_bar_image, 
+            give_bonus_bar.pos.get_tuple()
+        )
+        
+
         hit_button.display(screen)
         show_text(str(hit), 850, 72, (0, 0, 0), 20)
 
