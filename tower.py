@@ -108,7 +108,7 @@ class basic_tower(tower) :
             )
 
         def deal_damage(self, enemy) :
-            self.pierce -= 1
+            self.pierce -= enemy.anti_pierce
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
@@ -444,7 +444,7 @@ class sniper_tower(tower) :
             )
 
         def deal_damage(self, enemy) :
-            self.pierce -= 1
+            self.pierce -= enemy.anti_pierce
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)

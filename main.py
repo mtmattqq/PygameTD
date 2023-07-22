@@ -192,9 +192,12 @@ def level(level_now = 'basic_level.json') :
     ]
     
     boss_types = [
-        enemy.basic_boss(level_path[0].copy(), 0, 0, 0, 10, level_path)
+        enemy.basic_boss(level_path[0].copy(), 0, 0, 0, 10, level_path), 
+        enemy.eye_boss(level_path[0].copy(), 0, 0, 0, 10, level_path), 
+        enemy.high_armor_boss(level_path[0].copy(), 0, 0, 0, 10, level_path)
     ]
     boss = None
+    boss_level = 0
 
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
@@ -326,6 +329,7 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[0][1][0] = 15
                 enemy_base_info[0][1][3] = 3
                 enemy_base_info[0][0][3] = 60
+                enemy_base_info[0][0][4] = 150
                 enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
             elif wave == 125 :
                 enemy_base_info[1][1][0] = 2.5
@@ -333,6 +337,7 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[1][1][2] = 35
                 enemy_base_info[1][1][3] = 15
                 enemy_base_info[1][0][3] = 80
+                enemy_base_info[1][0][4] = 135
                 enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
             elif wave == 150 :
                 enemy_base_info[2][1][0] = 100
@@ -340,22 +345,23 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[2][1][2] = 3
                 enemy_base_info[2][1][3] = 1.5
                 enemy_base_info[2][0][3] = 50
+                enemy_base_info[2][0][4] = 150
                 enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
             
             if wave >= 100 and wave % 25 == 0 :
-                enemy_type_this_wave = 0
+                enemy_type_this_wave = boss_level % 3
+                boss_level += 1
                 boss = boss_types[enemy_type_this_wave].copy()
                 base_hit = enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2)
                 base_armor = enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * math.sqrt(enemy_level[enemy_type_this_wave])
                 base_shield = enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2)
                 boss.__init__(
                     level_path[0].copy(), 
-                    base_hit * (difficulty / 100) * 10, 
-                    base_armor * (difficulty / 100) * 10,
-                    base_shield * (difficulty / 100) * 10,
+                    base_hit * (difficulty / 100) * 10 * (boss_level ** 2), 
+                    base_armor * (difficulty / 100) * 5 * boss_level,
+                    base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
                     boss.move_speed, level_path
                 )
-                enemy_level[enemy_type_this_wave] += 20
 
             # Generate Enemy
             enemy_level[enemy_type_this_wave] += 1
@@ -410,6 +416,7 @@ def level(level_now = 'basic_level.json') :
         if boss != None :
             if boss.update(delta_time) :
                 hit -= 1
+                boss.pos = boss.location = level_path[0]
                 if hit <= 0 :
                     is_game_over = True
                     in_game = False
