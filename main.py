@@ -12,6 +12,7 @@ import enemy
 import numpy as np
 import math
 import random
+# import android
 
 # pygame init
 pygame.init()
@@ -26,7 +27,9 @@ font = 'unifont'
 pygame.event.set_allowed([
     QUIT, KEYDOWN, KEYUP, 
     MOUSEBUTTONDOWN, MOUSEBUTTONUP, 
-    MOUSEMOTION, MOUSEWHEEL])
+    MOUSEMOTION, MOUSEWHEEL,
+    FINGERDOWN, FINGERUP, FINGERMOTION
+])
 
 # variables
 FPS=60
@@ -75,6 +78,9 @@ def game_over() :
         pygame.display.update()
         clock.tick(FPS)
     return
+
+def setting() :
+    a = 0
 
 def find_path(map = [[]]) :
     m = len(map)
@@ -445,16 +451,8 @@ def level(level_now = 'basic_level.json') :
             if event.type == pygame.QUIT :
                 in_game = False
             if event.type == pygame.KEYDOWN :
-                if event.unicode == 'q' :
+                if event.key == pygame.K_ESCAPE :
                     in_game = False
-                # if event.unicode == 'u' :
-                #     if selected_tower != None :
-                #         for i in range(100000) :
-                #             clicked_upgrade, natural_ingot = selected_tower.upgrade(
-                #                 mouse_pos, natural_ingot
-                #             )
-                #             if clicked_upgrade :
-                #                 continue
                         
             if event.type == pygame.MOUSEBUTTONDOWN : 
                 mouse = pygame.mouse.get_pressed()
@@ -586,7 +584,202 @@ def level(level_now = 'basic_level.json') :
     return
 
 def level_editor() :
-    a = 0
+    new_level_name = ''
+    level_name_pos = 0
+
+    title = 'Enter Level Name'
+    level_name_button = button(
+        "", vec2D(resolution[0]/2 - 256, resolution[1]/2 - 32), 
+        [0, 0, 0], 512, 64, ['select_level.png']
+    )
+
+    # enter level name
+    in_game = True
+    while in_game :
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0], mouse_pos[1])
+
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                in_game = False
+            if event.type == pygame.KEYDOWN :
+                if event.key == pygame.K_ESCAPE :
+                    return
+                elif event.key == pygame.K_KP_ENTER :
+                    in_game = False
+                elif event.key == pygame.K_BACKSPACE :
+                    if level_name_pos > 0 :
+                        new_level_name = new_level_name[:level_name_pos - 1] + new_level_name[level_name_pos:]
+                    level_name_pos = max(0, level_name_pos - 1)
+                elif event.key == pygame.K_DELETE :
+                    if level_name_pos < len(new_level_name) :
+                        new_level_name = new_level_name[:level_name_pos] + new_level_name[level_name_pos + 1:]
+                elif event.key == pygame.K_LEFT :
+                    level_name_pos = max(0, level_name_pos - 1)
+                elif event.key == pygame.K_RIGHT :
+                    level_name_pos = min(level_name_pos + 1, len(new_level_name))
+                elif event.key == pygame.K_UP :
+                    level_name_pos = 0
+                elif event.key == pygame.K_DOWN :
+                    level_name_pos = len(new_level_name)
+                elif event.key == pygame.K_LSHIFT :
+                    a = 0
+                else :
+                    if level_name_pos >= 15 :
+                        continue
+                    if(
+                        (event.key >= pygame.K_a and event.key <= pygame.K_z) or 
+                        (event.key >= pygame.K_0 and event.key <= pygame.K_9) or 
+                        (event.key >= pygame.K_KP_0 and event.key <= pygame.K_KP_9) or
+                        event.key == pygame.K_UNDERSCORE
+                    ) :
+                        new_level_name = new_level_name[:level_name_pos] + event.unicode + new_level_name[level_name_pos:]
+                        level_name_pos += 1
+                
+        
+        # display
+        screen.fill((245, 245, 245))
+
+        level_name_button.display(screen)
+        show_text(title, 250, 180, (0, 0, 0), 72)
+        show_text(new_level_name, 280, 270, (0, 0, 0), 64)
+        show_text('|', 262 + level_name_pos * 32, 270, (0, 0, 0), 64)
+        pygame.display.update()
+        clock.tick(FPS)
+
+    new_level_name += '.json'
+
+    # level editor
+    tile_set = tile.tileset([
+        'white.png',
+        'main_tower.png',
+        'enemy_sourse.png',
+        'road.png'
+    ], 64, 64)
+    
+    level_info_file = open(os.path.join(os.getcwd(), 'AppData', new_level_name), 'w')
+
+    map_info = [[]]
+    for i in range(9) :
+        line = []
+        for j in range(12) :
+            line.append(0)
+        map_info.append(line)
+
+    level_map = tile.tilemap(tile_set, [9, 12])
+    def update_map(level_map = tile.tilemap(tile_set, [9, 12])) :
+        level_map.set_zero()
+        level_map.load(map_info)
+        level_map.render()
+        
+    # level_path = find_path(map_info)
+
+    time_previous = pygame.time.get_ticks()
+    game_timer = 0
+
+    # row col -> y, x
+    selected_tile = [0, 0]
+
+    def editor_select_tile(mouse_pos = vec2D(0, 0)) :
+        tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
+
+        if(
+            tile_pos[0] < 9 and 
+            tile_pos[1] < 12
+        ) :
+            selected_tile = tile_pos
+        return selected_tile
+
+    tile_rect = pygame.Rect([0, 0], [tile.TILE_SIZE, tile.TILE_SIZE])
+
+    # buy tower button
+    show_tiles = False
+    tile_buttons = [
+        button(
+            0, vec2D(785, 80), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'white.png'], 
+        ),
+
+        button(
+            0, vec2D(845, 80), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'main_tower.png'], 
+        ),
+
+        button(
+            0, vec2D(905, 80), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'enemy_sourse.png'], 
+        ),
+
+        button(
+            0, vec2D(785, 140), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'road.png'], 
+        ),
+    ]
+
+    in_game = True
+    while in_game :
+        time_now = pygame.time.get_ticks()
+        delta_time = time_now - time_previous
+        time_previous = time_now
+        game_timer += delta_time
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
+
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                in_game = False
+            if event.type == pygame.KEYDOWN :
+                if event.key == pygame.K_ESCAPE :
+                    in_game = False
+                        
+            if event.type == pygame.MOUSEBUTTONDOWN : 
+                mouse = pygame.mouse.get_pressed()
+            if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
+                mouse = [False, False, False]
+                ct = 0
+                for tl in tile_buttons :
+                    if(
+                        show_tiles and 
+                        tl.click(mouse_pos)
+                    ) :
+                        map_info[selected_tile[0], selected_tile[1]] = ct
+                    ct += 1
+                selected_tile = editor_select_tile(mouse_pos)
+
+
+        # display
+        screen.fill((245, 245, 245))
+        screen.blit(level_map.image, level_map.rect)
+
+        if show_tiles :
+            tile_rect.center = transform(
+                vec2D(selected_tile[1], selected_tile[0]), 
+                tile.TILE_SIZE
+            ).get_tuple()
+            color = pygame.Color(100, 120, 180, a=2)
+            pygame.draw.rect(
+                screen, color, 
+                tile_rect, 0
+            )
+        
+        if show_tiles :
+            for tl in tile_buttons :
+                tl.state = 0
+                tl.display(screen)
+                tl.state = 1
+                tl.display(screen)
+        
+        pygame.display.update()
+
+        clock.tick(FPS)
+    return
 
 def select_level() :
     levels_file = open(os.path.join(os.getcwd(), 'AppData', 'levels.json'), 'r')
@@ -630,7 +823,7 @@ def select_level() :
             if event.type == pygame.QUIT :
                 in_game = False
             if event.type == pygame.KEYDOWN :
-                if event.unicode == 'q' :
+                if event.key == pygame.K_ESCAPE :
                     in_game = False
             if event.type == pygame.MOUSEBUTTONDOWN :
                 # start_button.detect(pos = mouse_pos)
@@ -673,8 +866,6 @@ def select_level() :
         clock.tick(FPS)
     return
 
-def setting() :
-    a = 0
 
 def main_page() :
     def click_start_button() :
@@ -691,6 +882,13 @@ def main_page() :
     setting_button.pos = vec2D(
         (resolution[0] / 2) - setting_button.width / 2 + 150, 
         (resolution[1] / 2) - setting_button.height / 2 + 50)
+    level_editor_button = button('setting', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
+                          [0, 0, 0], 128, 128, 
+                          ['level_editor_button.png'], click_start_button)
+    level_editor_button.pos = vec2D(
+        (resolution[0] / 2) - level_editor_button.width / 2 - 150, 
+        (resolution[1] / 2) - level_editor_button.height / 2 + 50)
+    
     
     title = 'Basic TD'
 
@@ -704,21 +902,24 @@ def main_page() :
             if event.type == pygame.QUIT :
                 in_game = False
             if event.type == pygame.KEYDOWN :
-                if event.unicode == 'q' :
+                if event.key == pygame.K_ESCAPE :
                     in_game = False
-            if event.type == pygame.MOUSEBUTTONDOWN :
+            if event.type == pygame.MOUSEBUTTONDOWN : 
                 start_button.detect(pos = mouse_pos)
                 setting_button.detect(mouse_pos)
             if event.type == pygame.MOUSEBUTTONUP :
                 if start_button.click(mouse_pos) :
                     select_level()
                 elif setting_button.click(mouse_pos) :
-                    select_level()
+                    setting()
+                elif level_editor_button.click(mouse_pos) :
+                    level_editor()
         
         # display
         screen.fill((245, 245, 245))
         start_button.display(screen)
         setting_button.display(screen)
+        level_editor_button.display(screen)
         show_text(title, 300, 175, (0, 0, 0), 108)
         pygame.display.update()
         clock.tick(FPS)
