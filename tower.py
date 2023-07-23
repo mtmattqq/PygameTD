@@ -182,6 +182,7 @@ class basic_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'basic_tower_fire.wav')
         )
+        # self.fire_sound.set_volume(1)
         
     def display(self, screen):
         super().display(screen)

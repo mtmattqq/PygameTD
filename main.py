@@ -349,6 +349,8 @@ def level(level_now = 'basic_level.json') :
                 enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
             
             if wave >= 100 and wave % 25 == 0 :
+                if boss != None :
+                    is_game_over = True
                 enemy_type_this_wave = boss_level % 3
                 boss_level += 1
                 boss = boss_types[enemy_type_this_wave].copy()
@@ -587,8 +589,51 @@ def level_editor() :
     a = 0
 
 def select_level() :
-    level_now = 'basic_level.json'
-    level(level_now)
+    levels_file = open(os.path.join(os.getcwd(), 'AppData', 'levels.json'), 'r')
+    levels = levels_file.read()
+    levels = json.loads(levels)
+    levels_file.close()
+
+    select_level_button = []
+    level_per_page = levels['level_per_page']
+    shift_pos = 70
+    for i in range(level_per_page) :
+        select_level_button.append(
+            button(
+                "", vec2D(resolution[0]/2 - 256, 100 + shift_pos * i), 
+                [0, 0, 0], 512, 64, ['select_level.png']
+            )
+        )
+    page = 0
+    
+    title = 'Select Level'
+
+    in_game=True
+    while in_game :
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0], mouse_pos[1])
+
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                in_game = False
+            if event.type == pygame.KEYDOWN :
+                if event.unicode == 'q' :
+                    in_game = False
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                # start_button.detect(pos = mouse_pos)
+                a = 0
+            if event.type == pygame.MOUSEBUTTONUP :
+                a = 0
+        
+        # display
+        screen.fill((245, 245, 245))
+        for btn in select_level_button :
+            btn.display(screen)
+        show_text(title, 300, 48, (0, 0, 0), 72)
+        pygame.display.update()
+        clock.tick(FPS)
+    return
 
 def main_page() :
     def click_start_button() :
