@@ -605,6 +605,18 @@ def select_level() :
             )
         )
     page = 0
+    max_page = len(levels['file_name']) // level_per_page + 1
+    level_num = len(levels['file_name'])
+    next_page_button = button(
+        "", vec2D(resolution[0]/2 + 256 - 128, 100 + shift_pos * level_per_page), 
+        [0, 0, 0], 64, 64, ['next_page_button.png']
+    )
+    prev_page_button = button(
+        "", vec2D(resolution[0]/2 - 256 + 64, 100 + shift_pos * level_per_page), 
+        [0, 0, 0], 64, 64, ['next_page_button.png']
+    )
+    prev_page_button.images[0] = pygame.transform.flip(prev_page_button.images[0], True, False)
+
     
     title = 'Select Level'
 
@@ -622,18 +634,47 @@ def select_level() :
                     in_game = False
             if event.type == pygame.MOUSEBUTTONDOWN :
                 # start_button.detect(pos = mouse_pos)
-                a = 0
-            if event.type == pygame.MOUSEBUTTONUP :
-                a = 0
+                mouse = pygame.mouse.get_pressed()
+            if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
+                mouse = [False, False, False]
+                if next_page_button.click(mouse_pos) :
+                    page = (page + 1) % max_page
+                elif prev_page_button.click(mouse_pos) :
+                    page = (page - 1 + max_page) % max_page
+                idx = 0
+                for btn in select_level_button :
+                    if btn.click(mouse_pos) :
+                        level(levels['file_name'][idx + (page * level_per_page)] + '.json')
+                        return
+                    idx += 1
+                
         
         # display
         screen.fill((245, 245, 245))
+        idx = 0
         for btn in select_level_button :
+            if level_num <= idx + (page * level_per_page) :
+                break
             btn.display(screen)
+            show_text(
+                levels['file_name'][idx + (page * level_per_page)], 
+                300, 133 + shift_pos * idx, (0, 0, 0), 36
+            )
+            idx += 1
+
+        next_page_button.display(screen)
+        prev_page_button.display(screen)
         show_text(title, 300, 48, (0, 0, 0), 72)
+        show_text(
+            '{} / {}'.format(page + 1, max_page), 
+            500, 495, (0, 0, 0), 20
+        )
         pygame.display.update()
         clock.tick(FPS)
     return
+
+def setting() :
+    a = 0
 
 def main_page() :
     def click_start_button() :
@@ -642,8 +683,15 @@ def main_page() :
                           [0, 0, 0], 128, 128, 
                           ['start_button.png'], click_start_button)
     start_button.pos = vec2D(
-        resolution[0]/2-start_button.width/2, 
-        resolution[1]/2-start_button.height/2+50)
+        resolution[0] / 2 - start_button.width / 2, 
+        resolution[1] / 2 - start_button.height / 2 + 50)
+    setting_button = button('setting', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
+                          [0, 0, 0], 128, 128, 
+                          ['setting_button.png'], click_start_button)
+    setting_button.pos = vec2D(
+        (resolution[0] / 2) - setting_button.width / 2 + 150, 
+        (resolution[1] / 2) - setting_button.height / 2 + 50)
+    
     title = 'Basic TD'
 
     in_game=True
@@ -660,13 +708,17 @@ def main_page() :
                     in_game = False
             if event.type == pygame.MOUSEBUTTONDOWN :
                 start_button.detect(pos = mouse_pos)
+                setting_button.detect(mouse_pos)
             if event.type == pygame.MOUSEBUTTONUP :
                 if start_button.click(mouse_pos) :
+                    select_level()
+                elif setting_button.click(mouse_pos) :
                     select_level()
         
         # display
         screen.fill((245, 245, 245))
         start_button.display(screen)
+        setting_button.display(screen)
         show_text(title, 300, 175, (0, 0, 0), 108)
         pygame.display.update()
         clock.tick(FPS)
