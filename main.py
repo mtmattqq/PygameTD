@@ -85,14 +85,21 @@ def setting() :
 def find_path(map = [[]]) :
     m = len(map)
     n = len(map[0])
-    enemy_source = []
-    main_tower = []
+    def in_boarder(r, c) :
+        return (
+            r >= 0 and c >= 0 and
+            r < m and c < n
+        )
+    enemy_source = None
+    main_tower = None
     for i in range(m) :
         for j in range(n) :
             if map[i][j] == 1 :
                 main_tower = [i, j]
             elif map[i][j] == 2 :
                 enemy_source = [i, j]
+    if enemy_source == None or main_tower == None :
+        return None
     isv = []
     for i in range(m) :
         line = []
@@ -103,25 +110,47 @@ def find_path(map = [[]]) :
     path = []
     pos_now = enemy_source
     ct = 0
-    while pos_now != main_tower :
-        ct += 1 
-        if ct > 1000 :
-            return path
+
+    def dfs(pos_now = []) :
         isv[pos_now[0]][pos_now[1]] = True
-        path.append(transform(vec2D(pos_now[1], pos_now[0]), tile.TILE_SIZE))
         for d in MOVEMENT :
             next_stap = [pos_now[0] + d[0], pos_now[1] + d[1]]
             if(
-                next_stap[0] >= 0 and next_stap[1] >= 0 and
-                next_stap[0] < m and next_stap[1] < n and
+                in_boarder(next_stap[0], next_stap[1]) and
                 (map[next_stap[0]][next_stap[1]] == 3 or
                  map[next_stap[0]][next_stap[1]] == 1) and 
                 not isv[next_stap[0]][next_stap[1]]
             ) :
-                pos_now = next_stap
+                path.append(transform(vec2D(pos_now[1], pos_now[0]), tile.TILE_SIZE))
+                if map[next_stap[0]][next_stap[1]] == 1 or dfs(next_stap) :
+                    return True
+                path.pop()
                 break
-    path.append(transform(vec2D(main_tower[1], main_tower[0]), tile.TILE_SIZE))
-    return path
+        return False
+    if dfs(enemy_source) :
+        path.append(transform(vec2D(main_tower[1], main_tower[0]), tile.TILE_SIZE))
+        return path
+    else :
+        return None
+    # while pos_now != main_tower :
+    #     ct += 1 
+    #     if ct > 1000 :
+    #         return path
+    #     isv[pos_now[0]][pos_now[1]] = True
+    #     path.append(transform(vec2D(pos_now[1], pos_now[0]), tile.TILE_SIZE))
+    #     for d in MOVEMENT :
+    #         next_stap = [pos_now[0] + d[0], pos_now[1] + d[1]]
+    #         if(
+    #             next_stap[0] >= 0 and next_stap[1] >= 0 and
+    #             next_stap[0] < m and next_stap[1] < n and
+    #             (map[next_stap[0]][next_stap[1]] == 3 or
+    #              map[next_stap[0]][next_stap[1]] == 1) and 
+    #             not isv[next_stap[0]][next_stap[1]]
+    #         ) :
+    #             pos_now = next_stap
+    #             break
+    # path.append(transform(vec2D(main_tower[1], main_tower[0]), tile.TILE_SIZE))
+    # return path
 
 def select_tile(
     mouse_pos, 
@@ -492,6 +521,7 @@ def level(level_now = 'basic_level.json') :
                         
 
                 if not sending_wave and sent_next_wave_button.click(mouse_pos) :
+                    give_bonus_time -= (send_next_wave - game_timer) * 1.2
                     send_next_wave = game_timer
                 selected_tile, show_buy_tower, show_tower_info, selected_tower = select_tile(
                     mouse_pos, tower_info, towers, 
@@ -540,7 +570,7 @@ def level(level_now = 'basic_level.json') :
         give_bonus_bar.display(screen)
         bonus_bar_image = pygame.transform.scale(
             give_bonus_bar.images[1], 
-            (give_bonus_bar.width * (give_bonus_time / give_bonus_wait_time), give_bonus_bar.width)
+            (give_bonus_bar.width * (max(0, give_bonus_time) / give_bonus_wait_time), give_bonus_bar.width)
         )
         screen.blit(
             bonus_bar_image, 
@@ -637,8 +667,7 @@ def level_editor() :
                         continue
                     if(
                         (event.key >= pygame.K_a and event.key <= pygame.K_z) or 
-                        (event.key >= pygame.K_0 and event.key <= pygame.K_9) or 
-                        (event.key >= pygame.K_KP_0 and event.key <= pygame.K_KP_9) or
+                        event.unicode.isdigit() or
                         event.unicode == chr(pygame.K_UNDERSCORE)
                     ) :
                         new_level_name = new_level_name[:level_name_pos] + event.unicode + new_level_name[level_name_pos:]
@@ -740,7 +769,57 @@ def level_editor() :
     for tl in tile_buttons :
         tl.images[1] = pygame.transform.scale(tl.images[1], [48, 48])
 
+    input_buttons = []
+    input_button_text = [
+        'difficulty', 
+        'start_wave', 
+        'start_money',
+        'start_hit'
+    ]
+
+    shift_pos = 60
+    for i in range(4) :
+        input_buttons.append(
+            button(
+                input_button_text[i], vec2D(780, 110 + shift_pos * i), 
+                [0, 0, 0], 200, 25, ['select_level.png']
+            )
+        )
+
     buffer_string = ''
+    selected_input = None
+    level_name_pos = 0
+
+    save_button = button(
+        'save', vec2D(775, 490), 
+        [0, 0, 0], 32, 32, 
+        ['save_button.png']
+    )
+
+    def save() :
+        path = find_path(map_info)
+        if path == None :
+            return False
+        level_info['map'] = map_info
+        try :
+            output = open(os.path.join(os.getcwd(), 'AppData', new_level_name), 'x')
+            output.write(json.dumps(level_info))
+            output.close()
+            input_levels = open(os.path.join(os.getcwd(), 'AppData', 'levels.json'), 'r')
+            input = input_levels.read()
+            input = json.loads(input)
+            output = open(os.path.join(os.getcwd(), 'AppData', 'levels.json'), 'w')
+            input['file_name'].append(new_level_name[:-5])
+            output.write(json.dumps(input))
+            output.close()
+        except :
+            output = open(os.path.join(os.getcwd(), 'AppData', new_level_name), 'w')
+            output.write(json.dumps(level_info))
+            output.close()
+        return True
+
+    is_error = False
+    error_reset_time = 1000
 
     in_game = True
     while in_game :
@@ -752,6 +831,11 @@ def level_editor() :
         mouse_pos = pygame.mouse.get_pos()
         mouse_pos = vec2D(mouse_pos[0],mouse_pos[1])
 
+        if error_reset_time > 0 :
+            error_reset_time -= delta_time
+        else :
+            is_error = False
+
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
@@ -762,7 +846,7 @@ def level_editor() :
                 # start_money
                 # start_hit
                 if event.key == pygame.K_ESCAPE :
-                    return
+                    in_game = False
                 elif event.key == pygame.K_BACKSPACE :
                     if level_name_pos > 0 :
                         buffer_string = buffer_string[:level_name_pos - 1] + buffer_string[level_name_pos:]
@@ -781,20 +865,24 @@ def level_editor() :
                 elif event.key == pygame.K_LSHIFT :
                     a = 0
                 else :
-                    if level_name_pos >= 15 :
+                    if level_name_pos >= 18 :
                         continue
-                    if(
-                        (event.key >= pygame.K_a and event.key <= pygame.K_z) or 
-                        (event.key >= pygame.K_0 and event.key <= pygame.K_9) or 
-                        (event.key >= pygame.K_KP_0 and event.key <= pygame.K_KP_9) or
-                        event.unicode == chr(pygame.K_UNDERSCORE)
-                    ) :
+                    if event.unicode.isdigit() :
                         buffer_string = buffer_string[:level_name_pos] + event.unicode + buffer_string[level_name_pos:]
                         level_name_pos += 1
+                if selected_input != None :
+                    if buffer_string == '' :
+                        buffer_string = '0'
+                    level_info[selected_input] = int(buffer_string)
             if event.type == pygame.MOUSEBUTTONDOWN : 
                 mouse = pygame.mouse.get_pressed()
             if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
                 mouse = [False, False, False]
+                if save_button.click(mouse_pos) :
+                    if not save() :
+                        error_reset_time = 1000
+                        is_error = True
+                
                 ct = 0
                 for tl in tile_buttons :
                     if(
@@ -809,6 +897,16 @@ def level_editor() :
                     show_tiles = False
                 else :
                     show_tiles = True
+                is_click = False
+                for btn in input_buttons :
+                    if (not show_tiles) and btn.click(mouse_pos) :
+                        selected_input = btn.text
+                        buffer_string = str(level_info[btn.text])
+                        level_name_pos = len(buffer_string)
+                        is_click = True
+                if not is_click :
+                    selected_input = None
+                
 
 
         # display
@@ -831,11 +929,67 @@ def level_editor() :
                 tl.state = 0
                 tl.display(screen)
                 screen.blit(tl.images[1], (tl.pos + vec2D(8, 8)).get_tuple())
+        else :
+            i = 0
+            for btn in input_buttons :
+                btn.display(screen)
+            for btn in input_buttons :
+                if selected_input == btn.text :
+                    break
+                i += 1
+            
+
+            show_text(
+                'Difficulty', 
+                790, 100, [0, 0, 0], 20
+            )
+            show_text(
+                str(level_info['difficulty']), 
+                795, 130, [0, 0, 0], 20
+            )
+
+            show_text(
+                'Initial Wave', 
+                790, 160, [0, 0, 0], 20
+            )
+            show_text(
+                str(level_info['start_wave']), 
+                795, 190, [0, 0, 0], 20
+            )
+
+            show_text(
+                'Initial Natural Ingot', 
+                790, 220, [0, 0, 0], 20
+            )
+            show_text(
+                str(level_info['start_money']), 
+                795, 250, [0, 0, 0], 20
+            )
+
+            show_text(
+                'Initial Hit', 
+                790, 280, [0, 0, 0], 20
+            )
+            show_text(
+                str(level_info['start_hit']), 
+                795, 310, [0, 0, 0], 20
+            )
+
+            if selected_input != None :
+                show_text(
+                    '|', 791 + 10 * level_name_pos, 
+                    130 + shift_pos * i, (0, 0, 0), 20
+                )
+        save_button.display(screen)
         
+        if is_error :
+            show_text('Error', 300, 175, (0, 0, 0), 108)
+
         pygame.display.update()
 
         clock.tick(FPS)
-    level_info_file = open(os.path.join(os.getcwd(), 'AppData', new_level_name), 'x')
+
+    save()
     return
 
 def select_level() :

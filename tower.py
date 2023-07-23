@@ -182,7 +182,7 @@ class basic_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'basic_tower_fire.wav')
         )
-        # self.fire_sound.set_volume(1)
+        self.fire_sound.set_volume(0.1)
         
     def display(self, screen):
         super().display(screen)
@@ -505,6 +505,7 @@ class sniper_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'sniper_tower_fire.wav')
         )
+        self.fire_sound.set_volume(0.1)
 
         self.upgrade_damage = button(
             'damage', vec2D(1000, 84), [0, 0, 0], 
@@ -879,9 +880,11 @@ class cannon_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'cannon_tower_fire.wav')
         )
+        self.fire_sound.set_volume(0.1)
         self.explode_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'cannon_tower_explode.wav')
         )
+        self.explode_sound.set_volume(0.1)
         
     def display(self, screen):
         super().display(screen)
@@ -1148,7 +1151,7 @@ class tesla_tower(tower) :
             self.pierce -= 1
             enemy.regenerate_shield_time += self.interference_time
             if enemy.shield > 0 :
-                enemy.shield = max(0, enemy.shield - self.damage * 2)
+                enemy.shield = max(0, enemy.shield - self.damage * 4)
                 return
             enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
@@ -1220,6 +1223,7 @@ class tesla_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'tesla_tower_fire.wav')
         )
+        self.fire_sound.set_volume(0.1)
 
     def display_bullets(self, screen) :
         for bullet in self.bullets :
