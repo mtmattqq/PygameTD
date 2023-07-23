@@ -17,9 +17,9 @@ import random
 # pygame init
 pygame.init()
 pygame.mixer.init()
-flags = DOUBLEBUF | SCALED | FULLSCREEN
+flags = DOUBLEBUF | SCALED | FULLSCREEN | SRCALPHA
 resolution = (1024, 576)
-screen = pygame.display.set_mode(resolution, flags, 16)
+screen = pygame.display.set_mode(resolution, flags, 32)
 screen.fill((245, 245, 245))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Basic TD Game")
@@ -584,6 +584,11 @@ def level(level_now = 'basic_level.json') :
     return
 
 def level_editor() :
+    levels_file = open(os.path.join(os.getcwd(), 'AppData', 'levels.json'), 'r')
+    levels = levels_file.read()
+    levels = json.loads(levels)
+    levels_file.close()
+
     new_level_name = ''
     level_name_pos = 0
 
@@ -595,10 +600,8 @@ def level_editor() :
 
     # enter level name
     in_game = True
+    file_name_exist = False
     while in_game :
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = vec2D(mouse_pos[0], mouse_pos[1])
-
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
@@ -606,8 +609,12 @@ def level_editor() :
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_ESCAPE :
                     return
-                elif event.key == pygame.K_KP_ENTER :
-                    in_game = False
+                elif event.key == pygame.K_KP_ENTER or event.key == pygame.K_RETURN :
+                    for file_name in levels['file_name'] :
+                        if file_name == new_level_name :
+                            file_name_exist = True
+                    if not file_name_exist and new_level_name != '' :
+                        in_game = False
                 elif event.key == pygame.K_BACKSPACE :
                     if level_name_pos > 0 :
                         new_level_name = new_level_name[:level_name_pos - 1] + new_level_name[level_name_pos:]
@@ -632,7 +639,7 @@ def level_editor() :
                         (event.key >= pygame.K_a and event.key <= pygame.K_z) or 
                         (event.key >= pygame.K_0 and event.key <= pygame.K_9) or 
                         (event.key >= pygame.K_KP_0 and event.key <= pygame.K_KP_9) or
-                        event.key == pygame.K_UNDERSCORE
+                        event.unicode == chr(pygame.K_UNDERSCORE)
                     ) :
                         new_level_name = new_level_name[:level_name_pos] + event.unicode + new_level_name[level_name_pos:]
                         level_name_pos += 1
@@ -645,6 +652,8 @@ def level_editor() :
         show_text(title, 250, 180, (0, 0, 0), 72)
         show_text(new_level_name, 280, 270, (0, 0, 0), 64)
         show_text('|', 262 + level_name_pos * 32, 270, (0, 0, 0), 64)
+        if file_name_exist :
+            show_text('File Name Exists', 262, 350, (255, 50, 50), 64)
         pygame.display.update()
         clock.tick(FPS)
 
@@ -658,20 +667,26 @@ def level_editor() :
         'road.png'
     ], 64, 64)
     
-    level_info_file = open(os.path.join(os.getcwd(), 'AppData', new_level_name), 'w')
+    level_info = {
+        'map_size' : [9, 12], "difficulty" : 100,
+        "start_wave" : 0, "start_money" : 150,
+        "start_hit" : 20
+    }
 
-    map_info = [[]]
+    map_info = []
     for i in range(9) :
         line = []
         for j in range(12) :
             line.append(0)
         map_info.append(line)
+    level_info['map'] = map_info
 
     level_map = tile.tilemap(tile_set, [9, 12])
-    def update_map(level_map = tile.tilemap(tile_set, [9, 12])) :
+    def update_map(level_map = tile.tilemap(tile_set, [12, 9])) :
         level_map.set_zero()
         level_map.load(map_info)
         level_map.render()
+    update_map(level_map)
         
     # level_path = find_path(map_info)
 
@@ -682,6 +697,7 @@ def level_editor() :
     selected_tile = [0, 0]
 
     def editor_select_tile(mouse_pos = vec2D(0, 0)) :
+        selected_tile = None
         tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
 
         if(
@@ -699,27 +715,32 @@ def level_editor() :
         button(
             0, vec2D(785, 80), 
             [0, 0, 0], 64, 64, 
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'white.png'], 
+            ['can_buy_tower.png', 'white.png'], 
         ),
 
         button(
             0, vec2D(845, 80), 
             [0, 0, 0], 64, 64, 
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'main_tower.png'], 
+            ['can_buy_tower.png', 'main_tower.png'], 
         ),
 
         button(
             0, vec2D(905, 80), 
             [0, 0, 0], 64, 64, 
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'enemy_sourse.png'], 
+            ['can_buy_tower.png', 'enemy_sourse.png'], 
         ),
 
         button(
             0, vec2D(785, 140), 
             [0, 0, 0], 64, 64, 
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'road.png'], 
+            ['can_buy_tower.png', 'road.png'], 
         ),
     ]
+
+    for tl in tile_buttons :
+        tl.images[1] = pygame.transform.scale(tl.images[1], [48, 48])
+
+    buffer_string = ''
 
     in_game = True
     while in_game :
@@ -736,9 +757,40 @@ def level_editor() :
             if event.type == pygame.QUIT :
                 in_game = False
             if event.type == pygame.KEYDOWN :
+                # difficulty
+                # start_wave
+                # start_money
+                # start_hit
                 if event.key == pygame.K_ESCAPE :
-                    in_game = False
-                        
+                    return
+                elif event.key == pygame.K_BACKSPACE :
+                    if level_name_pos > 0 :
+                        buffer_string = buffer_string[:level_name_pos - 1] + buffer_string[level_name_pos:]
+                    level_name_pos = max(0, level_name_pos - 1)
+                elif event.key == pygame.K_DELETE :
+                    if level_name_pos < len(buffer_string) :
+                        buffer_string = buffer_string[:level_name_pos] + buffer_string[level_name_pos + 1:]
+                elif event.key == pygame.K_LEFT :
+                    level_name_pos = max(0, level_name_pos - 1)
+                elif event.key == pygame.K_RIGHT :
+                    level_name_pos = min(level_name_pos + 1, len(buffer_string))
+                elif event.key == pygame.K_UP :
+                    level_name_pos = 0
+                elif event.key == pygame.K_DOWN :
+                    level_name_pos = len(buffer_string)
+                elif event.key == pygame.K_LSHIFT :
+                    a = 0
+                else :
+                    if level_name_pos >= 15 :
+                        continue
+                    if(
+                        (event.key >= pygame.K_a and event.key <= pygame.K_z) or 
+                        (event.key >= pygame.K_0 and event.key <= pygame.K_9) or 
+                        (event.key >= pygame.K_KP_0 and event.key <= pygame.K_KP_9) or
+                        event.unicode == chr(pygame.K_UNDERSCORE)
+                    ) :
+                        buffer_string = buffer_string[:level_name_pos] + event.unicode + buffer_string[level_name_pos:]
+                        level_name_pos += 1
             if event.type == pygame.MOUSEBUTTONDOWN : 
                 mouse = pygame.mouse.get_pressed()
             if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
@@ -749,9 +801,14 @@ def level_editor() :
                         show_tiles and 
                         tl.click(mouse_pos)
                     ) :
-                        map_info[selected_tile[0], selected_tile[1]] = ct
+                        map_info[selected_tile[0]][selected_tile[1]] = ct
+                        update_map(level_map)
                     ct += 1
                 selected_tile = editor_select_tile(mouse_pos)
+                if selected_tile == None :
+                    show_tiles = False
+                else :
+                    show_tiles = True
 
 
         # display
@@ -763,7 +820,7 @@ def level_editor() :
                 vec2D(selected_tile[1], selected_tile[0]), 
                 tile.TILE_SIZE
             ).get_tuple()
-            color = pygame.Color(100, 120, 180, a=2)
+            color = pygame.Color(100, 120, 180, a=100)
             pygame.draw.rect(
                 screen, color, 
                 tile_rect, 0
@@ -773,12 +830,12 @@ def level_editor() :
             for tl in tile_buttons :
                 tl.state = 0
                 tl.display(screen)
-                tl.state = 1
-                tl.display(screen)
+                screen.blit(tl.images[1], (tl.pos + vec2D(8, 8)).get_tuple())
         
         pygame.display.update()
 
         clock.tick(FPS)
+    level_info_file = open(os.path.join(os.getcwd(), 'AppData', new_level_name), 'x')
     return
 
 def select_level() :
