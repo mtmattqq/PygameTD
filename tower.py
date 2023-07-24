@@ -1161,7 +1161,7 @@ class tesla_tower(tower) :
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage * 4)
                 return
-            if self.pierce >= enemy.anti_pierce :
+            if self.pierce + 5 >= enemy.anti_pierce :
                 enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = [], boss = None) :
