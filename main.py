@@ -59,6 +59,7 @@ def display_things() :
         [loading_bar_green.width * (progress / 100), loading_bar_green.height]
     )
     show_text(title, 300, 175, (0, 0, 0), 108)
+    screen.blit(loading_bar_green_image, loading_bar_green.pos.get_tuple())
     display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
     pygame.display.update()
 display_things()
