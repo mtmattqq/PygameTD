@@ -16,10 +16,12 @@ import random
 
 # pygame init
 pygame.init()
+pygame.font.init()
 pygame.mixer.init()
-flags = DOUBLEBUF | SCALED | FULLSCREEN | SRCALPHA
+flags = DOUBLEBUF | SCALED | FULLSCREEN
 resolution = (1024, 576)
-screen = pygame.display.set_mode(resolution, flags, 32)
+screen = pygame.surface.Surface(resolution)
+display = pygame.display.set_mode(resolution, flags, 32)
 screen.fill((245, 245, 245))
 clock = pygame.time.Clock()
 pygame.display.set_caption("Basic TD Game")
@@ -34,6 +36,8 @@ pygame.event.set_allowed([
 # variables
 FPS=60
 MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+is_fullscreen = True
+volume = 100
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     font=pygame.font.Font(os.path.join(os.getcwd(), 'AppData', 'unifont.ttf'), size)
@@ -61,7 +65,7 @@ def game_over() :
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                in_game = False
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 if event.unicode == 'q' :
                     in_game = False
@@ -75,12 +79,93 @@ def game_over() :
         screen.fill((200, 200, 200))
         start_button.display(screen)
         show_text(title, 300, 175, (0, 0, 0), 98)
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
         clock.tick(FPS)
     return
 
 def setting() :
-    a = 0
+    global flags, screen, display, is_fullscreen, volume
+    fullscreen_button = button(
+        'fullscreen', vec2D(resolution[0] / 2 - 128 + 100, resolution[1] / 2 - 16 - 50), 
+        [0, 0, 0], 256, 32, 
+        ['select_level.png']
+    )
+    set_volume_button = button(
+        'fullscreen', vec2D(resolution[0] / 2 - 16 - 100, resolution[1] / 2 - 16 + 50), 
+        [0, 0, 0], 32, 32, 
+        ['set_volume.png']
+    )
+    
+    input_file = open(os.path.join(os.getcwd(), 'AppData', 'setting.json'), 'r')
+    input = input_file.read()
+    input = json.loads(input)
+    input_file.close()
+
+    is_fullscreen = input['is_fullscreen']
+    volume = input['volume']
+    is_set_volume_bar_pressed = False
+    
+    title = 'Setting'
+
+    in_game=True
+    while in_game :
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = vec2D(mouse_pos[0], mouse_pos[1])
+
+        if is_set_volume_bar_pressed :
+            mouse_pos.x
+            volume = (mouse_pos.x - (resolution[0] / 2 - 16 - 20)) / 256 * 100 - 7
+            volume = max(0, min(100, volume))
+
+        # event in pygame
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                pygame.quit()
+            if event.type == pygame.KEYDOWN :
+                if event.key == pygame.K_ESCAPE : 
+                    in_game = False
+            if event.type == pygame.MOUSEBUTTONDOWN : 
+                if set_volume_button.click(mouse_pos) :
+                    is_set_volume_bar_pressed = True
+            if event.type == pygame.MOUSEBUTTONUP :
+                if fullscreen_button.click(mouse_pos) :
+                    if is_fullscreen :
+                        is_fullscreen = False
+                        flags = DOUBLEBUF
+                    else :
+                        is_fullscreen = True
+                        flags = DOUBLEBUF | SCALED | FULLSCREEN
+                    display = pygame.display.set_mode(resolution, flags, 32)
+                is_set_volume_bar_pressed = False
+        
+        # display
+        screen.fill((245, 245, 245))
+        show_text(title, 330, 70, [0, 0, 0], 108)
+        fullscreen_button.display(screen)
+        show_text('Fullscreen : ', 275, 237, [0, 0, 0], 36)
+        show_text(str(is_fullscreen), 580, 237, [0, 0, 0], 36)
+
+        show_text('Volume : ', 335, 337, [0, 0, 0], 36)
+        show_text('{:.0f}'.format(volume), 780, 337, [0, 0, 0], 36)
+        set_volume_button.pos.x = resolution[0] / 2 - 16 - 20 + (volume * 256 / 100)
+        pygame.draw.line(
+            screen, [0, 0, 0], 
+            [resolution[0] / 2 - 16, resolution[1] / 2 - 16 + 65], 
+            [resolution[0] / 2 - 16 + 250, resolution[1] / 2 - 16 + 65], 2
+        )
+        set_volume_button.display(screen)
+        
+
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
+        pygame.display.update()
+        clock.tick(FPS)
+    
+    input['is_fullscreen'] = is_fullscreen
+    input['volume'] = volume
+    output = open(os.path.join(os.getcwd(), 'AppData', 'setting.json'), 'w')
+    output.write(json.dumps(input))
+    return
 
 def find_path(map = [[]]) :
     m = len(map)
@@ -478,7 +563,7 @@ def level(level_now = 'basic_level.json') :
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                in_game = False
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_ESCAPE :
                     in_game = False
@@ -498,7 +583,7 @@ def level(level_now = 'basic_level.json') :
                         tower_info[selected_tile[0], selected_tile[1]] = ct
                         new_tower = None
                         if ct == 1 :
-                            new_tower = tower.basic_tower(vec2D(selected_tile[1], selected_tile[0]))
+                            new_tower = tower.basic_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 2 :
                             new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]))
                         elif ct == 3 :
@@ -606,6 +691,7 @@ def level(level_now = 'basic_level.json') :
         if not show_tower_info :
             selected_tower = None
         
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
 
         clock.tick(FPS)
@@ -635,7 +721,7 @@ def level_editor() :
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                in_game = False
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_ESCAPE :
                     return
@@ -683,6 +769,7 @@ def level_editor() :
         show_text('|', 262 + level_name_pos * 32, 270, (0, 0, 0), 64)
         if file_name_exist :
             show_text('File Name Exists', 262, 350, (255, 50, 50), 64)
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
         clock.tick(FPS)
 
@@ -839,7 +926,7 @@ def level_editor() :
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                in_game = False
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 # difficulty
                 # start_wave
@@ -985,6 +1072,7 @@ def level_editor() :
         if is_error :
             show_text('Error', 300, 175, (0, 0, 0), 108)
 
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
 
         clock.tick(FPS)
@@ -1004,7 +1092,7 @@ def select_level() :
     for i in range(level_per_page) :
         select_level_button.append(
             button(
-                "", vec2D(resolution[0]/2 - 256, 100 + shift_pos * i), 
+                "", vec2D(resolution[0]/2 - 256, 130 + shift_pos * i), 
                 [0, 0, 0], 512, 64, ['select_level.png']
             )
         )
@@ -1012,11 +1100,11 @@ def select_level() :
     max_page = len(levels['file_name']) // level_per_page + 1
     level_num = len(levels['file_name'])
     next_page_button = button(
-        "", vec2D(resolution[0]/2 + 256 - 128, 100 + shift_pos * level_per_page), 
+        "", vec2D(resolution[0]/2 + 256 - 128, 130 + shift_pos * level_per_page), 
         [0, 0, 0], 64, 64, ['next_page_button.png']
     )
     prev_page_button = button(
-        "", vec2D(resolution[0]/2 - 256 + 64, 100 + shift_pos * level_per_page), 
+        "", vec2D(resolution[0]/2 - 256 + 64, 130 + shift_pos * level_per_page), 
         [0, 0, 0], 64, 64, ['next_page_button.png']
     )
     prev_page_button.images[0] = pygame.transform.flip(prev_page_button.images[0], True, False)
@@ -1032,7 +1120,7 @@ def select_level() :
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                in_game = False
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_ESCAPE :
                     in_game = False
@@ -1062,7 +1150,7 @@ def select_level() :
             btn.display(screen)
             show_text(
                 levels['file_name'][idx + (page * level_per_page)], 
-                300, 133 + shift_pos * idx, (0, 0, 0), 36
+                300, 163 + shift_pos * idx, (0, 0, 0), 36
             )
             idx += 1
 
@@ -1071,14 +1159,24 @@ def select_level() :
         show_text(title, 300, 48, (0, 0, 0), 72)
         show_text(
             '{} / {}'.format(page + 1, max_page), 
-            500, 495, (0, 0, 0), 20
+            500, 525, (0, 0, 0), 20
         )
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
         clock.tick(FPS)
     return
 
 
 def main_page() :
+    global is_fullscreen, volume
+    input_file = open(os.path.join(os.getcwd(), 'AppData', 'setting.json'), 'r')
+    input = input_file.read()
+    input = json.loads(input)
+    input_file.close()
+
+    is_fullscreen = input['is_fullscreen']
+    volume = input['volume']
+
     def click_start_button() :
         return True
     start_button = button('Start', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
@@ -1111,7 +1209,7 @@ def main_page() :
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
-                in_game = False
+                pygame.quit()
             if event.type == pygame.KEYDOWN :
                 if event.key == pygame.K_ESCAPE :
                     in_game = False
@@ -1132,6 +1230,7 @@ def main_page() :
         setting_button.display(screen)
         level_editor_button.display(screen)
         show_text(title, 300, 175, (0, 0, 0), 108)
+        display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
         clock.tick(FPS)
     return

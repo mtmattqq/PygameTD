@@ -20,11 +20,12 @@ def show_text(screen, text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
 
 class tower(pygame.sprite.Sprite) :
     def __init__(
-        self, pos = vec2D(0, 0),
+        self, pos = vec2D(0, 0), 
         width = TILE_SIZE, height = TILE_SIZE, 
         pictures = [''],
         damage = 0, reload = 0,
-        range = 0, bullet_speed = 0
+        range = 0, bullet_speed = 0, 
+        volume = 100
     ) :
         pygame.sprite.Sprite.__init__(self)
         self.pos = pos
@@ -38,6 +39,7 @@ class tower(pygame.sprite.Sprite) :
         self.range = range
         self.bullet_speed = bullet_speed
         self.time_to_fire = 0
+        self.volume = volume
         self.images = []
         for picture in pictures :
             self.images.append(pygame.transform.scale(pygame.image.load(
@@ -108,13 +110,15 @@ class basic_tower(tower) :
             )
 
         def deal_damage(self, enemy) :
-            self.pierce -= enemy.anti_pierce
+            
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
                 return
-            enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
+            if self.pierce >= enemy.anti_pierce : 
+                enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
+            self.pierce -= enemy.anti_pierce
         def detect(self, enemys = [], boss = None) :
             for enemy in enemys :
                 if self.pierce <= 0 :
@@ -140,7 +144,7 @@ class basic_tower(tower) :
                 self.pierce = 0
 
     def __init__(
-        self, pos = vec2D(0, 0)
+        self, pos = vec2D(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -153,7 +157,8 @@ class basic_tower(tower) :
             pos, width, height, 
             pictures,
             damage, reload,
-            range, bullet_speed
+            range, bullet_speed, 
+            volume
         )
         self.aim = vec2D(0, 1)
         self.angle = 0
@@ -182,7 +187,7 @@ class basic_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'basic_tower_fire.wav')
         )
-        self.fire_sound.set_volume(0.1)
+        self.fire_sound.set_volume(self.volume / 100)
         
     def display(self, screen):
         super().display(screen)
@@ -478,7 +483,7 @@ class sniper_tower(tower) :
                 self.pierce = 0
 
     def __init__(
-        self, pos = vec2D(0, 0)
+        self, pos = vec2D(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -492,7 +497,8 @@ class sniper_tower(tower) :
             pos, width, height, 
             pictures,
             damage, reload,
-            range, bullet_speed
+            range, bullet_speed, 
+            volume
         )
         self.images[2] = pygame.transform.scale(
             self.images[2], [TILE_SIZE/2, TILE_SIZE/2])
@@ -505,7 +511,7 @@ class sniper_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'sniper_tower_fire.wav')
         )
-        self.fire_sound.set_volume(0.1)
+        self.fire_sound.set_volume(self.volume / 100)
 
         self.upgrade_damage = button(
             'damage', vec2D(1000, 84), [0, 0, 0], 
@@ -796,7 +802,8 @@ class cannon_tower(tower) :
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
-            enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
+            if self.pierce >= enemy.anti_pierce :
+                enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = [], boss = None) :
             crush = False
@@ -835,7 +842,7 @@ class cannon_tower(tower) :
             return False
 
     def __init__(
-        self, pos = vec2D(0, 0)
+        self, pos = vec2D(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -848,7 +855,8 @@ class cannon_tower(tower) :
             pos, width, height, 
             pictures,
             damage, reload,
-            range, bullet_speed
+            range, bullet_speed, 
+            volume
         )
         self.images[2] = pygame.transform.scale(
             self.images[2], [TILE_SIZE/2, TILE_SIZE/2])
@@ -880,11 +888,11 @@ class cannon_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'cannon_tower_fire.wav')
         )
-        self.fire_sound.set_volume(0.1)
+        self.fire_sound.set_volume(self.volume / 100)
         self.explode_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'cannon_tower_explode.wav')
         )
-        self.explode_sound.set_volume(0.1)
+        self.explode_sound.set_volume(self.volume / 100)
         
     def display(self, screen):
         super().display(screen)
@@ -1153,7 +1161,8 @@ class tesla_tower(tower) :
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage * 4)
                 return
-            enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
+            if self.pierce >= enemy.anti_pierce :
+                enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = [], boss = None) :
             if self.pierce <= 0 :
@@ -1180,7 +1189,7 @@ class tesla_tower(tower) :
             return False
 
     def __init__(
-        self, pos = vec2D(0, 0)
+        self, pos = vec2D(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -1193,7 +1202,8 @@ class tesla_tower(tower) :
             pos, width, height, 
             pictures,
             damage, reload,
-            range, bullet_speed
+            range, bullet_speed, 
+            volume
         )
         self.images[1] = pygame.transform.scale(
             self.images[1], [self.range * 2, self.range * 2])
@@ -1223,7 +1233,7 @@ class tesla_tower(tower) :
         self.fire_sound = pygame.mixer.Sound(
             os.path.join(os.getcwd(), 'AppData', 'tesla_tower_fire.wav')
         )
-        self.fire_sound.set_volume(0.1)
+        self.fire_sound.set_volume(self.volume / 100)
 
     def display_bullets(self, screen) :
         for bullet in self.bullets :
