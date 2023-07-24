@@ -1,18 +1,9 @@
 import pygame
-import copy
 from pygame.locals import *
+import os
+from button import button
 from vec2D import vec2D
 from vec2D import transform
-from button import button
-import tile
-import json
-import os
-import tower
-import enemy
-import numpy as np
-import math
-import random
-# import android
 
 # pygame init
 pygame.init()
@@ -33,18 +24,75 @@ pygame.event.set_allowed([
     FINGERDOWN, FINGERUP, FINGERMOTION
 ])
 
-# variables
-FPS=60
-MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
-is_fullscreen = True
-volume = 100
-
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     font=pygame.font.Font(os.path.join(os.getcwd(), 'AppData', 'unifont.ttf'), size)
     text=font.render(text, True, color)
     textRect=text.get_rect()
     textRect.topleft=(x-10, y-20)
     screen.blit(text, textRect)
+
+# loading
+
+loading_bar_red = button('', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
+                        [0, 0, 0], 256, 256, 
+                        ['hit_bar_red.png'])
+loading_bar_red.pos = vec2D(
+    resolution[0] / 2 - loading_bar_red.width / 2, 
+    resolution[1] / 2 - loading_bar_red.height / 2 + 50)
+loading_bar_green = button('', vec2D(resolution[0]/2-64, resolution[1]/2-64), 
+                        [0, 0, 0], 256, 256, 
+                        ['hit_bar_green.png']
+)
+loading_bar_green.pos = vec2D(
+    (resolution[0] / 2) - loading_bar_green.width / 2, 
+    (resolution[1] / 2) - loading_bar_green.height / 2 + 50)    
+
+title = 'Loading'
+progress = 0
+
+def display_things() :
+    # display
+    screen.fill((255, 255, 255))
+    loading_bar_red.display(screen)
+    loading_bar_green_image = pygame.transform.scale(
+        loading_bar_green.images[0], 
+        [loading_bar_green.width * (progress / 100), loading_bar_green.height]
+    )
+    show_text(title, 300, 175, (0, 0, 0), 108)
+    display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
+    pygame.display.update()
+display_things()
+
+import tile
+progress = 20
+display_things()
+
+import tower
+import enemy
+progress = 50
+display_things()
+
+import numpy as np
+import math
+import random
+import json
+progress = 80
+display_things()
+
+import copy
+progress = 100
+display_things()
+
+pygame.time.delay(300)
+# end loading
+
+# variables
+FPS=60
+MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+is_fullscreen = True
+volume = 100
+
+
 
 def game_over() :
     def click_start_button() :
@@ -298,10 +346,12 @@ def level(level_now = 'basic_level.json') :
     enemys = []
     
     enemy_types = [
-        enemy.basic_enemy(level_path[0].copy(), 0, 0, 0, 0, level_path),
-        enemy.evil_eye(level_path[0].copy(), 0, 0, 0, 0, level_path), 
-        enemy.high_armor(level_path[0].copy(), 0, 0, 0, 0, level_path)
+        enemy.basic_enemy(vec2D(800, 140), 0, 0, 0, 0, level_path),
+        enemy.evil_eye(vec2D(800, 220), 0, 0, 0, 0, level_path), 
+        enemy.high_armor(vec2D(800, 300), 0, 0, 0, 0, level_path)
     ]
+    for en in enemy_types :
+        en.location = en.pos
     enemy_level = [
         0, 0, 5
     ]
@@ -312,9 +362,9 @@ def level(level_now = 'basic_level.json') :
     ]
     
     boss_types = [
-        enemy.basic_boss(level_path[0].copy(), 0, 0, 0, 10, level_path), 
-        enemy.eye_boss(level_path[0].copy(), 0, 0, 0, 10, level_path), 
-        enemy.high_armor_boss(level_path[0].copy(), 0, 0, 0, 10, level_path)
+        enemy.basic_boss(vec2D(785, 80), 0, 0, 0, 10, [vec2D(785, 80)]), 
+        enemy.eye_boss(vec2D(785, 140), 0, 0, 0, 10, [vec2D(785, 140)]), 
+        enemy.high_armor_boss(vec2D(785, 200), 0, 0, 0, 10, [vec2D(785, 200)])
     ]
     boss = None
     boss_level = 0
@@ -408,6 +458,12 @@ def level(level_now = 'basic_level.json') :
         buy_tower_buttons_onclick
     )
 
+    setting_button = button(
+        'setting', vec2D(835, 490), 
+        [0, 0, 0], 32, 32, 
+        ['setting_button.png']
+    )
+
     is_game_over = False
 
     if wave >= 100 :
@@ -490,9 +546,9 @@ def level(level_now = 'basic_level.json') :
                 )
 
             # Generate Enemy
+            enemy_type_this_wave = enemy_type_next_wave
             enemy_level[enemy_type_this_wave] += 1
             send_this_wave = send_next_wave
-            enemy_type_this_wave = enemy_type_next_wave
             enemy_type_next_wave = random.randint(0, min(math.floor(wave / 5), ENEMY_TYPE - 1))
             enemy_amount = math.floor(
                 math.sqrt(
@@ -608,6 +664,7 @@ def level(level_now = 'basic_level.json') :
                     if selected_tower.deconstruct_button.click(mouse_pos) :
                         tower_info[selected_tower.pos.y][selected_tower.pos.x] = 0
                         towers.remove(selected_tower)
+                        natural_ingot += 80
                         
 
                 if not sending_wave and sent_next_wave_button.click(mouse_pos) :
@@ -618,6 +675,10 @@ def level(level_now = 'basic_level.json') :
                     level_info['map'], show_tower_info, 
                     selected_tile, selected_tower
                 )
+
+                if setting_button.click(mouse_pos) :
+                    setting()
+                    time_now = pygame.time.get_ticks()
 
 
         # display
@@ -645,6 +706,7 @@ def level(level_now = 'basic_level.json') :
             boss.display(screen)
         if not sending_wave :
             sent_next_wave_button.display(screen)
+        setting_button.display(screen)
         show_text(
             'Next wave in {:.2f} s.'.format((send_next_wave - game_timer)/1000), 
             790, 545, (0, 0, 0), 20
@@ -696,6 +758,30 @@ def level(level_now = 'basic_level.json') :
         if not show_tower_info :
             selected_tower = None
         
+        if not show_tower_info and not show_buy_tower :
+            for en in enemy_types :
+                en.display(screen)
+            shift_pos = 80
+            for i in range(ENEMY_TYPE) :
+                show_text(
+                    'Hit : {:.1f}'.format(
+                    enemy_base_info[i][0][0] + enemy_base_info[i][1][0] * 
+                    (enemy_level[i]**2)), 840, 140 + shift_pos * i, 
+                    [0, 0, 0], 20
+                )
+                show_text(
+                    'Shield : {:.1f}'.format(
+                    enemy_base_info[i][0][2] + enemy_base_info[i][1][2] * 
+                    (enemy_level[i]**2)), 840, 165 + shift_pos * i, 
+                    [0, 0, 0], 20
+                )
+                show_text(
+                    'Armor : {:.1f}'.format(
+                    enemy_base_info[i][0][1] + enemy_base_info[i][1][1] * 
+                    math.sqrt(enemy_level[i])), 840, 190 + shift_pos * i, 
+                    [0, 0, 0], 20
+                )
+
         display.blit(pygame.transform.scale(screen, display.get_size()), (0, 0))
         pygame.display.update()
 
@@ -1181,6 +1267,12 @@ def main_page() :
 
     is_fullscreen = input['is_fullscreen']
     volume = input['volume']
+
+    if is_fullscreen :
+        flags = DOUBLEBUF | SCALED | FULLSCREEN
+    else :
+        flags = DOUBLEBUF
+    display = pygame.display.set_mode(resolution, flags, 32)
 
     def click_start_button() :
         return True

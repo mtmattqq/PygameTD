@@ -114,6 +114,7 @@ class basic_tower(tower) :
             # damage dealing formula hasn't finished
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
+                self.pierce -= enemy.anti_pierce
                 return
             if self.pierce >= enemy.anti_pierce : 
                 enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
@@ -803,7 +804,8 @@ class cannon_tower(tower) :
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
             if self.pierce >= enemy.anti_pierce :
-                enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
+                armor = enemy.armor + math.log10(enemy.shield)
+                enemy.hit -= max(self.damage/20, (1 - 19*armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = [], boss = None) :
             crush = False
@@ -1159,7 +1161,7 @@ class tesla_tower(tower) :
             self.pierce -= 1
             enemy.regenerate_shield_time += self.interference_time
             if enemy.shield > 0 :
-                enemy.shield = max(0, enemy.shield - self.damage * 4)
+                enemy.shield = max(0, enemy.shield - self.damage * 8)
                 return
             if self.pierce + 5 >= enemy.anti_pierce :
                 enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
