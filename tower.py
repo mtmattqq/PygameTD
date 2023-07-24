@@ -740,7 +740,7 @@ class sniper_tower(tower) :
                 natural_ingot -= 50 + self.damage_level*50
                 self.damage += 50.0 * math.sqrt(self.damage_level)
         elif self.upgrade_hardness.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.hardness_level+1)*10 :
+            if natural_ingot >= 50 + (self.hardness_level+1)*50 :
                 self.hardness_level += 1
                 natural_ingot -= 50 + self.hardness_level*50
                 self.hardness += 3 * 1/self.hardness_level
