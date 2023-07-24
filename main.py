@@ -65,12 +65,14 @@ def display_things() :
 display_things()
 
 import tile
-progress = 20
+progress = 30
+pygame.time.delay(300)
 display_things()
 
 import tower
 import enemy
 progress = 50
+pygame.time.delay(300)
 display_things()
 
 import numpy as np
@@ -78,6 +80,7 @@ import math
 import random
 import json
 progress = 80
+pygame.time.delay(300)
 display_things()
 
 import copy
