@@ -1158,12 +1158,11 @@ class tesla_tower(tower) :
             )
 
         def deal_damage(self, enemy) :
-            self.pierce -= 1
             enemy.regenerate_shield_time += self.interference_time
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage * 8)
                 return
-            if self.pierce + 5 >= enemy.anti_pierce :
+            if enemy.anti_pierce < 10 :
                 enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = [], boss = None) :
