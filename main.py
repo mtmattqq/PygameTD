@@ -372,7 +372,7 @@ def level(level_now = 'basic_level.json') :
         enemy.high_armor_boss(vec2D(785, 200), 0, 0, 0, 10, [vec2D(785, 200)])
     ]
     boss = None
-    boss_level = 0
+    boss_level = (wave - 100) // 25
 
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
@@ -453,6 +453,37 @@ def level(level_now = 'basic_level.json') :
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'tesla_tower32.png'], 
             buy_tower_buttons_onclick
         ),
+    ]
+    buy_tower_info = [
+        [
+            'Basic', 
+            'Basic tower can attack', 
+            'fast, and it\'s cheap.'
+        ],
+
+        [
+            'Sniper',
+            'Sniper Tower attack ', 
+            'slowly. However, it\'s ',
+            'the only way to break',
+            'the armor.'
+        ],
+
+        [
+            'Cannon',
+            'Cannon Tower provides AOE',
+            'damage, and has greatest',
+            'DPS. Also, it can damage ',
+            'though shield.'
+        ],
+
+        [
+            'Tesla',
+            'Tesla Tower can damage all ',
+            'enemys with in range, and ',
+            'interfer the shield ',
+            'regeneration.'
+        ]
     ]
 
     # sent next wave
@@ -575,7 +606,7 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[enemy_type_this_wave][0][4], 
                 1000-enemy_base_info[enemy_type_this_wave][1][4]*enemy_level[enemy_type_this_wave]
             )
-            wave_interval = math.ceil(enemy_amount * enemy_dencity) + 5000
+            wave_interval = math.ceil(enemy_amount * enemy_dencity) + random.randint(10000, 25000)
             send_next_wave += wave_interval
             sending_wave = True
             sent_enemy += enemy_amount
@@ -646,6 +677,7 @@ def level(level_now = 'basic_level.json') :
                         
             if event.type == pygame.MOUSEBUTTONDOWN : 
                 mouse = pygame.mouse.get_pressed()
+
             if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
                 mouse = [False, False, False]
                 ct = 1
@@ -661,11 +693,11 @@ def level(level_now = 'basic_level.json') :
                         if ct == 1 :
                             new_tower = tower.basic_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 2 :
-                            new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]))
+                            new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 3 :
-                            new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]))
+                            new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 4 :
-                            new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]))
+                            new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
@@ -749,6 +781,7 @@ def level(level_now = 'basic_level.json') :
         show_text(str(hit), 850, 72, (0, 0, 0), 20)
 
         if show_buy_tower :
+            ct = 0
             for buy_tower in buy_tower_buttons :
                 if buy_tower.text > natural_ingot :
                     buy_tower.state = 1
@@ -758,6 +791,35 @@ def level(level_now = 'basic_level.json') :
                     buy_tower.display(screen)
                 buy_tower.state = 2
                 buy_tower.display(screen)
+
+                if buy_tower.click(mouse_pos) :
+                    idx = 0
+                    line_buf = 25
+                    for line in buy_tower_info[ct] :
+                        show_text(
+                            line, 790, 300 + line_buf * idx, 
+                            [0, 0, 0], 20
+                        )
+                        idx += 1
+                    new_tower = None
+                    if ct == 0 :
+                        new_tower = tower.basic_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                    elif ct == 1 :
+                        new_tower = tower.sniper_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                    elif ct == 2 :
+                        new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                    elif ct == 3 :
+                        new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                    pygame.draw.circle(
+                        screen, [100, 200, 100], new_tower.location.get_tuple(), 
+                        new_tower.range, 3
+                    )
+
+                    
+                ct += 1
+
+                
+                            
             
         elif show_tower_info :
             color = pygame.Color(30, 30, 30, a=70)
