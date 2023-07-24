@@ -516,7 +516,7 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[0][1][3] = 3
                 enemy_base_info[0][0][3] = 60
                 enemy_base_info[0][0][4] = 150
-                enemy_types[0] = enemy.angry_basic(enemy_types[0].pos, 0, 0, 0, 10, level_path)
+                enemy_types[0] = enemy.angry_basic(enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
                 enemy_types[0].location = enemy_types[0].pos
             elif wave >= 125 :
                 enemy_base_info[1][1][0] = 2.5
@@ -525,7 +525,7 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[1][1][3] = 15
                 enemy_base_info[1][0][3] = 80
                 enemy_base_info[1][0][4] = 135
-                enemy_types[1] = enemy.chaos_eye(enemy_types[1].location, 0, 0, 0, 10, level_path)
+                enemy_types[1] = enemy.chaos_eye(enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
                 enemy_types[1].location = enemy_types[1].pos
             elif wave >= 150 :
                 enemy_base_info[2][1][0] = 100
@@ -534,7 +534,7 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[2][1][3] = 1.5
                 enemy_base_info[2][0][3] = 50
                 enemy_base_info[2][0][4] = 150
-                enemy_types[2] = enemy.super_shield(enemy_types[2].pos, 0, 0, 0, 10, level_path)
+                enemy_types[2] = enemy.super_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
                 enemy_types[2].location = enemy_types[2].pos
 
             if (wave >= 100 and wave % 25 == 0) or is_sending_boss :
