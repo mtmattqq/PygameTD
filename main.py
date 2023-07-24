@@ -474,7 +474,7 @@ def level(level_now = 'basic_level.json') :
             
             if wave >= 100 and wave % 25 == 0 :
                 if boss != None :
-                    is_game_over = True
+                    boss_level += 3
                 enemy_type_this_wave = boss_level % 3
                 boss_level += 1
                 boss = boss_types[enemy_type_this_wave].copy()
@@ -543,6 +543,7 @@ def level(level_now = 'basic_level.json') :
             if boss.update(delta_time) :
                 hit -= 1
                 boss.pos = boss.location = level_path[0]
+                boss.progress = 0
                 if hit <= 0 :
                     is_game_over = True
                     in_game = False
