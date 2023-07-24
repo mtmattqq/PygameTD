@@ -682,7 +682,7 @@ def level(level_now = 'basic_level.json') :
 
                 if setting_button.click(mouse_pos) :
                     setting()
-                    time_now = pygame.time.get_ticks()
+                    time_previous = pygame.time.get_ticks()
 
 
         # display
