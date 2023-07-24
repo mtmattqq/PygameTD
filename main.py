@@ -415,22 +415,26 @@ def level(level_now = 'basic_level.json') :
         enemy_base_info[0][1][0] = 15
         enemy_base_info[0][1][3] = 3
         enemy_base_info[0][0][3] = 60
+        enemy_base_info[0][0][4] = 150
         enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
-    if wave >= 125 :
-        enemy_base_info[1][1][0] = 0.5
-        enemy_base_info[1][1][1] = 0.25
-        enemy_base_info[1][1][2] = 7
-        enemy_base_info[1][1][3] = 3
+    elif wave >= 125 :
+        enemy_base_info[1][1][0] = 2.5
+        enemy_base_info[1][1][1] = 1.25
+        enemy_base_info[1][1][2] = 35
+        enemy_base_info[1][1][3] = 15
         enemy_base_info[1][0][3] = 80
+        enemy_base_info[1][0][4] = 135
         enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
-    if wave >= 150 :
-        enemy_base_info[2][1][0] = 50
-        enemy_base_info[2][1][1] = 30
-        enemy_base_info[2][1][2] = 0.5
-        enemy_base_info[2][1][3] = 0.3
+    elif wave >= 150 :
+        enemy_base_info[2][1][0] = 100
+        enemy_base_info[2][1][1] = 40
+        enemy_base_info[2][1][2] = 3
+        enemy_base_info[2][1][3] = 1.5
         enemy_base_info[2][0][3] = 50
+        enemy_base_info[2][0][4] = 150
         enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
-
+    
+    
     in_game = True
     while in_game :
         time_now = pygame.time.get_ticks()
@@ -480,7 +484,7 @@ def level(level_now = 'basic_level.json') :
                 boss.__init__(
                     level_path[0].copy(), 
                     base_hit * (difficulty / 100) * 10 * (boss_level ** 2), 
-                    base_armor * (difficulty / 100) * 5 * boss_level,
+                    base_armor * (difficulty / 100) * 10 * (boss_level ** 2),
                     base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
                     boss.move_speed, level_path
                 )
