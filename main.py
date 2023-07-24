@@ -23,6 +23,7 @@ pygame.event.set_allowed([
     MOUSEMOTION, MOUSEWHEEL,
     FINGERDOWN, FINGERUP, FINGERMOTION
 ])
+pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'AppData', 'icon.png')))
 
 def show_text(text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
     font=pygame.font.Font(os.path.join(os.getcwd(), 'AppData', 'unifont.ttf'), size)
@@ -469,6 +470,7 @@ def level(level_now = 'basic_level.json') :
     )
 
     is_game_over = False
+    is_sending_boss = False
 
     if wave >= 100 :
         # make basic enemy much stronger
@@ -508,46 +510,52 @@ def level(level_now = 'basic_level.json') :
         if game_timer > send_next_wave :
             wave += 1
             # Enhance Enemy
-            if wave == 100 :
+            if wave >= 100 :
                 # make basic enemy much stronger
                 enemy_base_info[0][1][0] = 15
                 enemy_base_info[0][1][3] = 3
                 enemy_base_info[0][0][3] = 60
                 enemy_base_info[0][0][4] = 150
-                enemy_types[0] = enemy.angry_basic(level_path[0].copy(), 0, 0, 0, 10, level_path)
-            elif wave == 125 :
+                enemy_types[0] = enemy.angry_basic(enemy_types[0].pos, 0, 0, 0, 10, level_path)
+                enemy_types[0].location = enemy_types[0].pos
+            elif wave >= 125 :
                 enemy_base_info[1][1][0] = 2.5
                 enemy_base_info[1][1][1] = 1.25
                 enemy_base_info[1][1][2] = 35
                 enemy_base_info[1][1][3] = 15
                 enemy_base_info[1][0][3] = 80
                 enemy_base_info[1][0][4] = 135
-                enemy_types[1] = enemy.chaos_eye(level_path[0].copy(), 0, 0, 0, 10, level_path)
-            elif wave == 150 :
+                enemy_types[1] = enemy.chaos_eye(enemy_types[1].location, 0, 0, 0, 10, level_path)
+                enemy_types[1].location = enemy_types[1].pos
+            elif wave >= 150 :
                 enemy_base_info[2][1][0] = 100
                 enemy_base_info[2][1][1] = 40
                 enemy_base_info[2][1][2] = 3
                 enemy_base_info[2][1][3] = 1.5
                 enemy_base_info[2][0][3] = 50
                 enemy_base_info[2][0][4] = 150
-                enemy_types[2] = enemy.super_shield(level_path[0].copy(), 0, 0, 0, 10, level_path)
-            
-            if wave >= 100 and wave % 25 == 0 :
+                enemy_types[2] = enemy.super_shield(enemy_types[2].pos, 0, 0, 0, 10, level_path)
+                enemy_types[2].location = enemy_types[2].pos
+
+            if (wave >= 100 and wave % 25 == 0) or is_sending_boss :
                 if boss != None :
                     boss_level += 3
-                enemy_type_this_wave = boss_level % 3
-                boss_level += 1
-                boss = boss_types[enemy_type_this_wave].copy()
-                base_hit = enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2)
-                base_armor = enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * math.sqrt(enemy_level[enemy_type_this_wave])
-                base_shield = enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2)
-                boss.__init__(
-                    level_path[0].copy(), 
-                    base_hit * (difficulty / 100) * 10 * (boss_level ** 2), 
-                    base_armor * (difficulty / 100) * 10 * (boss_level ** 2),
-                    base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
-                    boss.move_speed, level_path
-                )
+                    is_sending_boss = True
+                else :
+                    is_sending_boss = False
+                    enemy_type_this_wave = boss_level % 3
+                    boss_level += 1
+                    boss = boss_types[enemy_type_this_wave].copy()
+                    base_hit = enemy_base_info[enemy_type_this_wave][0][0] + enemy_base_info[enemy_type_this_wave][1][0] * (enemy_level[enemy_type_this_wave]**2)
+                    base_armor = enemy_base_info[enemy_type_this_wave][0][1] + enemy_base_info[enemy_type_this_wave][1][1] * math.sqrt(enemy_level[enemy_type_this_wave])
+                    base_shield = enemy_base_info[enemy_type_this_wave][0][2] + enemy_base_info[enemy_type_this_wave][1][2] * (enemy_level[enemy_type_this_wave]**2)
+                    boss.__init__(
+                        level_path[0].copy(), 
+                        base_hit * (difficulty / 100) * 10 * (boss_level ** 2), 
+                        base_armor * (difficulty / 100) * 10 * (boss_level ** 2),
+                        base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
+                        boss.move_speed, level_path
+                    )
 
             # Generate Enemy
             enemy_type_this_wave = enemy_type_next_wave
