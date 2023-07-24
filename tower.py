@@ -804,7 +804,7 @@ class cannon_tower(tower) :
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
             if self.pierce >= enemy.anti_pierce :
-                armor = enemy.armor + math.log10(enemy.shield)
+                armor = enemy.armor + math.log10(max(1, enemy.shield))
                 enemy.hit -= max(self.damage/20, (1 - 19*armor/400) * self.damage)
             enemy.check_state()
         def detect(self, enemys = [], boss = None) :
