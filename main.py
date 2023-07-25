@@ -400,7 +400,7 @@ def level(level_now = 'basic_level.json') :
 
     # bonus
     give_bonus_rate = 0.05
-    give_bonus_wait_time = 10000
+    give_bonus_wait_time = 20000
     give_bonus_time = give_bonus_wait_time
     give_bonus_bar = button(
         'Give_Bonus_Bar', vec2D(945, 6), 
