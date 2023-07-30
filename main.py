@@ -372,7 +372,6 @@ def level(level_now = 'basic_level.json') :
         enemy.high_armor_boss(vec2D(785, 200), 0, 0, 0, 10, [vec2D(785, 200)])
     ]
     boss = None
-    boss_level = (wave - 100) // 25
 
     enemy_type_this_wave = 0
     enemy_type_next_wave = 0
@@ -381,6 +380,7 @@ def level(level_now = 'basic_level.json') :
     game_timer = 0
 
     wave = level_info['start_wave']
+    boss_level = max(0, (wave - 100) // 25)
     for i in range(ENEMY_TYPE) :
         enemy_level[i] = math.ceil(wave / ENEMY_TYPE)
     wave_interval = 5000
@@ -530,7 +530,8 @@ def level(level_now = 'basic_level.json') :
         enemy_types[2] = enemy.super_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
         enemy_types[2].location = enemy_types[2].pos
     
-    
+    mouse = [False, False, False]
+
     in_game = True
     while in_game :
         time_now = pygame.time.get_ticks()
@@ -644,7 +645,7 @@ def level(level_now = 'basic_level.json') :
         if boss != None :
             if boss.update(delta_time) :
                 hit -= 1
-                boss.pos = boss.location = level_path[0]
+                boss.pos = boss.location = level_path[0].copy()
                 boss.progress = 0
                 if hit <= 0 :
                     is_game_over = True
@@ -667,6 +668,7 @@ def level(level_now = 'basic_level.json') :
             give_bonus_time += give_bonus_wait_time
             natural_ingot += natural_ingot * give_bonus_rate
 
+        
         # event in pygame
         for event in pygame.event.get() :
             if event.type == pygame.QUIT :
@@ -679,7 +681,7 @@ def level(level_now = 'basic_level.json') :
                 mouse = pygame.mouse.get_pressed()
 
             if event.type == pygame.MOUSEBUTTONUP and mouse[0] :
-                mouse = [False, False, False]
+                
                 ct = 1
                 for buy_tower in buy_tower_buttons :
                     if(
@@ -712,6 +714,8 @@ def level(level_now = 'basic_level.json') :
                         tower_info[selected_tower.pos.y][selected_tower.pos.x] = 0
                         towers.remove(selected_tower)
                         natural_ingot += 80
+                        selected_tower = None
+                        show_tower_info = False
                         
 
                 if not sending_wave and sent_next_wave_button.click(mouse_pos) :
@@ -726,7 +730,14 @@ def level(level_now = 'basic_level.json') :
                 if setting_button.click(mouse_pos) :
                     setting()
                     time_previous = pygame.time.get_ticks()
+            if event.type == pygame.MOUSEBUTTONUP :
+                mouse = [False, False, False]
 
+        if mouse[2] :
+            if selected_tower != None :
+                clicked_upgrade, natural_ingot = selected_tower.upgrade(
+                    mouse_pos, natural_ingot
+                )
 
         # display
         screen.fill((245, 245, 245))
