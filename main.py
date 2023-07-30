@@ -666,7 +666,7 @@ def level(level_now = 'basic_level.json') :
             give_bonus_time -= delta_time
         else :
             give_bonus_time += give_bonus_wait_time
-            natural_ingot += natural_ingot * give_bonus_rate
+            natural_ingot += min(100000, natural_ingot * give_bonus_rate)
 
         
         # event in pygame
