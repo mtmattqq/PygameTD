@@ -360,6 +360,7 @@ def level(level_now = 'basic_level.json') :
     enemy_level = [
         0, 0, 5
     ]
+    # init {hit, armor, shield, speed}
     enemy_base_info = [
         [[30,  0,  0,  30, 300], [1.5,    0,    0,   1, 30]], 
         [[10,  5, 20,  40, 300], [0.1, 0.05,  1.4,   1, 30]], 
@@ -503,8 +504,10 @@ def level(level_now = 'basic_level.json') :
     is_game_over = False
     is_sending_boss = False
 
+
+    # Enhance Enemy
+
     if wave >= 100 :
-        # make basic enemy much stronger
         enemy_base_info[0][1][0] = 15
         enemy_base_info[0][1][3] = 3
         enemy_base_info[0][0][3] = 60
@@ -529,7 +532,36 @@ def level(level_now = 'basic_level.json') :
         enemy_base_info[2][0][4] = 150
         enemy_types[2] = enemy.super_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
         enemy_types[2].location = enemy_types[2].pos
-    
+    if wave >= 200 :
+        # make basic enemy much stronger
+        enemy_base_info[0][1][0] = 200
+        enemy_base_info[0][1][1] = 0.01
+        enemy_base_info[0][1][2] = 0.01
+        enemy_base_info[0][1][3] = 75
+        enemy_base_info[0][0][3] = 100
+        enemy_base_info[0][0][4] = 100
+        enemy_types[0] = enemy.shielded_basic(enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
+        enemy_types[0].location = enemy_types[0].pos
+    if wave >= 225 :
+        enemy_base_info[1][1][0] = 25
+        enemy_base_info[1][1][1] = 12.5
+        enemy_base_info[1][1][2] = 350
+        enemy_base_info[1][1][3] = 75
+        enemy_base_info[1][0][3] = 120
+        enemy_base_info[1][0][4] = 80
+        enemy_types[1] = enemy.storm_eye(enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
+        enemy_types[1].location = enemy_types[1].pos
+    if wave >= 250 :
+        enemy_base_info[2][1][0] = 1000
+        enemy_base_info[2][1][1] = 400
+        enemy_base_info[2][1][2] = 30
+        enemy_base_info[2][1][3] = 15
+        enemy_base_info[2][0][3] = 80
+        enemy_base_info[2][0][4] = 100
+        enemy_types[2] = enemy.ultra_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
+        enemy_types[2].location = enemy_types[2].pos
+
+
     mouse = [False, False, False]
 
     in_game = True
@@ -571,6 +603,37 @@ def level(level_now = 'basic_level.json') :
                 enemy_base_info[2][0][4] = 150
                 enemy_types[2] = enemy.super_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
                 enemy_types[2].location = enemy_types[2].pos
+            if wave >= 200 :
+                # make basic enemy much stronger
+                enemy_base_info[0][1][0] = 300
+                enemy_base_info[0][1][1] = 0.01
+                enemy_base_info[0][1][2] = 0.01
+                enemy_base_info[0][1][3] = 75
+                enemy_base_info[0][0][3] = 100
+                enemy_base_info[0][0][4] = 100
+                enemy_types[0] = enemy.shielded_basic(enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
+                enemy_types[0].location = enemy_types[0].pos
+                boss_types[0] = enemy.shielded_basic_boss(enemy_types[0].pos, 0, 0, 0, 20, [enemy_types[0].pos])
+            if wave >= 225 :
+                enemy_base_info[1][1][0] = 25
+                enemy_base_info[1][1][1] = 12.5
+                enemy_base_info[1][1][2] = 350
+                enemy_base_info[1][1][3] = 75
+                enemy_base_info[1][0][3] = 120
+                enemy_base_info[1][0][4] = 80
+                enemy_types[1] = enemy.storm_eye(enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
+                enemy_types[1].location = enemy_types[1].pos
+                boss_types[1] = enemy.storm_eye_boss(enemy_types[1].location, 0, 0, 0, 20, [enemy_types[1].pos])
+            if wave >= 250 :
+                enemy_base_info[2][1][0] = 1000
+                enemy_base_info[2][1][1] = 400
+                enemy_base_info[2][1][2] = 30
+                enemy_base_info[2][1][3] = 15
+                enemy_base_info[2][0][3] = 80
+                enemy_base_info[2][0][4] = 100
+                enemy_types[2] = enemy.ultra_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
+                enemy_types[2].location = enemy_types[2].pos
+                boss_types[2] = enemy.ultra_high_armor_boss(enemy_types[2].pos, 0, 0, 0, 20, [enemy_types[2].pos])
 
             if (wave >= 100 and wave % 25 == 0) or is_sending_boss :
                 if boss != None :
@@ -591,6 +654,11 @@ def level(level_now = 'basic_level.json') :
                         base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
                         boss.move_speed, level_path
                     )
+                if wave >= 300 :
+                    idx = 0
+                    for lv in enemy_level :
+                        enemy_level[idx] += math.sqrt(wave)
+                        idx += 1
 
             # Generate Enemy
             enemy_type_this_wave = enemy_type_next_wave
