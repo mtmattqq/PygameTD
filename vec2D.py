@@ -26,7 +26,12 @@ class vec2D :
         self.x = length*math.cos(math.radians(-a))
         self.y = length*math.sin(math.radians(-a))
 
+    def mod(self) :
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+
     def change_mod(self, length) :
+        if dis(vec2D(0, 0), self) == 0 :
+            return
         self *= 1.0/dis(vec2D(0, 0), self)
         self *= length
 

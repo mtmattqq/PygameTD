@@ -67,13 +67,13 @@ display_things()
 
 import tile
 progress = 30
-pygame.time.delay(300)
+# pygame.time.delay(300)
 display_things()
 
 import tower
 import enemy
 progress = 50
-pygame.time.delay(300)
+# pygame.time.delay(300)
 display_things()
 
 import numpy as np
@@ -81,14 +81,14 @@ import math
 import random
 import json
 progress = 80
-pygame.time.delay(300)
+# pygame.time.delay(300)
 display_things()
 
 import copy
 progress = 100
 display_things()
 
-pygame.time.delay(300)
+# pygame.time.delay(300)
 # end loading
 
 # variables
@@ -460,7 +460,14 @@ def level(level_now = 'basic_level.json') :
             [0, 0, 0], 64, 64, 
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'acid_tower64.png'], 
             buy_tower_buttons_onclick
-        )
+        ),
+
+        button(
+            50000, vec2D(905, 140), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'spread_tower64.png'], 
+            buy_tower_buttons_onclick
+        ),
     ]
     buy_tower_info = [
         [
@@ -473,7 +480,7 @@ def level(level_now = 'basic_level.json') :
             'Sniper',
             'Sniper Tower attack ', 
             'slowly. However, it\'s ',
-            'the only way to break',
+            'a good way to break',
             'the armor.'
         ],
 
@@ -495,9 +502,18 @@ def level(level_now = 'basic_level.json') :
 
         [
             'Acid',
-            'Acid can damage the armor ',
-            'efficiently.'
-        ]
+            'Acid can make the enemy ',
+            'miss the direction and ',
+            'go backward on the track.'
+        ],
+
+        [
+            'Split',
+            'Split can shoot special ',
+            'bullet which is able to ',
+            'split multiple times, ',
+            'depending on it\'s layer.'
+        ],
     ]
 
     # sent next wave
@@ -575,6 +591,7 @@ def level(level_now = 'basic_level.json') :
         enemy_types[2].location = enemy_types[2].pos
 
 
+    # global volume
     mouse = [False, False, False]
 
     in_game = True
@@ -783,6 +800,8 @@ def level(level_now = 'basic_level.json') :
                             new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 5 :
                             new_tower = tower.acid_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                        elif ct == 6 :
+                            new_tower = tower.spread_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
@@ -911,6 +930,9 @@ def level(level_now = 'basic_level.json') :
                         new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 4 :
                         new_tower = tower.acid_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                    elif ct == 5 :
+                        new_tower = tower.spread_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                        
                         
                     pygame.draw.circle(
                         screen, [100, 200, 100], new_tower.location.get_tuple(), 

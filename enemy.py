@@ -49,6 +49,7 @@ class enemy :
         # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
+        self.is_slowed = 0
 
     def copy(self) :
         ret = enemy(
@@ -87,7 +88,7 @@ class enemy :
             # deal damage to player's main tower
             self.alive = False
             return True
-        self.velocity = self.path[self.progress + 1] - self.path[self.progress]
+        self.velocity = self.path[self.progress + 1] - self.pos
         self.velocity.change_mod(self.move_speed)
         # print(self.velocity.get_tuple())
         if(
