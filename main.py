@@ -598,6 +598,9 @@ def level(level_now = 'basic_level.json') :
     while in_game :
         time_now = pygame.time.get_ticks()
         delta_time = time_now - time_previous
+
+        # delta_time *= 0.25
+
         time_previous = time_now
         game_timer += delta_time
 

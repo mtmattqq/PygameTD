@@ -1802,16 +1802,17 @@ class spread_tower(tower) :
             self.layer = layer
             self.split_time = 1000
             self.slow_rate = slow_rate
+            self.decay_time = 5000
         def move(self, delta_time) :
             self.pos += self.velocity * (delta_time/1000.0)
         def display(self, screen) :
             image = pygame.transform.rotozoom(
                 self.images[self.state], 
-                -math.atan2(self.velocity.y, self.velocity.x),
+                math.degrees(-math.atan2(self.velocity.y, self.velocity.x)),
                 1
             )
             self.rect.center = self.pos.get_tuple()
-            dw = self.rect.width - self.images[0].get_rect().width
+            dw = image.get_rect().width - self.rect.width
             dw /= 2
             self.rect.centerx -= dw
             self.rect.centery -= dw
@@ -1860,7 +1861,7 @@ class spread_tower(tower) :
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['spread_tower.png', 'spread_tower_bullet.png']
-        damage = 50
+        damage = 10000
         reload = 0.66
         range = 20*TILE_SIZE
         bullet_speed = 2*TILE_SIZE
@@ -1965,19 +1966,22 @@ class spread_tower(tower) :
             self.time_to_fire -= delta_time
 
     def shoot(self, enemys = [], boss = None) :
+        ret = self.aim_first(enemys, boss)
         if self.time_to_fire <= 0 :
             if self.target == 'first' :
                 if self.shoot_first(enemys, boss) != None :
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
-        else :
-            self.aim_first(enemys, boss)
+        return ret
     def update(self, delta_time, enemys = [], boss = None) :
         self.update_time_to_fire(delta_time)
         en = self.shoot(enemys, boss)
         for bullet in self.bullets :
             bullet.move(delta_time)
-            bullet.split_time = max(0, bullet.split_time - delta_time)
+            if bullet.decay_time > 0 :
+                bullet.decay_time = max(0, bullet.decay_time - delta_time)
+            if bullet.split_time > 0 :
+                bullet.split_time = max(0, bullet.split_time - delta_time)
             if bullet.split_time == 0 and bullet.layer > 0 :
                 bullet.split_time = -1
                 bullet.layer -= 1
@@ -1988,21 +1992,23 @@ class spread_tower(tower) :
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
                 angle = -math.atan2(nb.velocity.y, nb.velocity.x)
-                nb.velocity.set_angle(angle + 30, nb.velocity.mod())
+                angle = math.degrees(angle)
+                nb.velocity.set_angle(angle + 10, nb.velocity.mod())
                 self.bullets.append(nb)
                 nb2 = self.bullet(
                     bullet.pos.copy(), bullet.velocity.copy(), 
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
-                nb2.velocity.set_angle(angle - 30, nb2.velocity.mod())
+                nb2.velocity.set_angle(angle - 10, nb2.velocity.mod())
                 self.bullets.append(nb2)
             if en != None :
                 speed = bullet.velocity.mod()
                 acceleration = en.location - bullet.pos
-                acceleration.change_mod((1 / math.sqrt(acceleration.mod)) * (delta_time / 1000))
+                # print(acceleration.get_tuple())
+                acceleration.change_mod(100 * (delta_time / 1000))
                 bullet.velocity += acceleration
-                bullet.change_mod(speed)
+                bullet.velocity.change_mod(speed)
             bullet.detect(enemys, boss)
         for bullet in self.bullets :
             if bullet.pierce <= 0 and bullet.layer > 0 :
@@ -2013,18 +2019,19 @@ class spread_tower(tower) :
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
                 angle = -math.atan2(nb.velocity.y, nb.velocity.x)
-                nb.velocity.set_angle(angle + 30, nb.velocity.mod())
+                angle = math.degrees(angle)
+                nb.velocity.set_angle(angle + 10, nb.velocity.mod())
                 self.bullets.append(nb)
                 nb2 = self.bullet(
                     bullet.pos.copy(), bullet.velocity.copy(), 
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
-                nb2.velocity.set_angle(angle - 30, nb2.velocity.mod())
+                nb2.velocity.set_angle(angle - 10, nb2.velocity.mod())
                 self.bullets.append(nb2)
 
                 self.bullets.remove(bullet)
-            elif bullet.pierce <= 0 :
+            elif bullet.pierce <= 0 or bullet.decay_time <= 0 :
                 self.bullets.remove(bullet)
         
     def display_info(self, screen, natural_ingot) :
@@ -2046,7 +2053,7 @@ class spread_tower(tower) :
         )
         show_text(
             screen, 
-            'Bspeed : {}'.format(self.layer), 
+            'Layer : {}'.format(self.layer), 
             790, 175, [0, 0, 0], 20
         )
 
@@ -2094,7 +2101,7 @@ class spread_tower(tower) :
 
         show_text(
             screen, 
-            'Damage : {}'.format(500 + (self.damage_level+1)*100), 
+            'Damage : {}'.format(5000 + (self.damage_level+1)*1000), 
             790, 400, [0, 0, 0], 20
         )
         if self.freeze_rate_level > 1e15 :
@@ -2145,10 +2152,10 @@ class spread_tower(tower) :
         self.upgrade_layer.display(screen)
     def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
         if self.upgrade_damage.click(mouse_pos) :
-            if natural_ingot >= 500 + (self.damage_level+1)*100 :
+            if natural_ingot >= 5000 + (self.damage_level+1)*1000 :
                 self.damage_level += 1
-                natural_ingot -= 500 + self.damage_level*100
-                self.damage += 50.0 * math.sqrt(self.damage_level)
+                natural_ingot -= 5000 + self.damage_level*1000
+                self.damage += 500.0 * math.sqrt(self.damage_level)
         elif self.upgrade_freeze_rate.click(mouse_pos) :
             if natural_ingot >= 500 + (self.freeze_rate_level+1)*100 :
                 self.freeze_rate_level += 1
@@ -2170,8 +2177,8 @@ class spread_tower(tower) :
                 self.layer_level += 1
                 natural_ingot -= 100 * (self.layer_level**5)
                 self.layer += 1
-                if self.layer >= 7 :
-                    self.layer = 7
+                if self.layer >= 5 :
+                    self.layer = 5
                     self.layer_level = 1e20
         else :
             return [False, natural_ingot]
