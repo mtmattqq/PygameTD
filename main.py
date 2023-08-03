@@ -454,6 +454,13 @@ def level(level_now = 'basic_level.json') :
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'tesla_tower32.png'], 
             buy_tower_buttons_onclick
         ),
+
+        button(
+            10000, vec2D(845, 140), 
+            [0, 0, 0], 64, 64, 
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'acid_tower64.png'], 
+            buy_tower_buttons_onclick
+        )
     ]
     buy_tower_info = [
         [
@@ -484,6 +491,12 @@ def level(level_now = 'basic_level.json') :
             'enemys with in range, and ',
             'interfer the shield ',
             'regeneration.'
+        ],
+
+        [
+            'Acid',
+            'Acid can damage the armor ',
+            'efficiently.'
         ]
     ]
 
@@ -768,6 +781,8 @@ def level(level_now = 'basic_level.json') :
                             new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 4 :
                             new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                        elif ct == 5 :
+                            new_tower = tower.acid_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                     ct += 1 
@@ -798,6 +813,11 @@ def level(level_now = 'basic_level.json') :
                 if setting_button.click(mouse_pos) :
                     setting()
                     time_previous = pygame.time.get_ticks()
+                    for tow in towers :
+                        tow.volume = volume
+                        tow.fire_sound.set_volume(tow.volume / 100)
+                        if tow.explode_sound != None :
+                            tow.explode_sound.set_volume(tow.volume / 100)
             if event.type == pygame.MOUSEBUTTONUP :
                 mouse = [False, False, False]
 
@@ -889,6 +909,9 @@ def level(level_now = 'basic_level.json') :
                         new_tower = tower.cannon_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 3 :
                         new_tower = tower.tesla_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                    elif ct == 4 :
+                        new_tower = tower.acid_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
+                        
                     pygame.draw.circle(
                         screen, [100, 200, 100], new_tower.location.get_tuple(), 
                         new_tower.range, 3
