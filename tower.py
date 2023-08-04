@@ -1555,7 +1555,7 @@ class acid_tower(tower) :
         self.acid_level = 0
         self.hardness_level = 0
         self.reload_level = 0
-        self.pierce_level = 10
+        self.pierce_level = 0
 
     def display_bullets(self, screen) :
         for bullet in self.bullets :
@@ -1597,7 +1597,7 @@ class acid_tower(tower) :
             return False
         bullet = self.bullet(
             self.location.copy(), vec2D(0, 0), 
-            self.acid, self.hardness * math.log10(self.acid), 
+            self.acid, self.hardness * math.sqrt(self.acid), 
             self.pierce, [self.images[1]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)

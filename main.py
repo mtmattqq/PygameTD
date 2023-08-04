@@ -683,7 +683,7 @@ def level(level_now = 'basic_level.json') :
                     boss.__init__(
                         level_path[0].copy(), 
                         base_hit * (difficulty / 100) * 10 * (boss_level ** 2), 
-                        base_armor * (difficulty / 100) * 10 * (boss_level ** 2),
+                        base_armor * (difficulty / 100) * 10 * boss_level,
                         base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
                         boss.move_speed, level_path
                     )
