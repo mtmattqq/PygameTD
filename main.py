@@ -814,6 +814,7 @@ def level(level_now = 'basic_level.json') :
                             new_tower = tower.spread_tower(vec2D(selected_tile[1], selected_tile[0]), volume)
                         new_tower.place(vec2D(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
+                        break
                     ct += 1 
                 
                 if selected_tower != None :
@@ -955,7 +956,7 @@ def level(level_now = 'basic_level.json') :
                 
                             
             
-        elif show_tower_info :
+        elif show_tower_info and selected_tower != None :
             color = pygame.Color(30, 30, 30, a=70)
             pygame.draw.circle(
                 screen, color, 
