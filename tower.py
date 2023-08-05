@@ -1471,7 +1471,7 @@ class acid_tower(tower) :
             self.pierce -= 1
             move = (enemy.pos - self.pos)
             move.change_mod(1)
-            enemy.progress = max(0, enemy.progress - 1)
+            
 
             if enemy.shield > 0 :
                 enemy.shield = max(0, enemy.shield - self.damage)
@@ -1484,6 +1484,7 @@ class acid_tower(tower) :
                 if self.pierce <= 0 :
                     break
                 if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                    enemy.progress = max(0, enemy.progress - 1)
                     self.deal_damage(enemy)
             if boss != None :
                 if self.pierce <= 0 :

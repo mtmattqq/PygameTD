@@ -667,6 +667,12 @@ def level(level_now = 'basic_level.json') :
                 enemy_types[2] = enemy.ultra_shield(enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
                 enemy_types[2].location = enemy_types[2].pos
                 boss_types[2] = enemy.ultra_high_armor_boss(enemy_types[2].pos, 0, 0, 0, 20, [enemy_types[2].pos])
+            if wave >= 300 :
+                idx = 0
+                for lv in enemy_level :
+                    enemy_base_info[idx][0][4] = 50
+                    idx += 1
+            
 
             if (wave >= 100 and wave % 25 == 0) or is_sending_boss :
                 if boss != None :
@@ -687,10 +693,11 @@ def level(level_now = 'basic_level.json') :
                         base_shield * (difficulty / 100) * 10 * (boss_level ** 2),
                         boss.move_speed, level_path
                     )
-                if wave >= 300 :
+                if wave >= 250 :
                     idx = 0
                     for lv in enemy_level :
                         enemy_level[idx] += math.sqrt(wave)
+                        enemy_base_info[idx][1][3] += 10
                         idx += 1
 
             # Generate Enemy
