@@ -671,6 +671,8 @@ def level(level_now = 'basic_level.json') :
                 idx = 0
                 for lv in enemy_level :
                     enemy_base_info[idx][0][4] = 50
+                    enemy_base_info[idx][0][3] += 5
+                    enemy_level[idx] += 30
                     idx += 1
             
 

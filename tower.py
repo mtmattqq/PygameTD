@@ -2131,7 +2131,7 @@ class spread_tower(tower) :
         )
 
 
-        if natural_ingot >= 500 + (self.damage_level+1)*100 :
+        if natural_ingot >= 5000 + (self.damage_level+1)*1000 :
             self.upgrade_damage.state = 0
         else :
             self.upgrade_damage.state = 1
