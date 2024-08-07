@@ -53,4 +53,4 @@ class button:
             return self.action_onclick()
 
     def display(self, screen):
-        screen.blit(self.images[self.state], self.pos.get_tuple())
+        screen.blit(self.images[self.state], self.pos)

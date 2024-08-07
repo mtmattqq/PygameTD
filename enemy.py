@@ -1,4 +1,3 @@
-from vec2D import dis
 import pygame
 import os
 from tile import TILE_SIZE
@@ -42,7 +41,7 @@ class enemy:
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.rect.width = width
         self.rect.height = height
-        self.rect.center = self.pos.get_tuple()
+        self.rect.center = self.pos
         for picture in pictures:
             self.images.append(pygame.transform.scale(pygame.image.load(
                 os.path.join(os.getcwd(), 'AppData', picture)).convert_alpha(), (width, height)))
@@ -74,7 +73,7 @@ class enemy:
         return False
 
     def display(self, screen):
-        self.rect.center = self.location.get_tuple()
+        self.rect.center = self.location
         screen.blit(
             self.images[self.state],
             self.rect
@@ -91,11 +90,11 @@ class enemy:
             self.alive = False
             return True
         self.velocity = self.path[self.progress + 1] - self.pos
-        self.velocity.change_mod(self.move_speed)
-        # print(self.velocity.get_tuple())
+        self.velocity = self.velocity.normalize() * self.move_speed if self.velocity.length() != 0 else pygame.Vector2(0, 0)
+        # print(self.velocity)
         if (
-            dis(self.path[self.progress + 1] - self.pos, pygame.Vector2(0, 0)) <=
-            dis(self.velocity * (delta_time/1000), pygame.Vector2(0, 0))
+            (self.path[self.progress + 1] - self.pos).distance_to(pygame.Vector2(0, 0)) <=
+            (self.velocity * (delta_time/1000)).distance_to(pygame.Vector2(0, 0))
         ):
             self.pos = self.path[self.progress + 1].copy()
             self.progress += 1

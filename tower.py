@@ -1,5 +1,4 @@
 from typing import Any
-from vec2D import dis
 import pygame
 import os
 from tile import TILE_SIZE
@@ -85,7 +84,7 @@ class tower(pygame.sprite.Sprite):
     def display(self, screen):
         screen.blit(
             self.images[self.state],
-            (self.pos*TILE_SIZE).get_tuple()
+            (self.pos*TILE_SIZE)
         )
 
     def display_info(self, screen):
@@ -102,7 +101,7 @@ class basic_tower(tower):
             self.rect = pygame.Rect(0, 0, 0, 0)
             self.rect.width = TILE_SIZE
             self.rect.height = TILE_SIZE
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             self.state = 0
             self.size = TILE_SIZE/8
             self.damage = damage
@@ -111,7 +110,7 @@ class basic_tower(tower):
             self.pos += self.velocity * (delta_time/1000.0)
 
         def display(self, screen):
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             screen.blit(
                 self.images[self.state],
                 self.rect
@@ -134,17 +133,17 @@ class basic_tower(tower):
             for enemy in enemys:
                 if self.pierce <= 0:
                     return
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                if enemy.location.distance_to(self.pos) < (self.size+enemy.size)/2:
                     self.deal_damage(enemy)
             if boss != None:
                 if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
+                if boss.location.distance_to(self.pos) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
                 for enemy in boss.generated_unit:
                     if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                    if enemy.location.distance_to(self.pos) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
             if (
                 self.pos.x < 0 or
@@ -204,7 +203,7 @@ class basic_tower(tower):
     def display(self, screen):
         super().display(screen)
         barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
@@ -224,7 +223,7 @@ class basic_tower(tower):
             if (
                 (first_enemy == None or
                  enemy.progress > first_enemy.progress) and
-                dis(self.location, enemy.location) < self.range
+                self.location.distance_to(enemy.location) < self.range
             ):
                 first_enemy = enemy
         if boss != None:
@@ -232,13 +231,13 @@ class basic_tower(tower):
                 if (
                     (first_enemy == None or
                      enemy.progress > first_enemy.progress) and
-                    dis(self.location, enemy.location) < self.range
+                    self.location.distance_to(enemy.location) < self.range
                 ):
                     first_enemy = enemy
             if (
                 (first_enemy == None or
                  boss.progress > first_enemy.progress) and
-                dis(self.location, boss.location) < self.range
+                self.location.distance_to(boss.location) < self.range
             ):
                 first_enemy = boss
         if first_enemy == None:
@@ -256,9 +255,8 @@ class basic_tower(tower):
             self.location.copy(), pygame.Vector2(0, 0),
             self.damage, [self.images[2]]
         )
-        bullet.velocity.set_angle(self.angle, self.bullet_speed)
-
-        # print(bullet.velocity.get_tuple())
+        bullet.velocity.from_polar([self.bullet_speed, -self.angle])
+        # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
 
@@ -452,7 +450,7 @@ class sniper_tower(tower):
             self.rect = pygame.Rect(0, 0, 0, 0)
             self.rect.width = TILE_SIZE/2
             self.rect.height = TILE_SIZE/2
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             self.state = 0
             self.size = TILE_SIZE/2
             self.damage = damage
@@ -462,7 +460,7 @@ class sniper_tower(tower):
             self.pos += self.velocity * (delta_time/1000.0)
 
         def display(self, screen):
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             screen.blit(
                 self.images[self.state],
                 self.rect
@@ -483,17 +481,17 @@ class sniper_tower(tower):
             for enemy in enemys:
                 if self.pierce <= 0:
                     break
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                     self.deal_damage(enemy)
             if boss != None:
                 if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
+                if self.pos.distance_to(boss.location) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
                 for enemy in boss.generated_unit:
                     if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                    if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
             if (
                 self.pos.x < 0 or
@@ -560,7 +558,7 @@ class sniper_tower(tower):
     def display(self, screen):
         super().display(screen)
         barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
@@ -580,7 +578,7 @@ class sniper_tower(tower):
             if (
                 (first_enemy == None or
                  enemy.progress > first_enemy.progress) and
-                dis(self.location, enemy.location) < self.range
+                self.location.distance_to(enemy.location) < self.range
             ):
                 first_enemy = enemy
         if boss != None:
@@ -588,16 +586,16 @@ class sniper_tower(tower):
                 if (
                     (first_enemy == None or
                      enemy.progress > first_enemy.progress) and
-                    dis(self.location, enemy.location) < self.range
+                    self.location.distance_to(enemy.location) < self.range
                 ):
                     first_enemy = enemy
             if (
                 (first_enemy == None or
                  boss.progress > first_enemy.progress) and
-                dis(self.location, boss.location) < self.range
+                self.location.distance_to(boss.location) < self.range
             ):
                 first_enemy = boss
-        # print((first_enemy.pos - self.location).get_tuple())
+        # print((first_enemy.pos - self.location))
         if first_enemy == None:
             return False
 
@@ -614,8 +612,8 @@ class sniper_tower(tower):
             self.damage, self.hardness,
             self.pierce, [self.images[2]]
         )
-        bullet.velocity.set_angle(self.angle, self.bullet_speed)
-        # print(bullet.velocity.get_tuple())
+        bullet.velocity.from_polar([self.bullet_speed, -self.angle])
+        # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
 
@@ -812,7 +810,7 @@ class cannon_tower(tower):
             self.rect = pygame.Rect(0, 0, 0, 0)
             self.rect.width = TILE_SIZE/2
             self.rect.height = TILE_SIZE/2
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             self.state = 0
             self.size = TILE_SIZE/2
             self.damage = damage
@@ -822,7 +820,7 @@ class cannon_tower(tower):
             self.pos += self.velocity * (delta_time/1000.0)
 
         def display(self, screen):
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             screen.blit(
                 self.images[self.state],
                 self.rect
@@ -843,26 +841,26 @@ class cannon_tower(tower):
             if self.pierce <= 0:
                 return crush
             for enemy in enemys:
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                     crush = True
 
             if boss != None:
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
+                if self.pos.distance_to(boss.location) < (self.size+boss.size)/2:
                     crush = True
                 for enemy in boss.generated_unit:
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                    if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                         crush = True
 
             if crush:
                 for enemy in enemys:
-                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
+                    if self.pos.distance_to(enemy.location) < (self.explode_range+enemy.size)/2:
                         self.deal_damage(enemy)
                 if boss != None:
-                    if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2:
+                    if self.pos.distance_to(boss.location) < (self.explode_range+boss.size)/2:
                         crush = True
                         self.deal_damage(boss)
                     for enemy in boss.generated_unit:
-                        if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
+                        if self.pos.distance_to(enemy.location) < (self.explode_range+enemy.size)/2:
                             self.deal_damage(enemy)
                 self.pierce -= 1
             if (
@@ -931,7 +929,7 @@ class cannon_tower(tower):
     def display(self, screen):
         super().display(screen)
         barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
@@ -951,7 +949,7 @@ class cannon_tower(tower):
             if (
                 (first_enemy == None or
                  enemy.progress > first_enemy.progress) and
-                dis(self.location, enemy.location) < self.range
+                self.location.distance_to(enemy.location) < self.range
             ):
                 first_enemy = enemy
         if boss != None:
@@ -959,13 +957,13 @@ class cannon_tower(tower):
                 if (
                     (first_enemy == None or
                      enemy.progress > first_enemy.progress) and
-                    dis(self.location, enemy.location) < self.range
+                    self.location.distance_to(enemy.location) < self.range
                 ):
                     first_enemy = enemy
             if (
                 (first_enemy == None or
                  boss.progress > first_enemy.progress) and
-                dis(self.location, boss.location) < self.range
+                self.location.distance_to(boss.location) < self.range
             ):
                 first_enemy = boss
         if first_enemy == None:
@@ -984,8 +982,8 @@ class cannon_tower(tower):
             self.damage, self.explode_range,
             [self.images[2]]
         )
-        bullet.velocity.set_angle(self.angle, self.bullet_speed)
-        # print(bullet.velocity.get_tuple())
+        bullet.velocity.from_polar([self.bullet_speed, -self.angle])
+        # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
 
@@ -1179,7 +1177,7 @@ class tesla_tower(tower):
             self.pos = pos
             self.images = images
             self.rect = self.images[0].get_rect()
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             self.state = 0
             self.size = explode_range
             self.damage = damage
@@ -1188,7 +1186,7 @@ class tesla_tower(tower):
             self.decay_time = 200
 
         def display(self, screen):
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             screen.blit(
                 self.images[self.state],
                 self.rect
@@ -1209,13 +1207,13 @@ class tesla_tower(tower):
                 return True
 
             for enemy in enemys:
-                if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
+                if self.pos.distance_to(enemy.location) < (self.explode_range+enemy.size)/2:
                     self.deal_damage(enemy)
             if boss != None:
-                if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2:
+                if self.pos.distance_to(boss.location) < (self.explode_range+boss.size)/2:
                     self.deal_damage(boss)
                 for enemy in boss.generated_unit:
-                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
+                    if self.pos.distance_to(enemy.location) < (self.explode_range+enemy.size)/2:
                         self.deal_damage(enemy)
 
             self.pierce -= 1
@@ -1281,13 +1279,13 @@ class tesla_tower(tower):
 
     def aim_first(self, enemys=[], boss=None):
         for enemy in enemys:
-            if (dis(self.location, enemy.location) < self.range):
+            if (self.location.distance_to(enemy.location) < self.range):
                 return True
         if boss != None:
             for enemy in boss.generated_unit:
-                if (dis(self.location, enemy.location) < self.range):
+                if (self.location.distance_to(enemy.location) < self.range):
                     return True
-            if (dis(self.location, boss.location) < self.range):
+            if (self.location.distance_to(boss.location) < self.range):
                 return True
         return False
 
@@ -1493,7 +1491,7 @@ class acid_tower(tower):
             self.rect = pygame.Rect(0, 0, 0, 0)
             self.rect.width = TILE_SIZE/2
             self.rect.height = TILE_SIZE/2
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             self.state = 0
             self.size = TILE_SIZE
             self.damage = damage
@@ -1503,7 +1501,7 @@ class acid_tower(tower):
             self.pos += self.velocity * (delta_time/1000.0)
 
         def display(self, screen):
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             screen.blit(
                 self.images[self.state],
                 self.rect
@@ -1512,7 +1510,7 @@ class acid_tower(tower):
         def deal_damage(self, enemy):
             self.pierce -= 1
             move = (enemy.pos - self.pos)
-            move.change_mod(1)
+            move.normalize()
 
             if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
@@ -1525,18 +1523,18 @@ class acid_tower(tower):
             for enemy in enemys:
                 if self.pierce <= 0:
                     break
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                     enemy.progress = max(0, enemy.progress - 1)
                     self.deal_damage(enemy)
             if boss != None:
                 if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
+                if self.pos.distance_to(boss.location) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
                 for enemy in boss.generated_unit:
                     if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                    if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
             if (
                 self.pos.x < 0 or
@@ -1610,7 +1608,7 @@ class acid_tower(tower):
             if (
                 (first_enemy == None or
                  enemy.progress > first_enemy.progress) and
-                dis(self.location, enemy.location) < self.range
+                self.location.distance_to(enemy.location) < self.range
             ):
                 first_enemy = enemy
         if boss != None:
@@ -1618,16 +1616,16 @@ class acid_tower(tower):
                 if (
                     (first_enemy == None or
                      enemy.progress > first_enemy.progress) and
-                    dis(self.location, enemy.location) < self.range
+                    self.location.distance_to(enemy.location) < self.range
                 ):
                     first_enemy = enemy
             if (
                 (first_enemy == None or
                  boss.progress > first_enemy.progress) and
-                dis(self.location, boss.location) < self.range
+                self.location.distance_to(boss.location) < self.range
             ):
                 first_enemy = boss
-        # print((first_enemy.pos - self.location).get_tuple())
+        # print((first_enemy.pos - self.location))
         if first_enemy == None:
             return False
 
@@ -1644,8 +1642,8 @@ class acid_tower(tower):
             self.acid, self.hardness * math.sqrt(self.acid),
             self.pierce, [self.images[1]]
         )
-        bullet.velocity.set_angle(self.angle, self.bullet_speed)
-        # print(bullet.velocity.get_tuple())
+        bullet.velocity.from_polar([self.bullet_speed, -self.angle])
+        # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
 
@@ -1842,7 +1840,7 @@ class spread_tower(tower):
             self.rect = pygame.Rect(0, 0, 0, 0)
             self.rect.width = TILE_SIZE
             self.rect.height = TILE_SIZE
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             self.state = 0
             self.size = TILE_SIZE
             self.damage = damage
@@ -1860,7 +1858,7 @@ class spread_tower(tower):
                 math.degrees(-math.atan2(self.velocity.y, self.velocity.x)),
                 1
             )
-            self.rect.center = self.pos.get_tuple()
+            self.rect.center = self.pos
             dw = image.get_rect().width - self.rect.width
             dw /= 2
             self.rect.centerx -= dw
@@ -1886,17 +1884,17 @@ class spread_tower(tower):
             for enemy in enemys:
                 if self.pierce <= 0:
                     return
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                     self.deal_damage(enemy)
             if boss != None:
                 if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
+                if self.pos.distance_to(boss.location) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
                 for enemy in boss.generated_unit:
                     if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
+                    if self.pos.distance_to(enemy.location) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
             if (
                 self.pos.x < 0 or
@@ -1957,7 +1955,7 @@ class spread_tower(tower):
     def display(self, screen):
         super().display(screen)
         barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
@@ -2008,9 +2006,9 @@ class spread_tower(tower):
             self.damage, self.layer,
             1 - self.freeze_rate / 100, [self.images[1]]
         )
-        bullet.velocity.set_angle(self.angle, self.bullet_speed)
+        bullet.velocity.from_polar([self.bullet_speed, -self.angle])
 
-        # print(bullet.velocity.get_tuple())
+        # print(bullet.velocity)
         self.bullets.append(bullet)
         return ret
 
@@ -2047,22 +2045,22 @@ class spread_tower(tower):
                 )
                 angle = -math.atan2(nb.velocity.y, nb.velocity.x)
                 angle = math.degrees(angle)
-                nb.velocity.set_angle(angle + 10, nb.velocity.mod())
+                nb.velocity.from_polar([nb.velocity.length(), -(angle + 10)])
                 self.bullets.append(nb)
                 nb2 = self.bullet(
                     bullet.pos.copy(), bullet.velocity.copy(),
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
-                nb2.velocity.set_angle(angle - 10, nb2.velocity.mod())
+                nb2.velocity.from_polar([nb.velocity.length(), -(angle - 10)])
                 self.bullets.append(nb2)
             if en != None:
-                speed = bullet.velocity.mod()
+                speed = bullet.velocity.length()
                 acceleration = en.location - bullet.pos
-                # print(acceleration.get_tuple())
-                acceleration.change_mod(100 * (delta_time / 1000))
+                # print(acceleration)
+                acceleration = acceleration.normalize() * (100 * (delta_time / 1000))
                 bullet.velocity += acceleration
-                bullet.velocity.change_mod(speed)
+                bullet.velocity = bullet.velocity.normalize() * (speed)
             bullet.detect(enemys, boss)
         for bullet in self.bullets:
             if bullet.pierce <= 0 and bullet.layer > 0:
@@ -2072,16 +2070,16 @@ class spread_tower(tower):
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
-                angle = -math.atan2(nb.velocity.y, nb.velocity.x)
+                angle = math.atan2(nb.velocity.y, nb.velocity.x)
                 angle = math.degrees(angle)
-                nb.velocity.set_angle(angle + 10, nb.velocity.mod())
+                nb.velocity.from_polar([nb.velocity.length(), -(angle + 10)])
                 self.bullets.append(nb)
                 nb2 = self.bullet(
                     bullet.pos.copy(), bullet.velocity.copy(),
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
-                nb2.velocity.set_angle(angle - 10, nb2.velocity.mod())
+                nb2.velocity.from_polar([nb.velocity.length(), -(angle - 10)])
                 self.bullets.append(nb2)
 
                 self.bullets.remove(bullet)

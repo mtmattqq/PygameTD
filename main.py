@@ -260,7 +260,7 @@ def select_tile(
     selected_tile,
     selected_tower
 ):
-    tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
+    tile_pos = [int(mouse_pos.y // 64), int(mouse_pos.x // 64)]
     show_buy_tower = False
 
     if (
@@ -863,7 +863,7 @@ def level(level_now='basic_level.json'):
             tile_rect.center = transform(
                 pygame.Vector2(selected_tile[1], selected_tile[0]),
                 tile.TILE_SIZE
-            ).get_tuple()
+            )
             color = pygame.Color(100, 120, 180, a=2)
             pygame.draw.rect(
                 screen, color,
@@ -902,7 +902,7 @@ def level(level_now='basic_level.json'):
         )
         screen.blit(
             bonus_bar_image,
-            give_bonus_bar.pos.get_tuple()
+            give_bonus_bar.pos
         )
 
         hit_button.display(screen)
@@ -950,7 +950,7 @@ def level(level_now='basic_level.json'):
                             pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
 
                     pygame.draw.circle(
-                        screen, [100, 200, 100], new_tower.location.get_tuple(),
+                        screen, [100, 200, 100], new_tower.location,
                         new_tower.range, 3
                     )
 
@@ -960,7 +960,7 @@ def level(level_now='basic_level.json'):
             color = pygame.Color(30, 30, 30, a=70)
             pygame.draw.circle(
                 screen, color,
-                selected_tower.location.get_tuple(),
+                selected_tower.location,
                 selected_tower.range,
                 3
             )
@@ -1321,7 +1321,7 @@ def level_editor():
             tile_rect.center = transform(
                 pygame.Vector2(selected_tile[1], selected_tile[0]),
                 tile.TILE_SIZE
-            ).get_tuple()
+            )
             color = pygame.Color(100, 120, 180, a=100)
             pygame.draw.rect(
                 screen, color,
@@ -1332,7 +1332,7 @@ def level_editor():
             for tl in tile_buttons:
                 tl.state = 0
                 tl.display(screen)
-                screen.blit(tl.images[1], (tl.pos + pygame.Vector2(8, 8)).get_tuple())
+                screen.blit(tl.images[1], (tl.pos + pygame.Vector2(8, 8)))
         else:
             i = 0
             for btn in input_buttons:
@@ -1533,6 +1533,7 @@ def main():
     title = 'Basic TD'
 
     start_button, setting_button, level_editor_button = create_menu_buttons()
+    print('app start')
 
     in_game = True
     while in_game:
@@ -1569,6 +1570,6 @@ def main():
         clock.tick(FPS)
     return
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
 pygame.quit()
