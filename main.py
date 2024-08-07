@@ -824,7 +824,7 @@ def level(level_now='basic_level.json'):
                     if clicked_upgrade:
                         continue
                     if selected_tower.deconstruct_button.click(mouse_pos):
-                        tower_info[selected_tower.pos.y][selected_tower.pos.x] = 0
+                        tower_info[int(selected_tower.pos.y)][int(selected_tower.pos.x)] = 0
                         towers.remove(selected_tower)
                         natural_ingot += 80
                         selected_tower = None
