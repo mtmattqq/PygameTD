@@ -1,5 +1,4 @@
 from typing import Any
-from vec2D import vec2D
 from vec2D import dis
 import pygame
 import os
@@ -20,7 +19,7 @@ def show_text(screen, text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
 
 class tower(pygame.sprite.Sprite) :
     def __init__(
-        self, pos = vec2D(0, 0), 
+        self, pos = pygame.vector2(0, 0), 
         width = TILE_SIZE, height = TILE_SIZE, 
         pictures = [''],
         damage = 0, reload = 0,
@@ -29,7 +28,7 @@ class tower(pygame.sprite.Sprite) :
     ) :
         pygame.sprite.Sprite.__init__(self)
         self.pos = pos
-        self.location = self.pos*TILE_SIZE + vec2D(TILE_SIZE/2, TILE_SIZE/2)
+        self.location = self.pos*TILE_SIZE + pygame.vector2(TILE_SIZE/2, TILE_SIZE/2)
         self.height = height
         self.width = width
         self.placed = False
@@ -46,7 +45,7 @@ class tower(pygame.sprite.Sprite) :
                 os.path.join(os.getcwd(),'AppData',picture)).convert_alpha(), (width,height)))
         self.state = 0
         self.deconstruct_button = button(
-            "decontruct", vec2D(805, 490), [0, 0, 0],
+            "decontruct", pygame.vector2(805, 490), [0, 0, 0],
             32, 32, ['decontruct_button.png']
         )
         self.explode_sound = None
@@ -54,7 +53,7 @@ class tower(pygame.sprite.Sprite) :
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
         
-    def detect_mouse(self, pos = vec2D(0, 0)) :
+    def detect_mouse(self, pos = pygame.vector2(0, 0)) :
         self_pos = self.pos*TILE_SIZE
         if(
             pos.x<self_pos.x+self.width and 
@@ -68,13 +67,13 @@ class tower(pygame.sprite.Sprite) :
     def action_onclick(self) :
         self.selected = True
 
-    def click(self, pos = vec2D(0, 0)) :
+    def click(self, pos = pygame.vector2(0, 0)) :
         if(self.detect(pos)) :
             return self.action_onclick()
         else :
             self.selected = False
 
-    def place(self, pos = vec2D(0, 0)) :
+    def place(self, pos = pygame.vector2(0, 0)) :
         self.pos = pos
         self.placed = True
 
@@ -89,7 +88,7 @@ class tower(pygame.sprite.Sprite) :
 
 class basic_tower(tower) :
     class bullet :
-        def __init__(self, pos = vec2D(0, 0), velocity = vec2D(0, 0), damage = 0, images = []) :
+        def __init__(self, pos = pygame.vector2(0, 0), velocity = pygame.vector2(0, 0), damage = 0, images = []) :
             self.pierce = 1
             self.pos = pos
             self.velocity = velocity
@@ -146,7 +145,7 @@ class basic_tower(tower) :
                 self.pierce = 0
 
     def __init__(
-        self, pos = vec2D(0, 0), volume = 100
+        self, pos = pygame.vector2(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -162,24 +161,24 @@ class basic_tower(tower) :
             range, bullet_speed, 
             volume
         )
-        self.aim = vec2D(0, 1)
+        self.aim = pygame.vector2(0, 1)
         self.angle = 0
         self.bullets = []
         self.target = 'first'
         self.upgrade_damage = button(
-            'damage', vec2D(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_range = button(
-            'range', vec2D(1000, 109), [0, 0, 0], 
+            'range', pygame.vector2(1000, 109), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', vec2D(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_bullet_speed = button(
-            'bullet_speed', vec2D(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -241,7 +240,7 @@ class basic_tower(tower) :
         if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
-            self.location.copy(), vec2D(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0), 
             self.damage, [self.images[2]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
@@ -388,7 +387,7 @@ class basic_tower(tower) :
         else :
             self.upgrade_bullet_speed.state = 1
         self.upgrade_bullet_speed.display(screen)
-    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
         if self.upgrade_damage.click(mouse_pos) :
             if natural_ingot >= 50 + (self.damage_level+1)*10 :
                 self.damage_level += 1
@@ -425,8 +424,8 @@ class basic_tower(tower) :
 class sniper_tower(tower) :
     class bullet :
         def __init__(
-                self, pos = vec2D(0, 0), 
-                velocity = vec2D(0, 0), 
+                self, pos = pygame.vector2(0, 0), 
+                velocity = pygame.vector2(0, 0), 
                 damage = 0, hardness = 0, 
                 pierce = 0, images = []
         ) :
@@ -485,7 +484,7 @@ class sniper_tower(tower) :
                 self.pierce = 0
 
     def __init__(
-        self, pos = vec2D(0, 0), volume = 100
+        self, pos = pygame.vector2(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -504,7 +503,7 @@ class sniper_tower(tower) :
         )
         self.images[2] = pygame.transform.scale(
             self.images[2], [TILE_SIZE/2, TILE_SIZE/2])
-        self.aim = vec2D(0, 1)
+        self.aim = pygame.vector2(0, 1)
         self.angle = 0
         self.bullets = []
         self.target = 'first'
@@ -517,19 +516,19 @@ class sniper_tower(tower) :
         self.fire_sound.set_volume(self.volume / 100)
 
         self.upgrade_damage = button(
-            'damage', vec2D(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_hardness = button(
-            'hardness', vec2D(1000, 109), [0, 0, 0], 
+            'hardness', pygame.vector2(1000, 109), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', vec2D(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_pierce = button(
-            'bullet_speed', vec2D(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -588,7 +587,7 @@ class sniper_tower(tower) :
         if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
-            self.location.copy(), vec2D(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0), 
             self.damage, self.hardness, 
             self.pierce, [self.images[2]]
         )
@@ -735,7 +734,7 @@ class sniper_tower(tower) :
         else :
             self.upgrade_pierce.state = 1
         self.upgrade_pierce.display(screen)
-    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
         if self.upgrade_damage.click(mouse_pos) :
             if natural_ingot >= 50 + (self.damage_level+1)*50 :
                 self.damage_level += 1
@@ -775,8 +774,8 @@ class sniper_tower(tower) :
 class cannon_tower(tower) :
     class bullet :
         def __init__(
-            self, pos = vec2D(0, 0), 
-            velocity = vec2D(0, 0), 
+            self, pos = pygame.vector2(0, 0), 
+            velocity = pygame.vector2(0, 0), 
             damage = 0, explode_range = 0,
             images = []
         ) :
@@ -846,7 +845,7 @@ class cannon_tower(tower) :
             return False
 
     def __init__(
-        self, pos = vec2D(0, 0), volume = 100
+        self, pos = pygame.vector2(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -864,25 +863,25 @@ class cannon_tower(tower) :
         )
         self.images[2] = pygame.transform.scale(
             self.images[2], [TILE_SIZE/2, TILE_SIZE/2])
-        self.aim = vec2D(0, 1)
+        self.aim = pygame.vector2(0, 1)
         self.angle = 0
         self.bullets = []
         self.target = 'first'
         self.explode_range = 1 * TILE_SIZE
         self.upgrade_damage = button(
-            'damage', vec2D(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_explode_range = button(
-            'range', vec2D(1000, 109), [0, 0, 0], 
+            'range', pygame.vector2(1000, 109), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', vec2D(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_bullet_speed = button(
-            'bullet_speed', vec2D(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -948,7 +947,7 @@ class cannon_tower(tower) :
         if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
-            self.location.copy(), vec2D(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0), 
             self.damage, self.explode_range, 
             [self.images[2]]
         )
@@ -1097,7 +1096,7 @@ class cannon_tower(tower) :
         else :
             self.upgrade_bullet_speed.state = 1
         self.upgrade_bullet_speed.display(screen)
-    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
         if self.upgrade_damage.click(mouse_pos) :
             if natural_ingot >= 100 + (self.damage_level+1)*100 :
                 self.damage_level += 1
@@ -1134,7 +1133,7 @@ class cannon_tower(tower) :
 class tesla_tower(tower) :
     class bullet :
         def __init__(
-            self, pos = vec2D(0, 0),
+            self, pos = pygame.vector2(0, 0),
             interference_time = 0,
             damage = 0, explode_range = 0,
             images = []
@@ -1192,7 +1191,7 @@ class tesla_tower(tower) :
             return False
 
     def __init__(
-        self, pos = vec2D(0, 0), volume = 100
+        self, pos = pygame.vector2(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -1213,19 +1212,19 @@ class tesla_tower(tower) :
         self.bullets = []
 
         self.upgrade_damage = button(
-            'damage', vec2D(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_range = button(
-            'range', vec2D(1000, 109), [0, 0, 0], 
+            'range', pygame.vector2(1000, 109), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', vec2D(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_interference = button(
-            'Interference', vec2D(1000, 159), [0, 0, 0], 
+            'Interference', pygame.vector2(1000, 159), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -1402,7 +1401,7 @@ class tesla_tower(tower) :
         else :
             self.upgrade_interference.state = 1
         self.upgrade_interference.display(screen)
-    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
         if self.upgrade_damage.click(mouse_pos) :
             if natural_ingot >= 100 + (self.damage_level+1)*100 :
                 self.damage_level += 1
@@ -1441,8 +1440,8 @@ class tesla_tower(tower) :
 class acid_tower(tower) :
     class bullet :
         def __init__(
-                self, pos = vec2D(0, 0), 
-                velocity = vec2D(0, 0), 
+                self, pos = pygame.vector2(0, 0), 
+                velocity = pygame.vector2(0, 0), 
                 damage = 0, hardness = 0, 
                 pierce = 0, images = []
         ) :
@@ -1505,7 +1504,7 @@ class acid_tower(tower) :
                 self.pierce = 0
 
     def __init__(
-        self, pos = vec2D(0, 0), volume = 100
+        self, pos = pygame.vector2(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -1524,7 +1523,7 @@ class acid_tower(tower) :
         )
         self.images[1] = pygame.transform.scale(
             self.images[1], [TILE_SIZE / 2, TILE_SIZE / 2])
-        self.aim = vec2D(0, 1)
+        self.aim = pygame.vector2(0, 1)
         self.angle = 0
         self.bullets = []
         self.target = 'first'
@@ -1538,19 +1537,19 @@ class acid_tower(tower) :
 
         self.acid = 10
         self.upgrade_acid = button(
-            'damage', vec2D(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_hardness = button(
-            'hardness', vec2D(1000, 109), [0, 0, 0], 
+            'hardness', pygame.vector2(1000, 109), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', vec2D(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_pierce = button(
-            'bullet_speed', vec2D(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.acid_level = 0
@@ -1597,7 +1596,7 @@ class acid_tower(tower) :
         if not self.aim_first(enemys, boss) : 
             return False
         bullet = self.bullet(
-            self.location.copy(), vec2D(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0), 
             self.acid, self.hardness * math.sqrt(self.acid), 
             self.pierce, [self.images[1]]
         )
@@ -1744,7 +1743,7 @@ class acid_tower(tower) :
         else :
             self.upgrade_pierce.state = 1
         self.upgrade_pierce.display(screen)
-    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
         if self.upgrade_acid.click(mouse_pos) :
             if natural_ingot >= 50 + (self.acid_level+1)*50 :
                 self.acid_level += 1
@@ -1784,8 +1783,8 @@ class acid_tower(tower) :
 class spread_tower(tower) :
     class bullet :
         def __init__(
-            self, pos = vec2D(0, 0), 
-            velocity = vec2D(0, 0), 
+            self, pos = pygame.vector2(0, 0), 
+            velocity = pygame.vector2(0, 0), 
             damage = 0, layer = 0, 
             slow_rate = 1, images = []
         ) :
@@ -1857,7 +1856,7 @@ class spread_tower(tower) :
                 self.pierce = 0
 
     def __init__(
-        self, pos = vec2D(0, 0), volume = 100
+        self, pos = pygame.vector2(0, 0), volume = 100
     ) :
         width = TILE_SIZE
         height = TILE_SIZE
@@ -1873,24 +1872,24 @@ class spread_tower(tower) :
             range, bullet_speed, 
             volume
         )
-        self.aim = vec2D(0, 1)
+        self.aim = pygame.vector2(0, 1)
         self.angle = 0
         self.bullets = []
         self.target = 'first'
         self.upgrade_damage = button(
-            'damage', vec2D(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_freeze_rate = button(
-            'freeze_rate', vec2D(1000, 109), [0, 0, 0], 
+            'freeze_rate', pygame.vector2(1000, 109), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', vec2D(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_layer = button(
-            'layer', vec2D(1000, 159), [0, 0, 0], 
+            'layer', pygame.vector2(1000, 159), [0, 0, 0], 
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -1952,7 +1951,7 @@ class spread_tower(tower) :
         if ret == None :
             return None
         bullet = self.bullet(
-            self.location.copy(), vec2D(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0), 
             self.damage, self.layer,
             1 - self.freeze_rate / 100, [self.images[1]]
         )
@@ -2151,7 +2150,7 @@ class spread_tower(tower) :
         else :
             self.upgrade_layer.state = 1
         self.upgrade_layer.display(screen)
-    def upgrade(self, mouse_pos = vec2D(0, 0), natural_ingot = 0) :
+    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
         if self.upgrade_damage.click(mouse_pos) :
             if natural_ingot >= 5000 + (self.damage_level+1)*1000 :
                 self.damage_level += 1
