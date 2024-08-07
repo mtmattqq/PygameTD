@@ -81,14 +81,85 @@ class tower(pygame.sprite.Sprite):
         self.pos = pos
         self.placed = True
 
+    def aim_first(self, enemys=[], boss=None):
+        first_enemy = None
+        for enemy in enemys:
+            if (
+                (first_enemy == None or
+                 enemy.progress > first_enemy.progress) and
+                self.location.distance_to(enemy.location) < self.range
+            ):
+                first_enemy = enemy
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (
+                    (first_enemy == None or
+                     enemy.progress > first_enemy.progress) and
+                    self.location.distance_to(enemy.location) < self.range
+                ):
+                    first_enemy = enemy
+            if (
+                (first_enemy == None or
+                 boss.progress > first_enemy.progress) and
+                self.location.distance_to(boss.location) < self.range
+            ):
+                first_enemy = boss
+        # print((first_enemy.pos - self.location))
+        if first_enemy == None:
+            return False
+
+        relation = first_enemy.location - self.location
+        self.angle = math.atan2(relation.y, relation.x)
+        self.angle = -math.degrees(self.angle)
+        return True
+
+    def shoot(self, enemys=[], boss=None):
+        ret = self.aim_first(enemys, boss)
+        if self.time_to_fire <= 0:
+            if self.target == 'first':
+                if self.shoot_first(enemys, boss) != None:
+                    self.time_to_fire += 1000.0/self.reload
+                    self.fire_sound.play()
+        return ret
+
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
+            bullet.display(screen)
+
     def display(self, screen):
         screen.blit(
             self.images[self.state],
             (self.pos*TILE_SIZE)
         )
+        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
+        dw = rotated_rect.width - self.images[0].get_rect().width
+        dw /= 2
+        rotated_rect.centerx -= dw
+        rotated_rect.centery -= dw
+        screen.blit(
+            barrel,
+            rotated_rect.center
+        )
 
     def display_info(self, screen):
         self.deconstruct_button.display(screen)
+    
+    def update(self, delta_time, enemys=[], boss=None):
+        self.update_time_to_fire(delta_time)
+        self.shoot(enemys, boss)
+        for bullet in self.bullets:
+            bullet.move(delta_time)
+            bullet.detect(enemys, boss)
+        for bullet in self.bullets:
+            if bullet.pierce <= 0:
+                self.bullets.remove(bullet)
+                return True
+        return False
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
+            self.time_to_fire -= delta_time
 
 
 class basic_tower(tower):
@@ -200,54 +271,6 @@ class basic_tower(tower):
         )
         self.fire_sound.set_volume(self.volume / 100)
 
-    def display(self, screen):
-        super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
-        dw = rotated_rect.width - self.images[0].get_rect().width
-        dw /= 2
-        rotated_rect.centerx -= dw
-        rotated_rect.centery -= dw
-        screen.blit(
-            barrel,
-            rotated_rect.center
-        )
-
-    def display_bullets(self, screen):
-        for bullet in self.bullets:
-            bullet.display(screen)
-
-    def aim_first(self, enemys=[], boss=None):
-        first_enemy = None
-        for enemy in enemys:
-            if (
-                (first_enemy == None or
-                 enemy.progress > first_enemy.progress) and
-                self.location.distance_to(enemy.location) < self.range
-            ):
-                first_enemy = enemy
-        if boss != None:
-            for enemy in boss.generated_unit:
-                if (
-                    (first_enemy == None or
-                     enemy.progress > first_enemy.progress) and
-                    self.location.distance_to(enemy.location) < self.range
-                ):
-                    first_enemy = enemy
-            if (
-                (first_enemy == None or
-                 boss.progress > first_enemy.progress) and
-                self.location.distance_to(boss.location) < self.range
-            ):
-                first_enemy = boss
-        if first_enemy == None:
-            return False
-
-        relation = first_enemy.location - self.location
-        self.angle = math.atan2(relation.y, relation.x)
-        self.angle = -math.degrees(self.angle)
-        return True
-
     def shoot_first(self, enemys=[], boss=None):
         if not self.aim_first(enemys, boss):
             return False
@@ -259,29 +282,6 @@ class basic_tower(tower):
         # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
-
-    def update_time_to_fire(self, delta_time=0):
-        if self.time_to_fire > 0:
-            self.time_to_fire -= delta_time
-
-    def shoot(self, enemys=[], boss=None):
-        if self.time_to_fire <= 0:
-            if self.target == 'first':
-                if self.shoot_first(enemys, boss):
-                    self.time_to_fire += 1000.0/self.reload
-                    self.fire_sound.play()
-        else:
-            self.aim_first(enemys, boss)
-
-    def update(self, delta_time, enemys=[], boss=None):
-        self.update_time_to_fire(delta_time)
-        self.shoot(enemys, boss)
-        for bullet in self.bullets:
-            bullet.move(delta_time)
-            bullet.detect(enemys, boss)
-        for bullet in self.bullets:
-            if bullet.pierce <= 0:
-                self.bullets.remove(bullet)
 
     def display_info(self, screen, natural_ingot):
         super().display_info(screen)
@@ -555,55 +555,6 @@ class sniper_tower(tower):
         self.reload_level = 0
         self.pierce_level = 0
 
-    def display(self, screen):
-        super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
-        dw = rotated_rect.width - self.images[0].get_rect().width
-        dw /= 2
-        rotated_rect.centerx -= dw
-        rotated_rect.centery -= dw
-        screen.blit(
-            barrel,
-            rotated_rect.center
-        )
-
-    def display_bullets(self, screen):
-        for bullet in self.bullets:
-            bullet.display(screen)
-
-    def aim_first(self, enemys=[], boss=None):
-        first_enemy = None
-        for enemy in enemys:
-            if (
-                (first_enemy == None or
-                 enemy.progress > first_enemy.progress) and
-                self.location.distance_to(enemy.location) < self.range
-            ):
-                first_enemy = enemy
-        if boss != None:
-            for enemy in boss.generated_unit:
-                if (
-                    (first_enemy == None or
-                     enemy.progress > first_enemy.progress) and
-                    self.location.distance_to(enemy.location) < self.range
-                ):
-                    first_enemy = enemy
-            if (
-                (first_enemy == None or
-                 boss.progress > first_enemy.progress) and
-                self.location.distance_to(boss.location) < self.range
-            ):
-                first_enemy = boss
-        # print((first_enemy.pos - self.location))
-        if first_enemy == None:
-            return False
-
-        relation = first_enemy.location - self.location
-        self.angle = math.atan2(relation.y, relation.x)
-        self.angle = -math.degrees(self.angle)
-        return True
-
     def shoot_first(self, enemys=[], boss=None):
         if not self.aim_first(enemys, boss):
             return False
@@ -616,30 +567,6 @@ class sniper_tower(tower):
         # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
-
-    def update_time_to_fire(self, delta_time=0):
-        if self.time_to_fire > 0:
-            self.time_to_fire -= delta_time
-
-    def shoot(self, enemys=[], boss=None):
-        if self.time_to_fire <= 0:
-            if self.target == 'first':
-                if self.shoot_first(enemys, boss):
-                    self.time_to_fire += 1000.0/self.reload
-                    self.fire_sound.play()
-
-        else:
-            self.aim_first(enemys, boss)
-
-    def update(self, delta_time, enemys=[], boss=None):
-        self.update_time_to_fire(delta_time)
-        self.shoot(enemys, boss)
-        for bullet in self.bullets:
-            bullet.move(delta_time)
-            bullet.detect(enemys, boss)
-        for bullet in self.bullets:
-            if bullet.pierce <= 0:
-                self.bullets.remove(bullet)
 
     def display_info(self, screen, natural_ingot):
         super().display_info(screen)
@@ -926,54 +853,6 @@ class cannon_tower(tower):
         )
         self.explode_sound.set_volume(self.volume / 100)
 
-    def display(self, screen):
-        super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
-        dw = rotated_rect.width - self.images[0].get_rect().width
-        dw /= 2
-        rotated_rect.centerx -= dw
-        rotated_rect.centery -= dw
-        screen.blit(
-            barrel,
-            rotated_rect.center
-        )
-
-    def display_bullets(self, screen):
-        for bullet in self.bullets:
-            bullet.display(screen)
-
-    def aim_first(self, enemys=[], boss=None):
-        first_enemy = None
-        for enemy in enemys:
-            if (
-                (first_enemy == None or
-                 enemy.progress > first_enemy.progress) and
-                self.location.distance_to(enemy.location) < self.range
-            ):
-                first_enemy = enemy
-        if boss != None:
-            for enemy in boss.generated_unit:
-                if (
-                    (first_enemy == None or
-                     enemy.progress > first_enemy.progress) and
-                    self.location.distance_to(enemy.location) < self.range
-                ):
-                    first_enemy = enemy
-            if (
-                (first_enemy == None or
-                 boss.progress > first_enemy.progress) and
-                self.location.distance_to(boss.location) < self.range
-            ):
-                first_enemy = boss
-        if first_enemy == None:
-            return False
-
-        relation = first_enemy.pos - self.location
-        self.angle = math.atan2(relation.y, relation.x)
-        self.angle = -math.degrees(self.angle)
-        return True
-
     def shoot_first(self, enemys=[], boss=None):
         if not self.aim_first(enemys, boss):
             return False
@@ -987,30 +866,9 @@ class cannon_tower(tower):
         self.bullets.append(bullet)
         return True
 
-    def update_time_to_fire(self, delta_time=0):
-        if self.time_to_fire > 0:
-            self.time_to_fire -= delta_time
-
-    def shoot(self, enemys=[], boss=None):
-        if self.time_to_fire <= 0:
-            if self.target == 'first':
-                if self.shoot_first(enemys, boss):
-                    self.time_to_fire += 1000.0/self.reload
-                    self.fire_sound.play()
-
-        else:
-            self.aim_first(enemys, boss)
-
     def update(self, delta_time, enemys=[], boss=None):
-        self.update_time_to_fire(delta_time)
-        self.shoot(enemys, boss)
-        for bullet in self.bullets:
-            bullet.move(delta_time)
-            bullet.detect(enemys, boss)
-        for bullet in self.bullets:
-            if bullet.pierce <= 0:
-                self.bullets.remove(bullet)
-                self.explode_sound.play()
+        if super().update(delta_time, enemys, boss):
+            self.explode_sound.play()
 
     def display_info(self, screen, natural_ingot):
         super().display_info(screen)
@@ -1273,10 +1131,6 @@ class tesla_tower(tower):
         )
         self.fire_sound.set_volume(self.volume / 100)
 
-    def display_bullets(self, screen):
-        for bullet in self.bullets:
-            bullet.display(screen)
-
     def aim_first(self, enemys=[], boss=None):
         for enemy in enemys:
             if (self.location.distance_to(enemy.location) < self.range):
@@ -1301,9 +1155,6 @@ class tesla_tower(tower):
         self.bullets.append(bullet)
         return True
 
-    def update_time_to_fire(self, delta_time=0):
-        if self.time_to_fire > 0:
-            self.time_to_fire -= delta_time
 
     def shoot(self, enemys=[], boss=None):
         if self.time_to_fire <= 0:
@@ -1321,6 +1172,12 @@ class tesla_tower(tower):
             bullet.decay_time -= delta_time
             if bullet.decay_time <= 0:
                 self.bullets.remove(bullet)
+
+    def display(self, screen):
+        screen.blit(
+            self.images[self.state],
+            (self.pos*TILE_SIZE)
+        )
 
     def display_info(self, screen, natural_ingot):
         super().display_info(screen)
@@ -1598,42 +1455,6 @@ class acid_tower(tower):
         self.reload_level = 0
         self.pierce_level = 0
 
-    def display_bullets(self, screen):
-        for bullet in self.bullets:
-            bullet.display(screen)
-
-    def aim_first(self, enemys=[], boss=None):
-        first_enemy = None
-        for enemy in enemys:
-            if (
-                (first_enemy == None or
-                 enemy.progress > first_enemy.progress) and
-                self.location.distance_to(enemy.location) < self.range
-            ):
-                first_enemy = enemy
-        if boss != None:
-            for enemy in boss.generated_unit:
-                if (
-                    (first_enemy == None or
-                     enemy.progress > first_enemy.progress) and
-                    self.location.distance_to(enemy.location) < self.range
-                ):
-                    first_enemy = enemy
-            if (
-                (first_enemy == None or
-                 boss.progress > first_enemy.progress) and
-                self.location.distance_to(boss.location) < self.range
-            ):
-                first_enemy = boss
-        # print((first_enemy.pos - self.location))
-        if first_enemy == None:
-            return False
-
-        relation = first_enemy.location - self.location
-        self.angle = math.atan2(relation.y, relation.x)
-        self.angle = -math.degrees(self.angle)
-        return True
-
     def shoot_first(self, enemys=[], boss=None):
         if not self.aim_first(enemys, boss):
             return False
@@ -1646,20 +1467,6 @@ class acid_tower(tower):
         # print(bullet.velocity)
         self.bullets.append(bullet)
         return True
-
-    def update_time_to_fire(self, delta_time=0):
-        if self.time_to_fire > 0:
-            self.time_to_fire -= delta_time
-
-    def shoot(self, enemys=[], boss=None):
-        if self.time_to_fire <= 0:
-            if self.target == 'first':
-                if self.shoot_first(enemys, boss):
-                    self.time_to_fire += 1000.0/self.reload
-                    self.fire_sound.play()
-
-        else:
-            self.aim_first(enemys, boss)
 
     def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
@@ -1952,51 +1759,6 @@ class spread_tower(tower):
         )
         self.fire_sound.set_volume(self.volume / 100)
 
-    def display(self, screen):
-        super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
-        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE))
-        dw = rotated_rect.width - self.images[0].get_rect().width
-        dw /= 2
-        rotated_rect.centerx -= dw
-        rotated_rect.centery -= dw
-        screen.blit(
-            barrel,
-            rotated_rect.center
-        )
-
-    def display_bullets(self, screen):
-        for bullet in self.bullets:
-            bullet.display(screen)
-
-    def aim_first(self, enemys=[], boss=None):
-        first_enemy = None
-        for enemy in enemys:
-            if (
-                (first_enemy == None or
-                 enemy.progress > first_enemy.progress)
-            ):
-                first_enemy = enemy
-        if boss != None:
-            for enemy in boss.generated_unit:
-                if (
-                    (first_enemy == None or
-                     enemy.progress > first_enemy.progress)
-                ):
-                    first_enemy = enemy
-            if (
-                (first_enemy == None or
-                 boss.progress > first_enemy.progress)
-            ):
-                first_enemy = boss
-        if first_enemy == None:
-            return None
-
-        relation = first_enemy.location - self.location
-        self.angle = math.atan2(relation.y, relation.x)
-        self.angle = -math.degrees(self.angle)
-        return first_enemy
-
     def shoot_first(self, enemys=[], boss=None):
         ret = self.aim_first(enemys, boss)
         if ret == None:
@@ -2010,19 +1772,6 @@ class spread_tower(tower):
 
         # print(bullet.velocity)
         self.bullets.append(bullet)
-        return ret
-
-    def update_time_to_fire(self, delta_time=0):
-        if self.time_to_fire > 0:
-            self.time_to_fire -= delta_time
-
-    def shoot(self, enemys=[], boss=None):
-        ret = self.aim_first(enemys, boss)
-        if self.time_to_fire <= 0:
-            if self.target == 'first':
-                if self.shoot_first(enemys, boss) != None:
-                    self.time_to_fire += 1000.0/self.reload
-                    self.fire_sound.play()
         return ret
 
     def update(self, delta_time, enemys=[], boss=None):
