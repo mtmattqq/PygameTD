@@ -11,7 +11,7 @@ from src.tower import *
 from src.scene import *
 import numpy as np
 
-def level(screen, display, level_now='basic_level.json'):
+def load_level_info(level_name):
     tile_set = tile.tileset([
         'white.png',
         'main_tower.png',
@@ -19,11 +19,216 @@ def level(screen, display, level_now='basic_level.json'):
         'road.png'
     ], 64, 64)
     level_info_file = open(os.path.join(
-        os.getcwd(), 'AppData', level_now), 'r')
+        os.getcwd(), 'AppData', level_name), 'r')
     level_info = level_info_file.read()
-    # print(level_info)
     level_info = json.loads(level_info)
     level_info_file.close()
+    return tile_set, level_info
+
+def init_enemy_base_info(difficulty):
+    return [
+        [[30*difficulty/100,  0,  0,  30, 300], [1.5*difficulty/100,    0,    0,   1, 30]],
+        [[10*difficulty/100,  5, 20,  40, 300], [0.1*difficulty/100, 0.05,  1.4,   1, 30]],
+        [[30*difficulty/100, 10,  1,  25, 300], [  5*difficulty/100,    1, 0.05, 0.1, 30]],
+    ]
+
+def init_buy_tower_buttons():
+    return [
+        button(
+            80, pygame.Vector2(785, 80),
+            [0, 0, 0], 64, 64,
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'basic_tower32.png']
+        ),
+
+        button(
+            150, pygame.Vector2(845, 80),
+            [0, 0, 0], 64, 64,
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'sniper_tower32.png']
+        ),
+
+        button(
+            300, pygame.Vector2(905, 80),
+            [0, 0, 0], 64, 64,
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'cannon_tower32.png']
+        ),
+
+        button(
+            400, pygame.Vector2(785, 140),
+            [0, 0, 0], 64, 64,
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'tesla_tower32.png']
+        ),
+
+        button(
+            10000, pygame.Vector2(845, 140),
+            [0, 0, 0], 64, 64,
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'acid_tower64.png']
+        ),
+
+        button(
+            50000, pygame.Vector2(905, 140),
+            [0, 0, 0], 64, 64,
+            ['can_buy_tower.png', 'cannot_buy_tower.png', 'spread_tower64.png'],
+        ),
+    ]
+
+def init_buy_tower_info():
+    return [
+        [
+            'Basic',
+            'Basic tower can attack',
+            'fast, and it\'s cheap.'
+        ],
+
+        [
+            'Sniper',
+            'Sniper Tower attack ',
+            'slowly. However, it\'s ',
+            'a good way to break',
+            'the armor.'
+        ],
+
+        [
+            'Cannon',
+            'Cannon Tower provides AOE',
+            'damage, and has greatest',
+            'DPS. Also, it can damage ',
+            'though shield.'
+        ],
+
+        [
+            'Tesla',
+            'Tesla Tower can damage all ',
+            'enemys with in range, and ',
+            'interfer the shield ',
+            'regeneration.'
+        ],
+
+        [
+            'Acid',
+            'Acid can make the enemy ',
+            'miss the direction and ',
+            'go backward on the track.'
+        ],
+
+        [
+            'Split',
+            'Split can shoot special ',
+            'bullet which is able to ',
+            'split multiple times, ',
+            'depending on it\'s layer.'
+        ],
+    ]
+
+def enhance_enemy(wave, enemy_base_info, enemy_types, boss_types, enemy_level):
+    # Enhance Enemy
+        if wave >= 100:
+            # make basic enemy much stronger
+            enemy_base_info[0][1][0] = 15
+            enemy_base_info[0][1][3] = 3
+            enemy_base_info[0][0][3] = 60
+            enemy_base_info[0][0][4] = 150
+            enemy_types[0] = angry_basic(
+                enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
+            enemy_types[0].location = enemy_types[0].pos
+        if wave >= 125:
+            enemy_base_info[1][1][0] = 2.5
+            enemy_base_info[1][1][1] = 1.25
+            enemy_base_info[1][1][2] = 35
+            enemy_base_info[1][1][3] = 15
+            enemy_base_info[1][0][3] = 80
+            enemy_base_info[1][0][4] = 135
+            enemy_types[1] = chaos_eye(
+                enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
+            enemy_types[1].location = enemy_types[1].pos
+        if wave >= 150:
+            enemy_base_info[2][1][0] = 100
+            enemy_base_info[2][1][1] = 40
+            enemy_base_info[2][1][2] = 3
+            enemy_base_info[2][1][3] = 1.5
+            enemy_base_info[2][0][3] = 50
+            enemy_base_info[2][0][4] = 150
+            enemy_types[2] = super_shield(
+                enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
+            enemy_types[2].location = enemy_types[2].pos
+        if wave >= 200:
+            # make basic enemy much stronger
+            enemy_base_info[0][1][0] = 300
+            enemy_base_info[0][1][1] = 0.01
+            enemy_base_info[0][1][2] = 0.01
+            enemy_base_info[0][1][3] = 75
+            enemy_base_info[0][0][3] = 100
+            enemy_base_info[0][0][4] = 100
+            enemy_types[0] = shielded_basic(
+                enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
+            enemy_types[0].location = enemy_types[0].pos
+            boss_types[0] = shielded_basic_boss(
+                enemy_types[0].pos, 0, 0, 0, 20, [enemy_types[0].pos])
+        if wave >= 225:
+            enemy_base_info[1][1][0] = 25
+            enemy_base_info[1][1][1] = 12.5
+            enemy_base_info[1][1][2] = 350
+            enemy_base_info[1][1][3] = 75
+            enemy_base_info[1][0][3] = 120
+            enemy_base_info[1][0][4] = 80
+            enemy_types[1] = storm_eye(
+                enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
+            enemy_types[1].location = enemy_types[1].pos
+            boss_types[1] = storm_eye_boss(
+                enemy_types[1].location, 0, 0, 0, 20, [enemy_types[1].pos])
+        if wave >= 250:
+            enemy_base_info[2][1][0] = 1000
+            enemy_base_info[2][1][1] = 400
+            enemy_base_info[2][1][2] = 30
+            enemy_base_info[2][1][3] = 15
+            enemy_base_info[2][0][3] = 80
+            enemy_base_info[2][0][4] = 100
+            enemy_types[2] = ultra_shield(
+                enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
+            enemy_types[2].location = enemy_types[2].pos
+            boss_types[2] = ultra_high_armor_boss(
+                enemy_types[2].pos, 0, 0, 0, 20, [enemy_types[2].pos])
+        if wave >= 300:
+            idx = 0
+            for lv in enemy_level:
+                enemy_base_info[idx][0][4] = 50
+                enemy_base_info[idx][0][3] += 5
+                enemy_level[idx] += 30
+                idx += 1
+
+def send_boss(wave, boss_types, enemy_base_info, enemy_level, level_path, difficulty):
+    if wave >= 250:
+        idx = 0
+        for lv in enemy_level:
+            enemy_level[idx] += math.sqrt(wave)
+            enemy_base_info[idx][1][3] += 10
+            idx += 1
+    if boss != None:
+        boss_level += 3
+        return True
+    enemy_type_this_wave = boss_level % 3
+    boss_level += 1
+    boss = boss_types[enemy_type_this_wave].copy()
+    base_hit = enemy_base_info[enemy_type_this_wave][0][0] + \
+        enemy_base_info[enemy_type_this_wave][1][0] * \
+        (enemy_level[enemy_type_this_wave]**2)
+    base_armor = enemy_base_info[enemy_type_this_wave][0][1] + \
+        enemy_base_info[enemy_type_this_wave][1][1] * \
+        math.sqrt(enemy_level[enemy_type_this_wave])
+    base_shield = enemy_base_info[enemy_type_this_wave][0][2] + \
+        enemy_base_info[enemy_type_this_wave][1][2] * \
+        (enemy_level[enemy_type_this_wave]**2)
+    boss.__init__(
+        level_path[0].copy(),
+        base_hit * (difficulty / 100) * 10 * (boss_level ** 2),
+        base_armor * (difficulty / 100) * 10 * boss_level,
+        base_shield * (difficulty / 100) *
+        10 * (boss_level ** 2),
+        boss.move_speed, level_path
+    )
+    return False
+
+def level(screen, display, level_name='basic_level.json'):
+    tile_set, level_info = load_level_info(level_name)
 
     level_map = tile.tilemap(tile_set, level_info['map_size'])
     level_map.set_zero()
@@ -36,34 +241,18 @@ def level(screen, display, level_now='basic_level.json'):
     show_tower_info = False
     selected_tower = None
 
-    ENEMY_TYPE = 3
     enemys = []
 
-    enemy_types = [
-        basic_enemy(pygame.Vector2(800, 140), 0, 0, 0, 0, level_path),
-        evil_eye(pygame.Vector2(800, 220), 0, 0, 0, 0, level_path),
-        high_armor(pygame.Vector2(800, 300), 0, 0, 0, 0, level_path)
-    ]
+    enemy_types = init_enemy_types(level_path)
+    ENEMY_TYPE = len(enemy_types)
+
     for en in enemy_types:
         en.location = en.pos
-    enemy_level = [
-        0, 0, 5
-    ]
-    # init {hit, armor, shield, speed}
-    enemy_base_info = [
-        [[30,  0,  0,  30, 300], [1.5,    0,    0,   1, 30]],
-        [[10,  5, 20,  40, 300], [0.1, 0.05,  1.4,   1, 30]],
-        [[30, 10,  1,  25, 300], [5,    1, 0.05, 0.1, 30]],
-    ]
+    enemy_level = [0, 0, 5]
 
-    boss_types = [
-        basic_boss(pygame.Vector2(785, 80), 0, 0, 0,
-                         10, [pygame.Vector2(785, 80)]),
-        eye_boss(pygame.Vector2(785, 140), 0, 0, 0,
-                       10, [pygame.Vector2(785, 140)]),
-        high_armor_boss(pygame.Vector2(785, 200), 0,
-                              0, 0, 10, [pygame.Vector2(785, 200)])
-    ]
+    enemy_base_info = init_enemy_base_info(level_info['difficulty'])
+
+    boss_types = init_boss_types()
     boss = None
 
     enemy_type_this_wave = 0
@@ -117,104 +306,14 @@ def level(screen, display, level_now='basic_level.json'):
     # buy tower button
     show_buy_tower = False
 
-    def buy_tower_buttons_onclick():
-        return True
-    buy_tower_buttons = [
-        button(
-            80, pygame.Vector2(785, 80),
-            [0, 0, 0], 64, 64,
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'basic_tower32.png'],
-            buy_tower_buttons_onclick
-        ),
-
-        button(
-            150, pygame.Vector2(845, 80),
-            [0, 0, 0], 64, 64,
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'sniper_tower32.png'],
-            buy_tower_buttons_onclick
-        ),
-
-        button(
-            300, pygame.Vector2(905, 80),
-            [0, 0, 0], 64, 64,
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'cannon_tower32.png'],
-            buy_tower_buttons_onclick
-        ),
-
-        button(
-            400, pygame.Vector2(785, 140),
-            [0, 0, 0], 64, 64,
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'tesla_tower32.png'],
-            buy_tower_buttons_onclick
-        ),
-
-        button(
-            10000, pygame.Vector2(845, 140),
-            [0, 0, 0], 64, 64,
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'acid_tower64.png'],
-            buy_tower_buttons_onclick
-        ),
-
-        button(
-            50000, pygame.Vector2(905, 140),
-            [0, 0, 0], 64, 64,
-            ['can_buy_tower.png', 'cannot_buy_tower.png', 'spread_tower64.png'],
-            buy_tower_buttons_onclick
-        ),
-    ]
-    buy_tower_info = [
-        [
-            'Basic',
-            'Basic tower can attack',
-            'fast, and it\'s cheap.'
-        ],
-
-        [
-            'Sniper',
-            'Sniper Tower attack ',
-            'slowly. However, it\'s ',
-            'a good way to break',
-            'the armor.'
-        ],
-
-        [
-            'Cannon',
-            'Cannon Tower provides AOE',
-            'damage, and has greatest',
-            'DPS. Also, it can damage ',
-            'though shield.'
-        ],
-
-        [
-            'Tesla',
-            'Tesla Tower can damage all ',
-            'enemys with in range, and ',
-            'interfer the shield ',
-            'regeneration.'
-        ],
-
-        [
-            'Acid',
-            'Acid can make the enemy ',
-            'miss the direction and ',
-            'go backward on the track.'
-        ],
-
-        [
-            'Split',
-            'Split can shoot special ',
-            'bullet which is able to ',
-            'split multiple times, ',
-            'depending on it\'s layer.'
-        ],
-    ]
+    buy_tower_buttons = init_buy_tower_buttons()
+    buy_tower_info = init_buy_tower_info()
 
     # sent next wave
     sent_next_wave_button = button(
         'sent_next_wave', pygame.Vector2(775, 490),
         [0, 0, 0], 32, 32,
-        ['start_button.png'],
-        buy_tower_buttons_onclick
+        ['start_button.png']
     )
 
     setting_button = button(
@@ -227,66 +326,7 @@ def level(screen, display, level_now='basic_level.json'):
     is_sending_boss = False
 
     # Enhance Enemy
-
-    if wave >= 100:
-        enemy_base_info[0][1][0] = 15
-        enemy_base_info[0][1][3] = 3
-        enemy_base_info[0][0][3] = 60
-        enemy_base_info[0][0][4] = 150
-        enemy_types[0] = angry_basic(
-            enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
-        enemy_types[0].location = enemy_types[0].pos
-    if wave >= 125:
-        enemy_base_info[1][1][0] = 2.5
-        enemy_base_info[1][1][1] = 1.25
-        enemy_base_info[1][1][2] = 35
-        enemy_base_info[1][1][3] = 15
-        enemy_base_info[1][0][3] = 80
-        enemy_base_info[1][0][4] = 135
-        enemy_types[1] = chaos_eye(
-            enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
-        enemy_types[1].location = enemy_types[1].pos
-    if wave >= 150:
-        enemy_base_info[2][1][0] = 100
-        enemy_base_info[2][1][1] = 40
-        enemy_base_info[2][1][2] = 3
-        enemy_base_info[2][1][3] = 1.5
-        enemy_base_info[2][0][3] = 50
-        enemy_base_info[2][0][4] = 150
-        enemy_types[2] = super_shield(
-            enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
-        enemy_types[2].location = enemy_types[2].pos
-    if wave >= 200:
-        # make basic enemy much stronger
-        enemy_base_info[0][1][0] = 200
-        enemy_base_info[0][1][1] = 0.01
-        enemy_base_info[0][1][2] = 0.01
-        enemy_base_info[0][1][3] = 75
-        enemy_base_info[0][0][3] = 100
-        enemy_base_info[0][0][4] = 100
-        enemy_types[0] = shielded_basic(
-            enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
-        enemy_types[0].location = enemy_types[0].pos
-    if wave >= 225:
-        enemy_base_info[1][1][0] = 25
-        enemy_base_info[1][1][1] = 12.5
-        enemy_base_info[1][1][2] = 350
-        enemy_base_info[1][1][3] = 75
-        enemy_base_info[1][0][3] = 120
-        enemy_base_info[1][0][4] = 80
-        enemy_types[1] = storm_eye(
-            enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
-        enemy_types[1].location = enemy_types[1].pos
-    if wave >= 250:
-        enemy_base_info[2][1][0] = 1000
-        enemy_base_info[2][1][1] = 400
-        enemy_base_info[2][1][2] = 30
-        enemy_base_info[2][1][3] = 15
-        enemy_base_info[2][0][3] = 80
-        enemy_base_info[2][0][4] = 100
-        enemy_types[2] = ultra_shield(
-            enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
-        enemy_types[2].location = enemy_types[2].pos
+    enhance_enemy(wave, enemy_base_info, enemy_types, boss_types, enemy_level)
 
     # global volume
     mouse = [False, False, False]
@@ -306,113 +346,9 @@ def level(screen, display, level_now='basic_level.json'):
 
         if game_timer > send_next_wave:
             wave += 1
-            # Enhance Enemy
-            if wave >= 100:
-                # make basic enemy much stronger
-                enemy_base_info[0][1][0] = 15
-                enemy_base_info[0][1][3] = 3
-                enemy_base_info[0][0][3] = 60
-                enemy_base_info[0][0][4] = 150
-                enemy_types[0] = angry_basic(
-                    enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
-                enemy_types[0].location = enemy_types[0].pos
-            if wave >= 125:
-                enemy_base_info[1][1][0] = 2.5
-                enemy_base_info[1][1][1] = 1.25
-                enemy_base_info[1][1][2] = 35
-                enemy_base_info[1][1][3] = 15
-                enemy_base_info[1][0][3] = 80
-                enemy_base_info[1][0][4] = 135
-                enemy_types[1] = chaos_eye(
-                    enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
-                enemy_types[1].location = enemy_types[1].pos
-            if wave >= 150:
-                enemy_base_info[2][1][0] = 100
-                enemy_base_info[2][1][1] = 40
-                enemy_base_info[2][1][2] = 3
-                enemy_base_info[2][1][3] = 1.5
-                enemy_base_info[2][0][3] = 50
-                enemy_base_info[2][0][4] = 150
-                enemy_types[2] = super_shield(
-                    enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
-                enemy_types[2].location = enemy_types[2].pos
-            if wave >= 200:
-                # make basic enemy much stronger
-                enemy_base_info[0][1][0] = 300
-                enemy_base_info[0][1][1] = 0.01
-                enemy_base_info[0][1][2] = 0.01
-                enemy_base_info[0][1][3] = 75
-                enemy_base_info[0][0][3] = 100
-                enemy_base_info[0][0][4] = 100
-                enemy_types[0] = shielded_basic(
-                    enemy_types[0].pos, 0, 0, 0, 10, [enemy_types[0].pos])
-                enemy_types[0].location = enemy_types[0].pos
-                boss_types[0] = shielded_basic_boss(
-                    enemy_types[0].pos, 0, 0, 0, 20, [enemy_types[0].pos])
-            if wave >= 225:
-                enemy_base_info[1][1][0] = 25
-                enemy_base_info[1][1][1] = 12.5
-                enemy_base_info[1][1][2] = 350
-                enemy_base_info[1][1][3] = 75
-                enemy_base_info[1][0][3] = 120
-                enemy_base_info[1][0][4] = 80
-                enemy_types[1] = storm_eye(
-                    enemy_types[1].location, 0, 0, 0, 10, [enemy_types[1].pos])
-                enemy_types[1].location = enemy_types[1].pos
-                boss_types[1] = storm_eye_boss(
-                    enemy_types[1].location, 0, 0, 0, 20, [enemy_types[1].pos])
-            if wave >= 250:
-                enemy_base_info[2][1][0] = 1000
-                enemy_base_info[2][1][1] = 400
-                enemy_base_info[2][1][2] = 30
-                enemy_base_info[2][1][3] = 15
-                enemy_base_info[2][0][3] = 80
-                enemy_base_info[2][0][4] = 100
-                enemy_types[2] = ultra_shield(
-                    enemy_types[2].pos, 0, 0, 0, 10, [enemy_types[2].pos])
-                enemy_types[2].location = enemy_types[2].pos
-                boss_types[2] = ultra_high_armor_boss(
-                    enemy_types[2].pos, 0, 0, 0, 20, [enemy_types[2].pos])
-            if wave >= 300:
-                idx = 0
-                for lv in enemy_level:
-                    enemy_base_info[idx][0][4] = 50
-                    enemy_base_info[idx][0][3] += 5
-                    enemy_level[idx] += 30
-                    idx += 1
-
+            enhance_enemy()
             if (wave >= 100 and wave % 25 == 0) or is_sending_boss:
-                if boss != None:
-                    boss_level += 3
-                    is_sending_boss = True
-                else:
-                    is_sending_boss = False
-                    enemy_type_this_wave = boss_level % 3
-                    boss_level += 1
-                    boss = boss_types[enemy_type_this_wave].copy()
-                    base_hit = enemy_base_info[enemy_type_this_wave][0][0] + \
-                        enemy_base_info[enemy_type_this_wave][1][0] * \
-                        (enemy_level[enemy_type_this_wave]**2)
-                    base_armor = enemy_base_info[enemy_type_this_wave][0][1] + \
-                        enemy_base_info[enemy_type_this_wave][1][1] * \
-                        math.sqrt(enemy_level[enemy_type_this_wave])
-                    base_shield = enemy_base_info[enemy_type_this_wave][0][2] + \
-                        enemy_base_info[enemy_type_this_wave][1][2] * \
-                        (enemy_level[enemy_type_this_wave]**2)
-                    boss.__init__(
-                        level_path[0].copy(),
-                        base_hit * (difficulty / 100) * 10 * (boss_level ** 2),
-                        base_armor * (difficulty / 100) * 10 * boss_level,
-                        base_shield * (difficulty / 100) *
-                        10 * (boss_level ** 2),
-                        boss.move_speed, level_path
-                    )
-                if wave >= 250:
-                    idx = 0
-                    for lv in enemy_level:
-                        enemy_level[idx] += math.sqrt(wave)
-                        enemy_base_info[idx][1][3] += 10
-                        idx += 1
+                is_sending_boss = send_boss()
 
             # Generate Enemy
             enemy_type_this_wave = enemy_type_next_wave

@@ -13,3 +13,5 @@ from src.enemy.storm_eye import *
 from src.enemy.ultra_shield import *
 # Boss
 from src.enemy.boss import *
+# Enemy types
+from src.enemy.enemy_types import *
