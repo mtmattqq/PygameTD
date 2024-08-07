@@ -7,28 +7,33 @@ import math
 import enemy
 from button import button
 
-def do_nothing() :
+
+def do_nothing():
     return
 
-def show_text(screen, text = '', x = 0, y = 0, color = (0, 0, 0), size = 0) :
-    font=pygame.font.Font(os.path.join(os.getcwd(), 'AppData', 'unifont.ttf'), size)
-    text=font.render(text, True, color)
-    textRect=text.get_rect()
-    textRect.topleft=(x-10, y-20)
+
+def show_text(screen, text='', x=0, y=0, color=(0, 0, 0), size=0):
+    font = pygame.font.Font(os.path.join(
+        os.getcwd(), 'AppData', 'unifont.ttf'), size)
+    text = font.render(text, True, color)
+    textRect = text.get_rect()
+    textRect.topleft = (x-10, y-20)
     screen.blit(text, textRect)
 
-class tower(pygame.sprite.Sprite) :
+
+class tower(pygame.sprite.Sprite):
     def __init__(
-        self, pos = pygame.vector2(0, 0), 
-        width = TILE_SIZE, height = TILE_SIZE, 
-        pictures = [''],
-        damage = 0, reload = 0,
-        range = 0, bullet_speed = 0, 
-        volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0),
+        width=TILE_SIZE, height=TILE_SIZE,
+        pictures=[''],
+        damage=0, reload=0,
+        range=0, bullet_speed=0,
+        volume=100
+    ):
         pygame.sprite.Sprite.__init__(self)
         self.pos = pos
-        self.location = self.pos*TILE_SIZE + pygame.vector2(TILE_SIZE/2, TILE_SIZE/2)
+        self.location = self.pos*TILE_SIZE + \
+            pygame.vector2(TILE_SIZE/2, TILE_SIZE/2)
         self.height = height
         self.width = width
         self.placed = False
@@ -40,9 +45,9 @@ class tower(pygame.sprite.Sprite) :
         self.time_to_fire = 0
         self.volume = volume
         self.images = []
-        for picture in pictures :
+        for picture in pictures:
             self.images.append(pygame.transform.scale(pygame.image.load(
-                os.path.join(os.getcwd(),'AppData',picture)).convert_alpha(), (width,height)))
+                os.path.join(os.getcwd(), 'AppData', picture)).convert_alpha(), (width, height)))
         self.state = 0
         self.deconstruct_button = button(
             "decontruct", pygame.vector2(805, 490), [0, 0, 0],
@@ -52,43 +57,44 @@ class tower(pygame.sprite.Sprite) :
         # self.image = self.images[self.state]
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
-        
-    def detect_mouse(self, pos = pygame.vector2(0, 0)) :
+
+    def detect_mouse(self, pos=pygame.vector2(0, 0)):
         self_pos = self.pos*TILE_SIZE
-        if(
-            pos.x<self_pos.x+self.width and 
-            pos.x>self_pos.x and 
-            pos.y<self_pos.y+self.height and 
-            pos.y>self_pos.y
-        ) :
+        if (
+            pos.x < self_pos.x+self.width and
+            pos.x > self_pos.x and
+            pos.y < self_pos.y+self.height and
+            pos.y > self_pos.y
+        ):
             return True
         return False
-    
-    def action_onclick(self) :
+
+    def action_onclick(self):
         self.selected = True
 
-    def click(self, pos = pygame.vector2(0, 0)) :
-        if(self.detect(pos)) :
+    def click(self, pos=pygame.vector2(0, 0)):
+        if (self.detect(pos)):
             return self.action_onclick()
-        else :
+        else:
             self.selected = False
 
-    def place(self, pos = pygame.vector2(0, 0)) :
+    def place(self, pos=pygame.vector2(0, 0)):
         self.pos = pos
         self.placed = True
 
-    def display(self, screen) :
+    def display(self, screen):
         screen.blit(
-            self.images[self.state], 
+            self.images[self.state],
             (self.pos*TILE_SIZE).get_tuple()
         )
 
-    def display_info(self, screen) :
+    def display_info(self, screen):
         self.deconstruct_button.display(screen)
 
-class basic_tower(tower) :
-    class bullet :
-        def __init__(self, pos = pygame.vector2(0, 0), velocity = pygame.vector2(0, 0), damage = 0, images = []) :
+
+class basic_tower(tower):
+    class bullet:
+        def __init__(self, pos=pygame.vector2(0, 0), velocity=pygame.vector2(0, 0), damage=0, images=[]):
             self.pierce = 1
             self.pos = pos
             self.velocity = velocity
@@ -100,65 +106,70 @@ class basic_tower(tower) :
             self.state = 0
             self.size = TILE_SIZE/8
             self.damage = damage
-        def move(self, delta_time) :
+
+        def move(self, delta_time):
             self.pos += self.velocity * (delta_time/1000.0)
-        def display(self, screen) :
+
+        def display(self, screen):
             self.rect.center = self.pos.get_tuple()
             screen.blit(
-                self.images[self.state], 
+                self.images[self.state],
                 self.rect
             )
 
-        def deal_damage(self, enemy) :
-            
+        def deal_damage(self, enemy):
+
             # damage dealing formula hasn't finished
-            if enemy.shield > 0 :
+            if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
                 self.pierce -= enemy.anti_pierce
                 return
-            if self.pierce >= enemy.anti_pierce : 
-                enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
+            if self.pierce >= enemy.anti_pierce:
+                enemy.hit -= max(self.damage/20,
+                                 (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
             self.pierce -= enemy.anti_pierce
-        def detect(self, enemys = [], boss = None) :
-            for enemy in enemys :
-                if self.pierce <= 0 :
+
+        def detect(self, enemys=[], boss=None):
+            for enemy in enemys:
+                if self.pierce <= 0:
                     return
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                     self.deal_damage(enemy)
-            if boss != None :
-                if self.pierce <= 0 :
+            if boss != None:
+                if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
-                for enemy in boss.generated_unit :
-                    if self.pierce <= 0 :
+                for enemy in boss.generated_unit:
+                    if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
-            if(
+            if (
                 self.pos.x < 0 or
                 self.pos.y < 0 or
                 self.pos.x > TILE_SIZE*12 or
                 self.pos.y > TILE_SIZE*9
-            ) :
+            ):
                 self.pierce = 0
 
     def __init__(
-        self, pos = pygame.vector2(0, 0), volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0), volume=100
+    ):
         width = TILE_SIZE
         height = TILE_SIZE
-        pictures = ['basic_tower16.png', 'basic_tower_barrel.png', 'basic_tower_bullet.png']
+        pictures = ['basic_tower16.png',
+                    'basic_tower_barrel.png', 'basic_tower_bullet.png']
         damage = 10
         reload = 3
         range = 1.5*TILE_SIZE
         bullet_speed = 4*TILE_SIZE
         super().__init__(
-            pos, width, height, 
+            pos, width, height,
             pictures,
             damage, reload,
-            range, bullet_speed, 
+            range, bullet_speed,
             volume
         )
         self.aim = pygame.vector2(0, 1)
@@ -166,19 +177,19 @@ class basic_tower(tower) :
         self.bullets = []
         self.target = 'first'
         self.upgrade_damage = button(
-            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_range = button(
-            'range', pygame.vector2(1000, 109), [0, 0, 0], 
+            'range', pygame.vector2(1000, 109), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_bullet_speed = button(
-            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -189,246 +200,251 @@ class basic_tower(tower) :
             os.path.join(os.getcwd(), 'AppData', 'basic_tower_fire.wav')
         )
         self.fire_sound.set_volume(self.volume / 100)
-        
+
     def display(self, screen):
         super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
-        rotated_rect = barrel.get_rect(center = (self.pos*TILE_SIZE).get_tuple())
+        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
         rotated_rect.centery -= dw
         screen.blit(
-            barrel, 
+            barrel,
             rotated_rect.center
         )
-    def display_bullets(self, screen) :
-        for bullet in self.bullets :
+
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
             bullet.display(screen)
 
-    def aim_first(self, enemys = [], boss = None) :
+    def aim_first(self, enemys=[], boss=None):
         first_enemy = None
-        for enemy in enemys :
-            if(
+        for enemy in enemys:
+            if (
                 (first_enemy == None or
-                enemy.progress > first_enemy.progress) and
+                 enemy.progress > first_enemy.progress) and
                 dis(self.location, enemy.location) < self.range
-            ) :
+            ):
                 first_enemy = enemy
-        if boss != None :
-            for enemy in boss.generated_unit :
-                if(
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (
                     (first_enemy == None or
-                    enemy.progress > first_enemy.progress) and
+                     enemy.progress > first_enemy.progress) and
                     dis(self.location, enemy.location) < self.range
-                ) :
+                ):
                     first_enemy = enemy
-            if(
+            if (
                 (first_enemy == None or
-                boss.progress > first_enemy.progress) and
+                 boss.progress > first_enemy.progress) and
                 dis(self.location, boss.location) < self.range
-            ) :
+            ):
                 first_enemy = boss
-        if first_enemy == None :
+        if first_enemy == None:
             return False
-        
+
         relation = first_enemy.location - self.location
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = [], boss = None) :
-        if not self.aim_first(enemys, boss) : 
+
+    def shoot_first(self, enemys=[], boss=None):
+        if not self.aim_first(enemys, boss):
             return False
         bullet = self.bullet(
-            self.location.copy(), pygame.vector2(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0),
             self.damage, [self.images[2]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
-        
+
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return True
-    
-    def update_time_to_fire(self, delta_time = 0) :
-        if self.time_to_fire > 0 :
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = [], boss = None) :
-        if self.time_to_fire <= 0 :
-            if self.target == 'first' :
-                if self.shoot_first(enemys, boss) :
+    def shoot(self, enemys=[], boss=None):
+        if self.time_to_fire <= 0:
+            if self.target == 'first':
+                if self.shoot_first(enemys, boss):
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
-        else :
+        else:
             self.aim_first(enemys, boss)
-    def update(self, delta_time, enemys = [], boss = None) :
+
+    def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         self.shoot(enemys, boss)
-        for bullet in self.bullets :
+        for bullet in self.bullets:
             bullet.move(delta_time)
             bullet.detect(enemys, boss)
-        for bullet in self.bullets :
-            if bullet.pierce <= 0 :
+        for bullet in self.bullets:
+            if bullet.pierce <= 0:
                 self.bullets.remove(bullet)
-        
-    def display_info(self, screen, natural_ingot) :
+
+    def display_info(self, screen, natural_ingot):
         super().display_info(screen)
         show_text(
-            screen, 
-            'Damage : {:.2f}'.format(self.damage), 
+            screen,
+            'Damage : {:.2f}'.format(self.damage),
             790, 100, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Range  : {:.5f}'.format(self.range/TILE_SIZE), 
+            screen,
+            'Range  : {:.5f}'.format(self.range/TILE_SIZE),
             790, 125, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Reload : {:.2f}'.format(self.reload), 
+            screen,
+            'Reload : {:.2f}'.format(self.reload),
             790, 150, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Bspeed : {:.5f}'.format(self.bullet_speed/TILE_SIZE), 
+            screen,
+            'Bspeed : {:.5f}'.format(self.bullet_speed/TILE_SIZE),
             790, 175, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Level', 
+            screen,
+            'Level',
             790, 220, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(self.damage_level), 
+            screen,
+            'Damage : {}'.format(self.damage_level),
             790, 250, [0, 0, 0], 20
         )
-        if self.range_level > 1e15 :
+        if self.range_level > 1e15:
             text = 'Range : max'
-        else :
+        else:
             text = 'Range : {}'.format(self.range_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 275, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(self.reload_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 300, [0, 0, 0], 20
         )
-        if self.bullet_speed_level > 1e15 :
+        if self.bullet_speed_level > 1e15:
             text = 'Bullet Speed : max'
-        else :
+        else:
             text = 'Bullet Speed : {}'.format(self.bullet_speed_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 325, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Cost', 
+            screen,
+            'Cost',
             790, 370, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(50 + 10*(self.damage_level+1)), 
+            screen,
+            'Damage : {}'.format(50 + 10*(self.damage_level+1)),
             790, 400, [0, 0, 0], 20
         )
-        if self.range_level > 1e15 :
+        if self.range_level > 1e15:
             text = 'Range : max'
-        else :
+        else:
             text = 'Range : {}'.format(50 + 10*(self.range_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 425, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(50 + 10*(self.reload_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 450, [0, 0, 0], 20
         )
-        if self.bullet_speed_level > 1e15 :
+        if self.bullet_speed_level > 1e15:
             text = 'Bullet Speed : max'
-        else :
-            text = 'Bullet Speed : {}'.format(50 + 10*(self.bullet_speed_level+1))
+        else:
+            text = 'Bullet Speed : {}'.format(
+                50 + 10*(self.bullet_speed_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 475, [0, 0, 0], 20
         )
 
-
-        if natural_ingot >= 50 + (self.damage_level+1)*10 :
+        if natural_ingot >= 50 + (self.damage_level+1)*10:
             self.upgrade_damage.state = 0
-        else :
+        else:
             self.upgrade_damage.state = 1
         self.upgrade_damage.display(screen)
-        if natural_ingot >= 50 + (self.range_level+1)*10 :
+        if natural_ingot >= 50 + (self.range_level+1)*10:
             self.upgrade_range.state = 0
-        else :
+        else:
             self.upgrade_range.state = 1
         self.upgrade_range.display(screen)
-        if natural_ingot >= 50 + (self.reload_level+1)*10 :
+        if natural_ingot >= 50 + (self.reload_level+1)*10:
             self.upgrade_reload.state = 0
-        else :
+        else:
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if natural_ingot >= 50 + (self.bullet_speed_level+1)*10 :
+        if natural_ingot >= 50 + (self.bullet_speed_level+1)*10:
             self.upgrade_bullet_speed.state = 0
-        else :
+        else:
             self.upgrade_bullet_speed.state = 1
         self.upgrade_bullet_speed.display(screen)
-    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
-        if self.upgrade_damage.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.damage_level+1)*10 :
+
+    def upgrade(self, mouse_pos=pygame.vector2(0, 0), natural_ingot=0):
+        if self.upgrade_damage.click(mouse_pos):
+            if natural_ingot >= 50 + (self.damage_level+1)*10:
                 self.damage_level += 1
                 natural_ingot -= 50 + self.damage_level*10
                 self.damage += 10.0 * math.sqrt(self.damage_level)
-        elif self.upgrade_range.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.range_level+1)*10 :
+        elif self.upgrade_range.click(mouse_pos):
+            if natural_ingot >= 50 + (self.range_level+1)*10:
                 self.range_level += 1
                 natural_ingot -= 50 + self.range_level*10
                 self.range += TILE_SIZE/2 * 1/self.range_level
-                if self.range > 5 * TILE_SIZE :
+                if self.range > 5 * TILE_SIZE:
                     self.range = 5 * TILE_SIZE
                     self.range_level = 1e20
-        elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.reload_level+1)*10 :
+        elif self.upgrade_reload.click(mouse_pos):
+            if natural_ingot >= 50 + (self.reload_level+1)*10:
                 self.reload_level += 1
                 natural_ingot -= 50 + self.reload_level*10
                 self.reload += 3 * 1/self.reload_level
-                if self.reload > 60 :
+                if self.reload > 60:
                     self.reload = 60
                     self.reload_level = 1e20
-        elif self.upgrade_bullet_speed.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.bullet_speed_level+1)*10 :
+        elif self.upgrade_bullet_speed.click(mouse_pos):
+            if natural_ingot >= 50 + (self.bullet_speed_level+1)*10:
                 self.bullet_speed_level += 1
                 natural_ingot -= 50 + self.bullet_speed_level*10
                 self.bullet_speed += TILE_SIZE * 1/self.bullet_speed_level
-                if self.bullet_speed > 10 * TILE_SIZE :
+                if self.bullet_speed > 10 * TILE_SIZE:
                     self.bullet_speed = 10 * TILE_SIZE
                     self.bullet_speed_level = 1e20
-        else :
+        else:
             return [False, natural_ingot]
         return [True, natural_ingot]
 
-class sniper_tower(tower) :
-    class bullet :
+
+class sniper_tower(tower):
+    class bullet:
         def __init__(
-                self, pos = pygame.vector2(0, 0), 
-                velocity = pygame.vector2(0, 0), 
-                damage = 0, hardness = 0, 
-                pierce = 0, images = []
-        ) :
+                self, pos=pygame.vector2(0, 0),
+                velocity=pygame.vector2(0, 0),
+                damage=0, hardness=0,
+                pierce=0, images=[]
+        ):
             self.pierce = pierce
             self.pos = pos
             self.velocity = velocity
@@ -441,64 +457,69 @@ class sniper_tower(tower) :
             self.size = TILE_SIZE/2
             self.damage = damage
             self.hardness = hardness
-        def move(self, delta_time) :
+
+        def move(self, delta_time):
             self.pos += self.velocity * (delta_time/1000.0)
-        def display(self, screen) :
+
+        def display(self, screen):
             self.rect.center = self.pos.get_tuple()
             screen.blit(
-                self.images[self.state], 
+                self.images[self.state],
                 self.rect
             )
 
-        def deal_damage(self, enemy) :
+        def deal_damage(self, enemy):
             self.pierce -= enemy.anti_pierce
             # damage dealing formula hasn't finished
-            if enemy.shield > 0 :
+            if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
                 return
-            enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
+            enemy.hit -= max(self.damage/20,
+                             (1 - 19*enemy.armor/400) * self.damage)
             enemy.armor -= self.hardness
             enemy.check_state()
-        def detect(self, enemys = [], boss = None) :
-            for enemy in enemys :
-                if self.pierce <= 0 :
+
+        def detect(self, enemys=[], boss=None):
+            for enemy in enemys:
+                if self.pierce <= 0:
                     break
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                     self.deal_damage(enemy)
-            if boss != None :
-                if self.pierce <= 0 :
+            if boss != None:
+                if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
-                for enemy in boss.generated_unit :
-                    if self.pierce <= 0 :
+                for enemy in boss.generated_unit:
+                    if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
-            if(
+            if (
                 self.pos.x < 0 or
                 self.pos.y < 0 or
                 self.pos.x > TILE_SIZE*12 or
                 self.pos.y > TILE_SIZE*9
-            ) :
+            ):
                 self.pierce = 0
 
     def __init__(
-        self, pos = pygame.vector2(0, 0), volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0), volume=100
+    ):
         width = TILE_SIZE
         height = TILE_SIZE
-        pictures = ['sniper_tower16.png', 'sniper_tower_barrel.png', 'sniper_tower_bullet.png']
+        pictures = ['sniper_tower16.png',
+                    'sniper_tower_barrel.png', 'sniper_tower_bullet.png']
         damage = 50
         reload = 0.5
         range = 8*TILE_SIZE
         bullet_speed = 12*TILE_SIZE
-        
+
         super().__init__(
-            pos, width, height, 
+            pos, width, height,
             pictures,
             damage, reload,
-            range, bullet_speed, 
+            range, bullet_speed,
             volume
         )
         self.images[2] = pygame.transform.scale(
@@ -516,269 +537,274 @@ class sniper_tower(tower) :
         self.fire_sound.set_volume(self.volume / 100)
 
         self.upgrade_damage = button(
-            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_hardness = button(
-            'hardness', pygame.vector2(1000, 109), [0, 0, 0], 
+            'hardness', pygame.vector2(1000, 109), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_pierce = button(
-            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
         self.hardness_level = 0
         self.reload_level = 0
         self.pierce_level = 0
-        
+
     def display(self, screen):
         super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
-        rotated_rect = barrel.get_rect(center = (self.pos*TILE_SIZE).get_tuple())
+        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
         rotated_rect.centery -= dw
         screen.blit(
-            barrel, 
+            barrel,
             rotated_rect.center
         )
-    def display_bullets(self, screen) :
-        for bullet in self.bullets :
+
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
             bullet.display(screen)
 
-    def aim_first(self, enemys = [], boss = None) :
+    def aim_first(self, enemys=[], boss=None):
         first_enemy = None
-        for enemy in enemys :
-            if(
+        for enemy in enemys:
+            if (
                 (first_enemy == None or
-                enemy.progress > first_enemy.progress) and
+                 enemy.progress > first_enemy.progress) and
                 dis(self.location, enemy.location) < self.range
-            ) :
+            ):
                 first_enemy = enemy
-        if boss != None :
-            for enemy in boss.generated_unit :
-                if(
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (
                     (first_enemy == None or
-                    enemy.progress > first_enemy.progress) and
+                     enemy.progress > first_enemy.progress) and
                     dis(self.location, enemy.location) < self.range
-                ) :
+                ):
                     first_enemy = enemy
-            if(
+            if (
                 (first_enemy == None or
-                boss.progress > first_enemy.progress) and
+                 boss.progress > first_enemy.progress) and
                 dis(self.location, boss.location) < self.range
-            ) :
+            ):
                 first_enemy = boss
         # print((first_enemy.pos - self.location).get_tuple())
-        if first_enemy == None :
+        if first_enemy == None:
             return False
-        
+
         relation = first_enemy.location - self.location
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = [], boss = None) :
-        if not self.aim_first(enemys, boss) : 
+
+    def shoot_first(self, enemys=[], boss=None):
+        if not self.aim_first(enemys, boss):
             return False
         bullet = self.bullet(
-            self.location.copy(), pygame.vector2(0, 0), 
-            self.damage, self.hardness, 
+            self.location.copy(), pygame.vector2(0, 0),
+            self.damage, self.hardness,
             self.pierce, [self.images[2]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return True
-    
-    def update_time_to_fire(self, delta_time = 0) :
-        if self.time_to_fire > 0 :
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = [], boss = None) :
-        if self.time_to_fire <= 0 :
-            if self.target == 'first' :
-                if self.shoot_first(enemys, boss) :
+    def shoot(self, enemys=[], boss=None):
+        if self.time_to_fire <= 0:
+            if self.target == 'first':
+                if self.shoot_first(enemys, boss):
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
-            
-        else :
+
+        else:
             self.aim_first(enemys, boss)
-    def update(self, delta_time, enemys = [], boss = None) :
+
+    def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         self.shoot(enemys, boss)
-        for bullet in self.bullets :
+        for bullet in self.bullets:
             bullet.move(delta_time)
             bullet.detect(enemys, boss)
-        for bullet in self.bullets :
-            if bullet.pierce <= 0 :
+        for bullet in self.bullets:
+            if bullet.pierce <= 0:
                 self.bullets.remove(bullet)
-        
-    def display_info(self, screen, natural_ingot) :
+
+    def display_info(self, screen, natural_ingot):
         super().display_info(screen)
         show_text(
-            screen, 
-            'Damage   : {:.2f}'.format(self.damage), 
+            screen,
+            'Damage   : {:.2f}'.format(self.damage),
             790, 100, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Hardness : {:.5f}'.format(self.hardness), 
+            screen,
+            'Hardness : {:.5f}'.format(self.hardness),
             790, 125, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Reload   : {:.2f}'.format(self.reload), 
+            screen,
+            'Reload   : {:.2f}'.format(self.reload),
             790, 150, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Pierce   : {}'.format(self.pierce), 
+            screen,
+            'Pierce   : {}'.format(self.pierce),
             790, 175, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Level', 
+            screen,
+            'Level',
             790, 220, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(self.damage_level), 
+            screen,
+            'Damage : {}'.format(self.damage_level),
             790, 250, [0, 0, 0], 20
         )
-        if self.hardness_level > 1e15 :
+        if self.hardness_level > 1e15:
             text = 'Hardness : max'
-        else :
+        else:
             text = 'Hardness : {}'.format(self.hardness_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 275, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(self.reload_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 300, [0, 0, 0], 20
         )
-        if self.pierce_level > 1e15 :
+        if self.pierce_level > 1e15:
             text = 'Pierce : max'
-        else :
+        else:
             text = 'Pierce : {}'.format(self.pierce_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 325, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Cost', 
+            screen,
+            'Cost',
             790, 370, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(50 + 50*(self.damage_level+1)), 
+            screen,
+            'Damage : {}'.format(50 + 50*(self.damage_level+1)),
             790, 400, [0, 0, 0], 20
         )
-        if self.hardness_level > 1e15 :
+        if self.hardness_level > 1e15:
             text = 'Hardness : max'
-        else :
+        else:
             text = 'Hardness : {}'.format(50 + 50*(self.hardness_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 425, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(50 + 50*(self.reload_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 450, [0, 0, 0], 20
         )
-        if self.pierce_level > 1e15 :
+        if self.pierce_level > 1e15:
             text = 'Pierce : max'
-        else :
+        else:
             text = 'Pierce : {}'.format(100 * (2**(self.pierce_level+1)))
         show_text(
-            screen, text, 
+            screen, text,
             790, 475, [0, 0, 0], 20
         )
 
-        if natural_ingot >= 50 + (self.damage_level+1)*50 :
+        if natural_ingot >= 50 + (self.damage_level+1)*50:
             self.upgrade_damage.state = 0
-        else :
+        else:
             self.upgrade_damage.state = 1
         self.upgrade_damage.display(screen)
-        if natural_ingot >= 50 + (self.hardness_level+1)*50 :
+        if natural_ingot >= 50 + (self.hardness_level+1)*50:
             self.upgrade_hardness.state = 0
-        else :
+        else:
             self.upgrade_hardness.state = 1
         self.upgrade_hardness.display(screen)
-        if natural_ingot >= 50 + (self.reload_level+1)*50 :
+        if natural_ingot >= 50 + (self.reload_level+1)*50:
             self.upgrade_reload.state = 0
-        else :
+        else:
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if (not self.pierce_level > 1e15) and natural_ingot >= 100 * (2 ** (self.pierce_level+1)) :
+        if (not self.pierce_level > 1e15) and natural_ingot >= 100 * (2 ** (self.pierce_level+1)):
             self.upgrade_pierce.state = 0
-        else :
+        else:
             self.upgrade_pierce.state = 1
         self.upgrade_pierce.display(screen)
-    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
-        if self.upgrade_damage.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.damage_level+1)*50 :
+
+    def upgrade(self, mouse_pos=pygame.vector2(0, 0), natural_ingot=0):
+        if self.upgrade_damage.click(mouse_pos):
+            if natural_ingot >= 50 + (self.damage_level+1)*50:
                 self.damage_level += 1
                 natural_ingot -= 50 + self.damage_level*50
                 self.damage += 50.0 * math.sqrt(self.damage_level)
-        elif self.upgrade_hardness.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.hardness_level+1)*50 :
+        elif self.upgrade_hardness.click(mouse_pos):
+            if natural_ingot >= 50 + (self.hardness_level+1)*50:
                 self.hardness_level += 1
                 natural_ingot -= 50 + self.hardness_level*50
                 self.hardness += 3 * 1/self.hardness_level
-                if self.hardness >= 20 :
+                if self.hardness >= 20:
                     self.hardness = 20
                     self.hardness_level = 1e20
-        elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.reload_level+1)*50 :
+        elif self.upgrade_reload.click(mouse_pos):
+            if natural_ingot >= 50 + (self.reload_level+1)*50:
                 self.reload_level += 1
                 natural_ingot -= 50 + self.reload_level*10
                 self.reload += 0.2 * math.log10(self.reload_level*2)
-                if self.reload >= 5 :
+                if self.reload >= 5:
                     self.reload = 5
                     self.reload_level = 1e20
-        elif self.upgrade_pierce.click(mouse_pos) :
-            if(
-                self.pierce_level < 1e15 and 
+        elif self.upgrade_pierce.click(mouse_pos):
+            if (
+                self.pierce_level < 1e15 and
                 natural_ingot >= 100 * (2**(self.pierce_level+1))
-            ) :
+            ):
                 self.pierce_level += 1
                 natural_ingot -= 100 * (2**self.pierce_level)
                 self.pierce += 1
-                if self.pierce >= 10 :
+                if self.pierce >= 10:
                     self.pierce = 10
                     self.pierce_level = 1e20
-        else :
+        else:
             return [False, natural_ingot]
         return [True, natural_ingot]
 
-class cannon_tower(tower) :
-    class bullet :
+
+class cannon_tower(tower):
+    class bullet:
         def __init__(
-            self, pos = pygame.vector2(0, 0), 
-            velocity = pygame.vector2(0, 0), 
-            damage = 0, explode_range = 0,
-            images = []
-        ) :
+            self, pos=pygame.vector2(0, 0),
+            velocity=pygame.vector2(0, 0),
+            damage=0, explode_range=0,
+            images=[]
+        ):
             self.pierce = 1
             self.pos = pos
             self.velocity = velocity
@@ -791,74 +817,79 @@ class cannon_tower(tower) :
             self.size = TILE_SIZE/2
             self.damage = damage
             self.explode_range = explode_range
-        def move(self, delta_time) :
+
+        def move(self, delta_time):
             self.pos += self.velocity * (delta_time/1000.0)
-        def display(self, screen) :
+
+        def display(self, screen):
             self.rect.center = self.pos.get_tuple()
             screen.blit(
-                self.images[self.state], 
+                self.images[self.state],
                 self.rect
             )
 
-        def deal_damage(self, enemy) :
+        def deal_damage(self, enemy):
             # damage dealing formula hasn't finished
-            if enemy.shield > 0 :
+            if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
-            if self.pierce >= enemy.anti_pierce :
+            if self.pierce >= enemy.anti_pierce:
                 armor = enemy.armor + math.log10(max(1, enemy.shield))
-                enemy.hit -= max(self.damage/20, (1 - 19*armor/400) * self.damage)
+                enemy.hit -= max(self.damage/20,
+                                 (1 - 19*armor/400) * self.damage)
             enemy.check_state()
-        def detect(self, enemys = [], boss = None) :
+
+        def detect(self, enemys=[], boss=None):
             crush = False
-            if self.pierce <= 0 :
+            if self.pierce <= 0:
                 return crush
-            for enemy in enemys :
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+            for enemy in enemys:
+                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                     crush = True
 
-            if boss != None :
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+            if boss != None:
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
                     crush = True
-                for enemy in boss.generated_unit :
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                for enemy in boss.generated_unit:
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                         crush = True
 
-            if crush :
-                for enemy in enemys :
-                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+            if crush:
+                for enemy in enemys:
+                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
                         self.deal_damage(enemy)
-                if boss != None :
-                    if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2 :
+                if boss != None:
+                    if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2:
                         crush = True
                         self.deal_damage(boss)
-                    for enemy in boss.generated_unit :
-                        if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+                    for enemy in boss.generated_unit:
+                        if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
                             self.deal_damage(enemy)
                 self.pierce -= 1
-            if(
+            if (
                 self.pos.x < 0 or
                 self.pos.y < 0 or
                 self.pos.x > TILE_SIZE*12 or
                 self.pos.y > TILE_SIZE*9
-            ) :
+            ):
                 self.pierce = 0
             return False
 
     def __init__(
-        self, pos = pygame.vector2(0, 0), volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0), volume=100
+    ):
         width = TILE_SIZE
         height = TILE_SIZE
-        pictures = ['cannon_tower16.png', 'cannon_tower_barrel.png', 'cannon_tower_bullet.png']
+        pictures = ['cannon_tower16.png',
+                    'cannon_tower_barrel.png', 'cannon_tower_bullet.png']
         damage = 100
         reload = 1
         range = 2*TILE_SIZE
         bullet_speed = 2*TILE_SIZE
         super().__init__(
-            pos, width, height, 
+            pos, width, height,
             pictures,
             damage, reload,
-            range, bullet_speed, 
+            range, bullet_speed,
             volume
         )
         self.images[2] = pygame.transform.scale(
@@ -869,19 +900,19 @@ class cannon_tower(tower) :
         self.target = 'first'
         self.explode_range = 1 * TILE_SIZE
         self.upgrade_damage = button(
-            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_explode_range = button(
-            'range', pygame.vector2(1000, 109), [0, 0, 0], 
+            'range', pygame.vector2(1000, 109), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_bullet_speed = button(
-            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -896,248 +927,254 @@ class cannon_tower(tower) :
             os.path.join(os.getcwd(), 'AppData', 'cannon_tower_explode.wav')
         )
         self.explode_sound.set_volume(self.volume / 100)
-        
+
     def display(self, screen):
         super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
-        rotated_rect = barrel.get_rect(center = (self.pos*TILE_SIZE).get_tuple())
+        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
         rotated_rect.centery -= dw
         screen.blit(
-            barrel, 
+            barrel,
             rotated_rect.center
         )
-    def display_bullets(self, screen) :
-        for bullet in self.bullets :
+
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
             bullet.display(screen)
 
-    def aim_first(self, enemys = [], boss = None) :
+    def aim_first(self, enemys=[], boss=None):
         first_enemy = None
-        for enemy in enemys :
-            if(
+        for enemy in enemys:
+            if (
                 (first_enemy == None or
-                enemy.progress > first_enemy.progress) and
+                 enemy.progress > first_enemy.progress) and
                 dis(self.location, enemy.location) < self.range
-            ) :
+            ):
                 first_enemy = enemy
-        if boss != None :
-            for enemy in boss.generated_unit :
-                if(
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (
                     (first_enemy == None or
-                    enemy.progress > first_enemy.progress) and
+                     enemy.progress > first_enemy.progress) and
                     dis(self.location, enemy.location) < self.range
-                ) :
+                ):
                     first_enemy = enemy
-            if(
+            if (
                 (first_enemy == None or
-                boss.progress > first_enemy.progress) and
+                 boss.progress > first_enemy.progress) and
                 dis(self.location, boss.location) < self.range
-            ) :
+            ):
                 first_enemy = boss
-        if first_enemy == None :
+        if first_enemy == None:
             return False
-        
+
         relation = first_enemy.pos - self.location
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = [], boss = None) :
-        if not self.aim_first(enemys, boss) : 
+
+    def shoot_first(self, enemys=[], boss=None):
+        if not self.aim_first(enemys, boss):
             return False
         bullet = self.bullet(
-            self.location.copy(), pygame.vector2(0, 0), 
-            self.damage, self.explode_range, 
+            self.location.copy(), pygame.vector2(0, 0),
+            self.damage, self.explode_range,
             [self.images[2]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return True
-    
-    def update_time_to_fire(self, delta_time = 0) :
-        if self.time_to_fire > 0 :
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = [], boss = None) :
-        if self.time_to_fire <= 0 :
-            if self.target == 'first' :
-                if self.shoot_first(enemys, boss) :
+    def shoot(self, enemys=[], boss=None):
+        if self.time_to_fire <= 0:
+            if self.target == 'first':
+                if self.shoot_first(enemys, boss):
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
-            
-        else :
+
+        else:
             self.aim_first(enemys, boss)
-    def update(self, delta_time, enemys = [], boss = None) :
+
+    def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         self.shoot(enemys, boss)
-        for bullet in self.bullets :
+        for bullet in self.bullets:
             bullet.move(delta_time)
             bullet.detect(enemys, boss)
-        for bullet in self.bullets :
-            if bullet.pierce <= 0 :
+        for bullet in self.bullets:
+            if bullet.pierce <= 0:
                 self.bullets.remove(bullet)
                 self.explode_sound.play()
-        
-    def display_info(self, screen, natural_ingot) :
+
+    def display_info(self, screen, natural_ingot):
         super().display_info(screen)
         show_text(
-            screen, 
-            'Damage : {:.2f}'.format(self.damage), 
+            screen,
+            'Damage : {:.2f}'.format(self.damage),
             790, 100, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Explode Range : {:.4f}'.format(self.explode_range/TILE_SIZE), 
+            screen,
+            'Explode Range : {:.4f}'.format(self.explode_range/TILE_SIZE),
             790, 125, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Reload : {:.2f}'.format(self.reload), 
+            screen,
+            'Reload : {:.2f}'.format(self.reload),
             790, 150, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Bspeed : {:.5f}'.format(self.bullet_speed/TILE_SIZE), 
+            screen,
+            'Bspeed : {:.5f}'.format(self.bullet_speed/TILE_SIZE),
             790, 175, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Level', 
+            screen,
+            'Level',
             790, 220, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(self.damage_level), 
+            screen,
+            'Damage : {}'.format(self.damage_level),
             790, 250, [0, 0, 0], 20
         )
-        if self.explode_range_level > 1e15 :
+        if self.explode_range_level > 1e15:
             text = 'Explode Range : max'
-        else :
+        else:
             text = 'Explode Range : {}'.format(self.explode_range_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 275, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(self.reload_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 300, [0, 0, 0], 20
         )
-        if self.bullet_speed_level > 1e15 :
+        if self.bullet_speed_level > 1e15:
             text = 'Bullet Speed : max'
-        else :
+        else:
             text = 'Bullet Speed : {}'.format(self.bullet_speed_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 325, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Cost', 
+            screen,
+            'Cost',
             790, 370, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(100 + 100*(self.damage_level+1)), 
+            screen,
+            'Damage : {}'.format(100 + 100*(self.damage_level+1)),
             790, 400, [0, 0, 0], 20
         )
-        if self.explode_range_level > 1e15 :
+        if self.explode_range_level > 1e15:
             text = 'Explode Range : max'
-        else :
-            text = 'Explode Range : {}'.format(100 + 100*self.explode_range_level)
+        else:
+            text = 'Explode Range : {}'.format(
+                100 + 100*self.explode_range_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 425, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(100 + 100*(self.reload_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 450, [0, 0, 0], 20
         )
-        if self.bullet_speed_level > 1e15 :
+        if self.bullet_speed_level > 1e15:
             text = 'Bullet Speed : max'
-        else :
-            text = 'Bullet Speed : {}'.format(100 + 100*(self.bullet_speed_level+1))
+        else:
+            text = 'Bullet Speed : {}'.format(
+                100 + 100*(self.bullet_speed_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 475, [0, 0, 0], 20
         )
 
-
-        if natural_ingot >= 100 + (self.damage_level+1)*100 :
+        if natural_ingot >= 100 + (self.damage_level+1)*100:
             self.upgrade_damage.state = 0
-        else :
+        else:
             self.upgrade_damage.state = 1
         self.upgrade_damage.display(screen)
-        if natural_ingot >= 100 + (self.explode_range_level+1)*100 :
+        if natural_ingot >= 100 + (self.explode_range_level+1)*100:
             self.upgrade_explode_range.state = 0
-        else :
+        else:
             self.upgrade_explode_range.state = 1
         self.upgrade_explode_range.display(screen)
-        if natural_ingot >= 100 + (self.reload_level+1)*100 :
+        if natural_ingot >= 100 + (self.reload_level+1)*100:
             self.upgrade_reload.state = 0
-        else :
+        else:
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if natural_ingot >= 100 + (self.bullet_speed_level+1)*100 :
+        if natural_ingot >= 100 + (self.bullet_speed_level+1)*100:
             self.upgrade_bullet_speed.state = 0
-        else :
+        else:
             self.upgrade_bullet_speed.state = 1
         self.upgrade_bullet_speed.display(screen)
-    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
-        if self.upgrade_damage.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.damage_level+1)*100 :
+
+    def upgrade(self, mouse_pos=pygame.vector2(0, 0), natural_ingot=0):
+        if self.upgrade_damage.click(mouse_pos):
+            if natural_ingot >= 100 + (self.damage_level+1)*100:
                 self.damage_level += 1
                 natural_ingot -= 100 + self.damage_level*100
                 self.damage += 100.0 * math.sqrt(self.damage_level)
-        elif self.upgrade_explode_range.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.explode_range_level+1)*100 :
+        elif self.upgrade_explode_range.click(mouse_pos):
+            if natural_ingot >= 100 + (self.explode_range_level+1)*100:
                 self.explode_range_level += 1
                 natural_ingot -= 100 + self.explode_range_level*100
                 self.explode_range += TILE_SIZE/3 * 1/self.explode_range_level
-                if self.explode_range > 3 * TILE_SIZE :
+                if self.explode_range > 3 * TILE_SIZE:
                     self.explode_range = 3 * TILE_SIZE
                     self.explode_range_level = 1e20
-        elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.reload_level+1)*100 :
+        elif self.upgrade_reload.click(mouse_pos):
+            if natural_ingot >= 100 + (self.reload_level+1)*100:
                 self.reload_level += 1
                 natural_ingot -= 100 + self.reload_level*100
                 self.reload += 0.5 * math.log10(self.reload_level*2)
-                if self.reload >= 10 :
+                if self.reload >= 10:
                     self.reload = 10
                     self.reload_level = 1e20
-        elif self.upgrade_bullet_speed.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.bullet_speed_level+1)*100 :
+        elif self.upgrade_bullet_speed.click(mouse_pos):
+            if natural_ingot >= 100 + (self.bullet_speed_level+1)*100:
                 self.bullet_speed_level += 1
                 natural_ingot -= 100 + self.bullet_speed_level*100
                 self.bullet_speed += TILE_SIZE/3 * 1/self.bullet_speed_level
-                if self.bullet_speed >= 4 * TILE_SIZE :
+                if self.bullet_speed >= 4 * TILE_SIZE:
                     self.bullet_speed = 4 * TILE_SIZE
                     self.bullet_speed_level = 1e20
-        else :
+        else:
             return [False, natural_ingot]
         return [True, natural_ingot]
 
-class tesla_tower(tower) :
-    class bullet :
+
+class tesla_tower(tower):
+    class bullet:
         def __init__(
-            self, pos = pygame.vector2(0, 0),
-            interference_time = 0,
-            damage = 0, explode_range = 0,
-            images = []
-        ) :
+            self, pos=pygame.vector2(0, 0),
+            interference_time=0,
+            damage=0, explode_range=0,
+            images=[]
+        ):
             self.pierce = 1
             self.pos = pos
             self.images = images
@@ -1150,49 +1187,50 @@ class tesla_tower(tower) :
             self.interference_time = interference_time
             self.decay_time = 200
 
-
-        def display(self, screen) :
+        def display(self, screen):
             self.rect.center = self.pos.get_tuple()
             screen.blit(
-                self.images[self.state], 
+                self.images[self.state],
                 self.rect
             )
 
-        def deal_damage(self, enemy) :
+        def deal_damage(self, enemy):
             enemy.regenerate_shield_time += self.interference_time
-            if enemy.shield > 0 :
+            if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage * 8)
                 return
-            if enemy.anti_pierce < 10 :
-                enemy.hit -= max(self.damage/5, (1 - 19*enemy.armor/400) * self.damage)
+            if enemy.anti_pierce < 10:
+                enemy.hit -= max(self.damage/5,
+                                 (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
-        def detect(self, enemys = [], boss = None) :
-            if self.pierce <= 0 :
+
+        def detect(self, enemys=[], boss=None):
+            if self.pierce <= 0:
                 return True
 
-            for enemy in enemys :
-                if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+            for enemy in enemys:
+                if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
                     self.deal_damage(enemy)
-            if boss != None :
-                if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2 :
+            if boss != None:
+                if dis(boss.location, self.pos) < (self.explode_range+boss.size)/2:
                     self.deal_damage(boss)
-                for enemy in boss.generated_unit :
-                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2 :
+                for enemy in boss.generated_unit:
+                    if dis(enemy.location, self.pos) < (self.explode_range+enemy.size)/2:
                         self.deal_damage(enemy)
 
             self.pierce -= 1
-            if(
+            if (
                 self.pos.x < 0 or
                 self.pos.y < 0 or
                 self.pos.x > TILE_SIZE*12 or
                 self.pos.y > TILE_SIZE*9
-            ) :
+            ):
                 self.pierce = 0
             return False
 
     def __init__(
-        self, pos = pygame.vector2(0, 0), volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0), volume=100
+    ):
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['tesla_tower16.png', 'tesla_tower_bullet.png']
@@ -1201,10 +1239,10 @@ class tesla_tower(tower) :
         range = 2*TILE_SIZE
         bullet_speed = 0
         super().__init__(
-            pos, width, height, 
+            pos, width, height,
             pictures,
             damage, reload,
-            range, bullet_speed, 
+            range, bullet_speed,
             volume
         )
         self.images[1] = pygame.transform.scale(
@@ -1212,19 +1250,19 @@ class tesla_tower(tower) :
         self.bullets = []
 
         self.upgrade_damage = button(
-            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_range = button(
-            'range', pygame.vector2(1000, 109), [0, 0, 0], 
+            'range', pygame.vector2(1000, 109), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_interference = button(
-            'Interference', pygame.vector2(1000, 159), [0, 0, 0], 
+            'Interference', pygame.vector2(1000, 159), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -1237,214 +1275,217 @@ class tesla_tower(tower) :
         )
         self.fire_sound.set_volume(self.volume / 100)
 
-    def display_bullets(self, screen) :
-        for bullet in self.bullets :
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
             bullet.display(screen)
 
-    def aim_first(self, enemys = [], boss = None) :
-        for enemy in enemys :
-            if(dis(self.location, enemy.location) < self.range) :
+    def aim_first(self, enemys=[], boss=None):
+        for enemy in enemys:
+            if (dis(self.location, enemy.location) < self.range):
                 return True
-        if boss != None :
-            for enemy in boss.generated_unit :
-                if(dis(self.location, enemy.location) < self.range) :
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (dis(self.location, enemy.location) < self.range):
                     return True
-            if(dis(self.location, boss.location) < self.range) :
+            if (dis(self.location, boss.location) < self.range):
                 return True
         return False
-    def shoot_first(self, enemys = [], boss = None) :
-        if not self.aim_first(enemys, boss) : 
+
+    def shoot_first(self, enemys=[], boss=None):
+        if not self.aim_first(enemys, boss):
             return False
         bullet = self.bullet(
-            self.location.copy(), 
-            self.interference,  
-            self.damage, self.range * 2, 
+            self.location.copy(),
+            self.interference,
+            self.damage, self.range * 2,
             [self.images[1]]
         )
         self.bullets.append(bullet)
         return True
-    
-    def update_time_to_fire(self, delta_time = 0) :
-        if self.time_to_fire > 0 :
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = [], boss = None) :
-        if self.time_to_fire <= 0 :
-            if self.shoot_first(enemys, boss) :
+    def shoot(self, enemys=[], boss=None):
+        if self.time_to_fire <= 0:
+            if self.shoot_first(enemys, boss):
                 self.time_to_fire += 1000.0/self.reload
                 self.fire_sound.play()
 
-    def update(self, delta_time, enemys = [], boss = None) :
+    def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         self.shoot(enemys, boss)
-        for bullet in self.bullets :
-            if bullet.pierce > 0 :
+        for bullet in self.bullets:
+            if bullet.pierce > 0:
                 bullet.detect(enemys, boss)
-        for bullet in self.bullets :
+        for bullet in self.bullets:
             bullet.decay_time -= delta_time
-            if bullet.decay_time <= 0 :
+            if bullet.decay_time <= 0:
                 self.bullets.remove(bullet)
-        
-    def display_info(self, screen, natural_ingot) :
+
+    def display_info(self, screen, natural_ingot):
         super().display_info(screen)
         show_text(
-            screen, 
-            'Damage : {:.2f}'.format(self.damage), 
+            screen,
+            'Damage : {:.2f}'.format(self.damage),
             790, 100, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Range : {:.4f}'.format(self.range/TILE_SIZE), 
+            screen,
+            'Range : {:.4f}'.format(self.range/TILE_SIZE),
             790, 125, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Reload : {:.2f}'.format(self.reload), 
+            screen,
+            'Reload : {:.2f}'.format(self.reload),
             790, 150, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Interference : {:.5f}'.format(self.interference / 1000), 
+            screen,
+            'Interference : {:.5f}'.format(self.interference / 1000),
             790, 175, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Level', 
+            screen,
+            'Level',
             790, 220, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(self.damage_level), 
+            screen,
+            'Damage : {}'.format(self.damage_level),
             790, 250, [0, 0, 0], 20
         )
-        if self.range_level > 1e15 :
+        if self.range_level > 1e15:
             text = 'Range : max'
-        else :
+        else:
             text = 'Range : {}'.format(self.range_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 275, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(self.reload_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 300, [0, 0, 0], 20
         )
-        if self.interference_level > 1e15 :
+        if self.interference_level > 1e15:
             text = 'Interference : max'
-        else :
+        else:
             text = 'Interference : {}'.format(self.interference_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 325, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Cost', 
+            screen,
+            'Cost',
             790, 370, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(100 + 100*(self.damage_level+1)), 
+            screen,
+            'Damage : {}'.format(100 + 100*(self.damage_level+1)),
             790, 400, [0, 0, 0], 20
         )
-        if self.range_level > 1e15 :
+        if self.range_level > 1e15:
             text = 'Range : max'
-        else :
+        else:
             text = 'Range : {}'.format(100 + 100*self.range_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 425, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(100 + 100*(self.reload_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 450, [0, 0, 0], 20
         )
-        if self.interference_level > 1e15 :
+        if self.interference_level > 1e15:
             text = 'Interference : max'
-        else :
-            text = 'Interference : {}'.format(100 + 100*(self.interference_level+1))
+        else:
+            text = 'Interference : {}'.format(
+                100 + 100*(self.interference_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 475, [0, 0, 0], 20
         )
 
-
-        if natural_ingot >= 100 + (self.damage_level+1)*100 :
+        if natural_ingot >= 100 + (self.damage_level+1)*100:
             self.upgrade_damage.state = 0
-        else :
+        else:
             self.upgrade_damage.state = 1
         self.upgrade_damage.display(screen)
-        if natural_ingot >= 100 + (self.range_level+1)*100 :
+        if natural_ingot >= 100 + (self.range_level+1)*100:
             self.upgrade_range.state = 0
-        else :
+        else:
             self.upgrade_range.state = 1
         self.upgrade_range.display(screen)
-        if natural_ingot >= 100 + (self.reload_level+1)*100 :
+        if natural_ingot >= 100 + (self.reload_level+1)*100:
             self.upgrade_reload.state = 0
-        else :
+        else:
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if natural_ingot >= 100 + (self.interference_level+1)*100 :
+        if natural_ingot >= 100 + (self.interference_level+1)*100:
             self.upgrade_interference.state = 0
-        else :
+        else:
             self.upgrade_interference.state = 1
         self.upgrade_interference.display(screen)
-    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
-        if self.upgrade_damage.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.damage_level+1)*100 :
+
+    def upgrade(self, mouse_pos=pygame.vector2(0, 0), natural_ingot=0):
+        if self.upgrade_damage.click(mouse_pos):
+            if natural_ingot >= 100 + (self.damage_level+1)*100:
                 self.damage_level += 1
                 natural_ingot -= 100 + self.damage_level*100
                 self.damage += 20.0 * math.sqrt(self.damage_level)
-        elif self.upgrade_range.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.range_level+1)*100 :
+        elif self.upgrade_range.click(mouse_pos):
+            if natural_ingot >= 100 + (self.range_level+1)*100:
                 self.range_level += 1
                 natural_ingot -= 100 + self.range_level*100
                 self.range += TILE_SIZE/2 * 1/self.range_level
                 self.images[1] = pygame.transform.scale(
                     self.images[1], [self.range * 2, self.range * 2])
-                if self.range > 5 * TILE_SIZE :
+                if self.range > 5 * TILE_SIZE:
                     self.range = 5 * TILE_SIZE
                     self.range_level = 1e20
-        elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.reload_level+1)*100 :
+        elif self.upgrade_reload.click(mouse_pos):
+            if natural_ingot >= 100 + (self.reload_level+1)*100:
                 self.reload_level += 1
                 natural_ingot -= 100 + self.reload_level*100
                 self.reload += 0.3 * math.log10(self.reload_level*2)
-                if self.reload >= 6 :
+                if self.reload >= 6:
                     self.reload = 6
                     self.reload_level = 1e20
-        elif self.upgrade_interference.click(mouse_pos) :
-            if natural_ingot >= 100 + (self.interference_level+1)*100 :
+        elif self.upgrade_interference.click(mouse_pos):
+            if natural_ingot >= 100 + (self.interference_level+1)*100:
                 self.interference_level += 1
                 natural_ingot -= 100 + self.interference_level*100
                 self.interference += 500 * 1/self.interference_level
-                if self.interference >= 10000 :
+                if self.interference >= 10000:
                     self.interference = 10000
                     self.interference_level = 1e20
-        else :
+        else:
             return [False, natural_ingot]
         return [True, natural_ingot]
 
-class acid_tower(tower) :
-    class bullet :
+
+class acid_tower(tower):
+    class bullet:
         def __init__(
-                self, pos = pygame.vector2(0, 0), 
-                velocity = pygame.vector2(0, 0), 
-                damage = 0, hardness = 0, 
-                pierce = 0, images = []
-        ) :
+                self, pos=pygame.vector2(0, 0),
+                velocity=pygame.vector2(0, 0),
+                damage=0, hardness=0,
+                pierce=0, images=[]
+        ):
             self.pierce = pierce
             self.pos = pos
             self.velocity = velocity
@@ -1457,55 +1498,57 @@ class acid_tower(tower) :
             self.size = TILE_SIZE
             self.damage = damage
             self.hardness = hardness
-        def move(self, delta_time) :
+
+        def move(self, delta_time):
             self.pos += self.velocity * (delta_time/1000.0)
-        def display(self, screen) :
+
+        def display(self, screen):
             self.rect.center = self.pos.get_tuple()
             screen.blit(
-                self.images[self.state], 
+                self.images[self.state],
                 self.rect
             )
 
-        def deal_damage(self, enemy) :
+        def deal_damage(self, enemy):
             self.pierce -= 1
             move = (enemy.pos - self.pos)
             move.change_mod(1)
-            
 
-            if enemy.shield > 0 :
+            if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
                 return
             enemy.armor -= self.hardness
             enemy.hit = max(0, enemy.hit - self.damage * 2)
             enemy.check_state()
-        def detect(self, enemys = [], boss = None) :
-            for enemy in enemys :
-                if self.pierce <= 0 :
+
+        def detect(self, enemys=[], boss=None):
+            for enemy in enemys:
+                if self.pierce <= 0:
                     break
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                     enemy.progress = max(0, enemy.progress - 1)
                     self.deal_damage(enemy)
-            if boss != None :
-                if self.pierce <= 0 :
+            if boss != None:
+                if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
-                for enemy in boss.generated_unit :
-                    if self.pierce <= 0 :
+                for enemy in boss.generated_unit:
+                    if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
-            if(
+            if (
                 self.pos.x < 0 or
                 self.pos.y < 0 or
                 self.pos.x > TILE_SIZE*12 or
                 self.pos.y > TILE_SIZE*9
-            ) :
+            ):
                 self.pierce = 0
 
     def __init__(
-        self, pos = pygame.vector2(0, 0), volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0), volume=100
+    ):
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['acid_tower16.png', 'acid_bullet.png']
@@ -1513,12 +1556,12 @@ class acid_tower(tower) :
         reload = 0.33
         range = 3*TILE_SIZE
         bullet_speed = 4*TILE_SIZE
-        
+
         super().__init__(
-            pos, width, height, 
+            pos, width, height,
             pictures,
             damage, reload,
-            range, bullet_speed, 
+            range, bullet_speed,
             volume
         )
         self.images[1] = pygame.transform.scale(
@@ -1537,19 +1580,19 @@ class acid_tower(tower) :
 
         self.acid = 10
         self.upgrade_acid = button(
-            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_hardness = button(
-            'hardness', pygame.vector2(1000, 109), [0, 0, 0], 
+            'hardness', pygame.vector2(1000, 109), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_pierce = button(
-            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0], 
+            'bullet_speed', pygame.vector2(1000, 159), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.acid_level = 0
@@ -1557,237 +1600,241 @@ class acid_tower(tower) :
         self.reload_level = 0
         self.pierce_level = 0
 
-    def display_bullets(self, screen) :
-        for bullet in self.bullets :
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
             bullet.display(screen)
 
-    def aim_first(self, enemys = [], boss = None) :
+    def aim_first(self, enemys=[], boss=None):
         first_enemy = None
-        for enemy in enemys :
-            if(
+        for enemy in enemys:
+            if (
                 (first_enemy == None or
-                enemy.progress > first_enemy.progress) and
+                 enemy.progress > first_enemy.progress) and
                 dis(self.location, enemy.location) < self.range
-            ) :
+            ):
                 first_enemy = enemy
-        if boss != None :
-            for enemy in boss.generated_unit :
-                if(
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (
                     (first_enemy == None or
-                    enemy.progress > first_enemy.progress) and
+                     enemy.progress > first_enemy.progress) and
                     dis(self.location, enemy.location) < self.range
-                ) :
+                ):
                     first_enemy = enemy
-            if(
+            if (
                 (first_enemy == None or
-                boss.progress > first_enemy.progress) and
+                 boss.progress > first_enemy.progress) and
                 dis(self.location, boss.location) < self.range
-            ) :
+            ):
                 first_enemy = boss
         # print((first_enemy.pos - self.location).get_tuple())
-        if first_enemy == None :
+        if first_enemy == None:
             return False
-        
+
         relation = first_enemy.location - self.location
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return True
-    def shoot_first(self, enemys = [], boss = None) :
-        if not self.aim_first(enemys, boss) : 
+
+    def shoot_first(self, enemys=[], boss=None):
+        if not self.aim_first(enemys, boss):
             return False
         bullet = self.bullet(
-            self.location.copy(), pygame.vector2(0, 0), 
-            self.acid, self.hardness * math.sqrt(self.acid), 
+            self.location.copy(), pygame.vector2(0, 0),
+            self.acid, self.hardness * math.sqrt(self.acid),
             self.pierce, [self.images[1]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return True
-    
-    def update_time_to_fire(self, delta_time = 0) :
-        if self.time_to_fire > 0 :
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = [], boss = None) :
-        if self.time_to_fire <= 0 :
-            if self.target == 'first' :
-                if self.shoot_first(enemys, boss) :
+    def shoot(self, enemys=[], boss=None):
+        if self.time_to_fire <= 0:
+            if self.target == 'first':
+                if self.shoot_first(enemys, boss):
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
-            
-        else :
+
+        else:
             self.aim_first(enemys, boss)
-    def update(self, delta_time, enemys = [], boss = None) :
+
+    def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         self.shoot(enemys, boss)
-        for bullet in self.bullets :
+        for bullet in self.bullets:
             bullet.move(delta_time)
             bullet.detect(enemys, boss)
-        for bullet in self.bullets :
-            if bullet.pierce <= 0 :
+        for bullet in self.bullets:
+            if bullet.pierce <= 0:
                 self.bullets.remove(bullet)
-        
-    def display_info(self, screen, natural_ingot) :
+
+    def display_info(self, screen, natural_ingot):
         super().display_info(screen)
         show_text(
-            screen, 
-            'Acid   : {:.2f}'.format(self.acid), 
+            screen,
+            'Acid   : {:.2f}'.format(self.acid),
             790, 100, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Hardness : {:.5f}'.format(self.hardness), 
+            screen,
+            'Hardness : {:.5f}'.format(self.hardness),
             790, 125, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Reload   : {:.2f}'.format(self.reload), 
+            screen,
+            'Reload   : {:.2f}'.format(self.reload),
             790, 150, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Pierce   : {}'.format(self.pierce), 
+            screen,
+            'Pierce   : {}'.format(self.pierce),
             790, 175, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Level', 
+            screen,
+            'Level',
             790, 220, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Acid : {}'.format(self.acid_level), 
+            screen,
+            'Acid : {}'.format(self.acid_level),
             790, 250, [0, 0, 0], 20
         )
-        if self.hardness_level > 1e15 :
+        if self.hardness_level > 1e15:
             text = 'Hardness : max'
-        else :
+        else:
             text = 'Hardness : {}'.format(self.hardness_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 275, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(self.reload_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 300, [0, 0, 0], 20
         )
-        if self.pierce_level > 1e15 :
+        if self.pierce_level > 1e15:
             text = 'Pierce : max'
-        else :
+        else:
             text = 'Pierce : {}'.format(self.pierce_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 325, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Cost', 
+            screen,
+            'Cost',
             790, 370, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Acid : {}'.format(50 + 50*(self.acid_level+1)), 
+            screen,
+            'Acid : {}'.format(50 + 50*(self.acid_level+1)),
             790, 400, [0, 0, 0], 20
         )
-        if self.hardness_level > 1e15 :
+        if self.hardness_level > 1e15:
             text = 'Hardness : max'
-        else :
+        else:
             text = 'Hardness : {}'.format(50 + 50*(self.hardness_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 425, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(50 + 50*(self.reload_level+1))
         show_text(
-            screen, text, 
+            screen, text,
             790, 450, [0, 0, 0], 20
         )
-        if self.pierce_level > 1e15 :
+        if self.pierce_level > 1e15:
             text = 'Pierce : max'
-        else :
+        else:
             text = 'Pierce : {}'.format(100 * (2**(self.pierce_level+1)))
         show_text(
-            screen, text, 
+            screen, text,
             790, 475, [0, 0, 0], 20
         )
 
-        if natural_ingot >= 50 + (self.acid_level+1)*50 :
+        if natural_ingot >= 50 + (self.acid_level+1)*50:
             self.upgrade_acid.state = 0
-        else :
+        else:
             self.upgrade_acid.state = 1
         self.upgrade_acid.display(screen)
-        if natural_ingot >= 50 + (self.hardness_level+1)*50 :
+        if natural_ingot >= 50 + (self.hardness_level+1)*50:
             self.upgrade_hardness.state = 0
-        else :
+        else:
             self.upgrade_hardness.state = 1
         self.upgrade_hardness.display(screen)
-        if natural_ingot >= 50 + (self.reload_level+1)*50 :
+        if natural_ingot >= 50 + (self.reload_level+1)*50:
             self.upgrade_reload.state = 0
-        else :
+        else:
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if (not self.pierce_level > 1e15) and natural_ingot >= 100 * (2 ** (self.pierce_level+1)) :
+        if (not self.pierce_level > 1e15) and natural_ingot >= 100 * (2 ** (self.pierce_level+1)):
             self.upgrade_pierce.state = 0
-        else :
+        else:
             self.upgrade_pierce.state = 1
         self.upgrade_pierce.display(screen)
-    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
-        if self.upgrade_acid.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.acid_level+1)*50 :
+
+    def upgrade(self, mouse_pos=pygame.vector2(0, 0), natural_ingot=0):
+        if self.upgrade_acid.click(mouse_pos):
+            if natural_ingot >= 50 + (self.acid_level+1)*50:
                 self.acid_level += 1
                 natural_ingot -= 50 + self.acid_level*50
                 self.acid += 10.0 * (math.log10(self.acid_level) + 1)
-        elif self.upgrade_hardness.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.hardness_level+1)*50 :
+        elif self.upgrade_hardness.click(mouse_pos):
+            if natural_ingot >= 50 + (self.hardness_level+1)*50:
                 self.hardness_level += 1
                 natural_ingot -= 50 + self.hardness_level*50
                 self.hardness += 3 * 1/self.hardness_level
-                if self.hardness >= 20 :
+                if self.hardness >= 20:
                     self.hardness = 20
                     self.hardness_level = 1e20
-        elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 50 + (self.reload_level+1)*50 :
+        elif self.upgrade_reload.click(mouse_pos):
+            if natural_ingot >= 50 + (self.reload_level+1)*50:
                 self.reload_level += 1
                 natural_ingot -= 50 + self.reload_level*10
                 self.reload += 0.05 * math.log10(self.reload_level*2)
-                if self.reload >= 2 :
+                if self.reload >= 2:
                     self.reload = 2
                     self.reload_level = 1e20
-        elif self.upgrade_pierce.click(mouse_pos) :
-            if(
-                self.pierce_level < 1e15 and 
+        elif self.upgrade_pierce.click(mouse_pos):
+            if (
+                self.pierce_level < 1e15 and
                 natural_ingot >= 100 * (2**(self.pierce_level+1))
-            ) :
+            ):
                 self.pierce_level += 1
                 natural_ingot -= 100 * (2**self.pierce_level)
                 self.pierce += 1
-                if self.pierce >= 5 :
+                if self.pierce >= 5:
                     self.pierce = 5
                     self.pierce_level = 1e20
-        else :
+        else:
             return [False, natural_ingot]
         return [True, natural_ingot]
-    
-class spread_tower(tower) :
-    class bullet :
+
+
+class spread_tower(tower):
+    class bullet:
         def __init__(
-            self, pos = pygame.vector2(0, 0), 
-            velocity = pygame.vector2(0, 0), 
-            damage = 0, layer = 0, 
-            slow_rate = 1, images = []
-        ) :
+            self, pos=pygame.vector2(0, 0),
+            velocity=pygame.vector2(0, 0),
+            damage=0, layer=0,
+            slow_rate=1, images=[]
+        ):
             self.pierce = 1
             self.pos = pos
             self.velocity = velocity
@@ -1803,11 +1850,13 @@ class spread_tower(tower) :
             self.split_time = 1000
             self.slow_rate = slow_rate
             self.decay_time = 5000
-        def move(self, delta_time) :
+
+        def move(self, delta_time):
             self.pos += self.velocity * (delta_time/1000.0)
-        def display(self, screen) :
+
+        def display(self, screen):
             image = pygame.transform.rotozoom(
-                self.images[self.state], 
+                self.images[self.state],
                 math.degrees(-math.atan2(self.velocity.y, self.velocity.x)),
                 1
             )
@@ -1817,47 +1866,49 @@ class spread_tower(tower) :
             self.rect.centerx -= dw
             self.rect.centery -= dw
             screen.blit(
-                image, 
+                image,
                 self.rect
             )
 
-        def deal_damage(self, enemy) :
+        def deal_damage(self, enemy):
             self.pierce -= 1
             # damage dealing formula hasn't finished
-            if enemy.is_slowed <= 1 :
+            if enemy.is_slowed <= 1:
                 enemy.move_speed *= self.slow_rate
                 enemy.is_slowed += 1
-            if enemy.shield > 0 :
+            if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
-            enemy.hit -= max(self.damage/20, (1 - 19*enemy.armor/400) * self.damage)
+            enemy.hit -= max(self.damage/20,
+                             (1 - 19*enemy.armor/400) * self.damage)
             enemy.check_state()
-        def detect(self, enemys = [], boss = None) :
-            for enemy in enemys :
-                if self.pierce <= 0 :
+
+        def detect(self, enemys=[], boss=None):
+            for enemy in enemys:
+                if self.pierce <= 0:
                     return
-                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                     self.deal_damage(enemy)
-            if boss != None :
-                if self.pierce <= 0 :
+            if boss != None:
+                if self.pierce <= 0:
                     return
-                if dis(boss.location, self.pos) < (self.size+boss.size)/2 :
+                if dis(boss.location, self.pos) < (self.size+boss.size)/2:
                     self.deal_damage(boss)
-                for enemy in boss.generated_unit :
-                    if self.pierce <= 0 :
+                for enemy in boss.generated_unit:
+                    if self.pierce <= 0:
                         return
-                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2 :
+                    if dis(enemy.location, self.pos) < (self.size+enemy.size)/2:
                         self.deal_damage(enemy)
-            if(
+            if (
                 self.pos.x < 0 or
                 self.pos.y < 0 or
                 self.pos.x > TILE_SIZE*12 or
                 self.pos.y > TILE_SIZE*9
-            ) :
+            ):
                 self.pierce = 0
 
     def __init__(
-        self, pos = pygame.vector2(0, 0), volume = 100
-    ) :
+        self, pos=pygame.vector2(0, 0), volume=100
+    ):
         width = TILE_SIZE
         height = TILE_SIZE
         pictures = ['spread_tower.png', 'spread_tower_bullet.png']
@@ -1866,10 +1917,10 @@ class spread_tower(tower) :
         range = 20*TILE_SIZE
         bullet_speed = 2*TILE_SIZE
         super().__init__(
-            pos, width, height, 
+            pos, width, height,
             pictures,
             damage, reload,
-            range, bullet_speed, 
+            range, bullet_speed,
             volume
         )
         self.aim = pygame.vector2(0, 1)
@@ -1877,19 +1928,19 @@ class spread_tower(tower) :
         self.bullets = []
         self.target = 'first'
         self.upgrade_damage = button(
-            'damage', pygame.vector2(1000, 84), [0, 0, 0], 
+            'damage', pygame.vector2(1000, 84), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_freeze_rate = button(
-            'freeze_rate', pygame.vector2(1000, 109), [0, 0, 0], 
+            'freeze_rate', pygame.vector2(1000, 109), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_reload = button(
-            'reload', pygame.vector2(1000, 134), [0, 0, 0], 
+            'reload', pygame.vector2(1000, 134), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.upgrade_layer = button(
-            'layer', pygame.vector2(1000, 159), [0, 0, 0], 
+            'layer', pygame.vector2(1000, 159), [0, 0, 0],
             TILE_SIZE/4, TILE_SIZE/4, ['can_upgrade.png', 'cannot_upgrade.png']
         )
         self.damage_level = 0
@@ -1902,92 +1953,95 @@ class spread_tower(tower) :
             os.path.join(os.getcwd(), 'AppData', 'basic_tower_fire.wav')
         )
         self.fire_sound.set_volume(self.volume / 100)
-        
+
     def display(self, screen):
         super().display(screen)
-        barrel = pygame.transform.rotozoom(self.images[1],self.angle, 1)
-        rotated_rect = barrel.get_rect(center = (self.pos*TILE_SIZE).get_tuple())
+        barrel = pygame.transform.rotozoom(self.images[1], self.angle, 1)
+        rotated_rect = barrel.get_rect(center=(self.pos*TILE_SIZE).get_tuple())
         dw = rotated_rect.width - self.images[0].get_rect().width
         dw /= 2
         rotated_rect.centerx -= dw
         rotated_rect.centery -= dw
         screen.blit(
-            barrel, 
+            barrel,
             rotated_rect.center
         )
-    def display_bullets(self, screen) :
-        for bullet in self.bullets :
+
+    def display_bullets(self, screen):
+        for bullet in self.bullets:
             bullet.display(screen)
 
-    def aim_first(self, enemys = [], boss = None) :
+    def aim_first(self, enemys=[], boss=None):
         first_enemy = None
-        for enemy in enemys :
-            if(
+        for enemy in enemys:
+            if (
                 (first_enemy == None or
-                enemy.progress > first_enemy.progress)
-            ) :
+                 enemy.progress > first_enemy.progress)
+            ):
                 first_enemy = enemy
-        if boss != None :
-            for enemy in boss.generated_unit :
-                if(
+        if boss != None:
+            for enemy in boss.generated_unit:
+                if (
                     (first_enemy == None or
-                    enemy.progress > first_enemy.progress)
-                ) :
+                     enemy.progress > first_enemy.progress)
+                ):
                     first_enemy = enemy
-            if(
+            if (
                 (first_enemy == None or
-                boss.progress > first_enemy.progress)
-            ) :
+                 boss.progress > first_enemy.progress)
+            ):
                 first_enemy = boss
-        if first_enemy == None :
+        if first_enemy == None:
             return None
-        
+
         relation = first_enemy.location - self.location
         self.angle = math.atan2(relation.y, relation.x)
         self.angle = -math.degrees(self.angle)
         return first_enemy
-    def shoot_first(self, enemys = [], boss = None) :
+
+    def shoot_first(self, enemys=[], boss=None):
         ret = self.aim_first(enemys, boss)
-        if ret == None :
+        if ret == None:
             return None
         bullet = self.bullet(
-            self.location.copy(), pygame.vector2(0, 0), 
+            self.location.copy(), pygame.vector2(0, 0),
             self.damage, self.layer,
             1 - self.freeze_rate / 100, [self.images[1]]
         )
         bullet.velocity.set_angle(self.angle, self.bullet_speed)
-        
+
         # print(bullet.velocity.get_tuple())
         self.bullets.append(bullet)
         return ret
-    
-    def update_time_to_fire(self, delta_time = 0) :
-        if self.time_to_fire > 0 :
+
+    def update_time_to_fire(self, delta_time=0):
+        if self.time_to_fire > 0:
             self.time_to_fire -= delta_time
 
-    def shoot(self, enemys = [], boss = None) :
+    def shoot(self, enemys=[], boss=None):
         ret = self.aim_first(enemys, boss)
-        if self.time_to_fire <= 0 :
-            if self.target == 'first' :
-                if self.shoot_first(enemys, boss) != None :
+        if self.time_to_fire <= 0:
+            if self.target == 'first':
+                if self.shoot_first(enemys, boss) != None:
                     self.time_to_fire += 1000.0/self.reload
                     self.fire_sound.play()
         return ret
-    def update(self, delta_time, enemys = [], boss = None) :
+
+    def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         en = self.shoot(enemys, boss)
-        for bullet in self.bullets :
+        for bullet in self.bullets:
             bullet.move(delta_time)
-            if bullet.decay_time > 0 :
+            if bullet.decay_time > 0:
                 bullet.decay_time = max(0, bullet.decay_time - delta_time)
-            if bullet.split_time > 0 :
+            if bullet.split_time > 0:
                 bullet.split_time = max(0, bullet.split_time - delta_time)
-            if bullet.split_time == 0 and bullet.layer > 0 :
+            if bullet.split_time == 0 and bullet.layer > 0:
                 bullet.split_time = -1
                 bullet.layer -= 1
-                
+
                 nb = self.bullet(
-                    bullet.pos.copy(), bullet.velocity.copy(), 
+                    bullet.pos.copy(), bullet.velocity.copy(),
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
@@ -1996,13 +2050,13 @@ class spread_tower(tower) :
                 nb.velocity.set_angle(angle + 10, nb.velocity.mod())
                 self.bullets.append(nb)
                 nb2 = self.bullet(
-                    bullet.pos.copy(), bullet.velocity.copy(), 
+                    bullet.pos.copy(), bullet.velocity.copy(),
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
                 nb2.velocity.set_angle(angle - 10, nb2.velocity.mod())
                 self.bullets.append(nb2)
-            if en != None :
+            if en != None:
                 speed = bullet.velocity.mod()
                 acceleration = en.location - bullet.pos
                 # print(acceleration.get_tuple())
@@ -2010,11 +2064,11 @@ class spread_tower(tower) :
                 bullet.velocity += acceleration
                 bullet.velocity.change_mod(speed)
             bullet.detect(enemys, boss)
-        for bullet in self.bullets :
-            if bullet.pierce <= 0 and bullet.layer > 0 :
+        for bullet in self.bullets:
+            if bullet.pierce <= 0 and bullet.layer > 0:
                 bullet.layer -= 1
                 nb = self.bullet(
-                    bullet.pos.copy(), bullet.velocity.copy(), 
+                    bullet.pos.copy(), bullet.velocity.copy(),
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
@@ -2023,7 +2077,7 @@ class spread_tower(tower) :
                 nb.velocity.set_angle(angle + 10, nb.velocity.mod())
                 self.bullets.append(nb)
                 nb2 = self.bullet(
-                    bullet.pos.copy(), bullet.velocity.copy(), 
+                    bullet.pos.copy(), bullet.velocity.copy(),
                     self.damage, bullet.layer,
                     1 - self.freeze_rate / 100, [self.images[1]]
                 )
@@ -2031,155 +2085,156 @@ class spread_tower(tower) :
                 self.bullets.append(nb2)
 
                 self.bullets.remove(bullet)
-            elif bullet.pierce <= 0 or bullet.decay_time <= 0 :
+            elif bullet.pierce <= 0 or bullet.decay_time <= 0:
                 self.bullets.remove(bullet)
-        
-    def display_info(self, screen, natural_ingot) :
+
+    def display_info(self, screen, natural_ingot):
         super().display_info(screen)
         show_text(
-            screen, 
-            'Damage : {:.2f}'.format(self.damage), 
+            screen,
+            'Damage : {:.2f}'.format(self.damage),
             790, 100, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Freeze Rate  : {:.5f}%'.format(self.freeze_rate), 
+            screen,
+            'Freeze Rate  : {:.5f}%'.format(self.freeze_rate),
             790, 125, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Reload : {:.2f}'.format(self.reload), 
+            screen,
+            'Reload : {:.2f}'.format(self.reload),
             790, 150, [0, 0, 0], 20
         )
         show_text(
-            screen, 
-            'Layer : {}'.format(self.layer), 
+            screen,
+            'Layer : {}'.format(self.layer),
             790, 175, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Level', 
+            screen,
+            'Level',
             790, 220, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(self.damage_level), 
+            screen,
+            'Damage : {}'.format(self.damage_level),
             790, 250, [0, 0, 0], 20
         )
-        if self.freeze_rate_level > 1e15 :
+        if self.freeze_rate_level > 1e15:
             text = 'Freeze Rate : max'
-        else :
+        else:
             text = 'Freeze Rate : {}'.format(self.freeze_rate_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 275, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(self.reload_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 300, [0, 0, 0], 20
         )
-        if self.layer_level > 1e15 :
+        if self.layer_level > 1e15:
             text = 'Layer : max'
-        else :
+        else:
             text = 'Layer : {}'.format(self.layer_level)
         show_text(
-            screen, text, 
+            screen, text,
             790, 325, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Cost', 
+            screen,
+            'Cost',
             790, 370, [0, 0, 0], 20
         )
 
         show_text(
-            screen, 
-            'Damage : {}'.format(5000 + (self.damage_level+1)*1000), 
+            screen,
+            'Damage : {}'.format(5000 + (self.damage_level+1)*1000),
             790, 400, [0, 0, 0], 20
         )
-        if self.freeze_rate_level > 1e15 :
+        if self.freeze_rate_level > 1e15:
             text = 'Freeze Rate : max'
-        else :
-            text = 'Freeze Rate : {}'.format(500 + (self.freeze_rate_level+1)*100)
+        else:
+            text = 'Freeze Rate : {}'.format(
+                500 + (self.freeze_rate_level+1)*100)
         show_text(
-            screen, text, 
+            screen, text,
             790, 425, [0, 0, 0], 20
         )
-        if self.reload_level > 1e15 :
+        if self.reload_level > 1e15:
             text = 'Reload : max'
-        else :
+        else:
             text = 'Reload : {}'.format(500 + (self.reload_level+1)*100)
         show_text(
-            screen, text, 
+            screen, text,
             790, 450, [0, 0, 0], 20
         )
-        if self.layer_level > 1e15 :
+        if self.layer_level > 1e15:
             text = 'Layer : max'
-        else :
+        else:
             text = 'Layer : {}'.format(100 * ((self.layer_level+1)**5))
         show_text(
-            screen, text, 
+            screen, text,
             790, 475, [0, 0, 0], 20
         )
 
-
-        if natural_ingot >= 5000 + (self.damage_level+1)*1000 :
+        if natural_ingot >= 5000 + (self.damage_level+1)*1000:
             self.upgrade_damage.state = 0
-        else :
+        else:
             self.upgrade_damage.state = 1
         self.upgrade_damage.display(screen)
-        if natural_ingot >= 500 + (self.freeze_rate_level+1)*100 :
+        if natural_ingot >= 500 + (self.freeze_rate_level+1)*100:
             self.upgrade_freeze_rate.state = 0
-        else :
+        else:
             self.upgrade_freeze_rate.state = 1
         self.upgrade_freeze_rate.display(screen)
-        if natural_ingot >= 500 + (self.reload_level+1)*100 :
+        if natural_ingot >= 500 + (self.reload_level+1)*100:
             self.upgrade_reload.state = 0
-        else :
+        else:
             self.upgrade_reload.state = 1
         self.upgrade_reload.display(screen)
-        if self.layer_level < 1e15 and natural_ingot >= 100 * ((self.layer_level+1)**5) :
+        if self.layer_level < 1e15 and natural_ingot >= 100 * ((self.layer_level+1)**5):
             self.upgrade_layer.state = 0
-        else :
+        else:
             self.upgrade_layer.state = 1
         self.upgrade_layer.display(screen)
-    def upgrade(self, mouse_pos = pygame.vector2(0, 0), natural_ingot = 0) :
-        if self.upgrade_damage.click(mouse_pos) :
-            if natural_ingot >= 5000 + (self.damage_level+1)*1000 :
+
+    def upgrade(self, mouse_pos=pygame.vector2(0, 0), natural_ingot=0):
+        if self.upgrade_damage.click(mouse_pos):
+            if natural_ingot >= 5000 + (self.damage_level+1)*1000:
                 self.damage_level += 1
                 natural_ingot -= 5000 + self.damage_level*1000
                 self.damage += 500.0 * math.sqrt(self.damage_level)
-        elif self.upgrade_freeze_rate.click(mouse_pos) :
-            if natural_ingot >= 500 + (self.freeze_rate_level+1)*100 :
+        elif self.upgrade_freeze_rate.click(mouse_pos):
+            if natural_ingot >= 500 + (self.freeze_rate_level+1)*100:
                 self.freeze_rate_level += 1
                 natural_ingot -= 500 + self.freeze_rate_level*100
                 self.freeze_rate += 8 * 1/self.freeze_rate_level
-                if self.freeze_rate >= 30 :
+                if self.freeze_rate >= 30:
                     self.freeze_rate = 30
                     self.freeze_rate_level = 1e20
-        elif self.upgrade_reload.click(mouse_pos) :
-            if natural_ingot >= 500 + (self.reload_level+1)*100 :
+        elif self.upgrade_reload.click(mouse_pos):
+            if natural_ingot >= 500 + (self.reload_level+1)*100:
                 self.reload_level += 1
                 natural_ingot -= 500 + self.reload_level*100
                 self.reload += 0.66 * 1/self.reload_level
-                if self.reload >= 2.5 :
+                if self.reload >= 2.5:
                     self.reload = 2.5
                     self.reload_level = 1e20
-        elif self.upgrade_layer.click(mouse_pos) :
-            if self.layer_level < 1e15 and natural_ingot >= 100 * ((self.layer_level+1)**5) :
+        elif self.upgrade_layer.click(mouse_pos):
+            if self.layer_level < 1e15 and natural_ingot >= 100 * ((self.layer_level+1)**5):
                 self.layer_level += 1
                 natural_ingot -= 100 * (self.layer_level**5)
                 self.layer += 1
-                if self.layer >= 5 :
+                if self.layer >= 5:
                     self.layer = 5
                     self.layer_level = 1e20
-        else :
+        else:
             return [False, natural_ingot]
         return [True, natural_ingot]
