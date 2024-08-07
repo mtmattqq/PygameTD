@@ -1,10 +1,10 @@
 from typing import Any
 import pygame
 import os
-from tile import TILE_SIZE
+from src.tile import TILE_SIZE
 import math
-import enemy
-from button import button
+import src.enemy as enemy
+from src.button import button
 
 
 def do_nothing():

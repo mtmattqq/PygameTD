@@ -1,8 +1,7 @@
 import pygame
 import os
-from tile import TILE_SIZE
-import math
-import enemy
+from src.tile import TILE_SIZE
+import src.enemy as enemy
 import random
 
 

@@ -3,14 +3,14 @@ import json
 import random
 import math
 import numpy as np
-import enemy
-import tower
-import tile
+import src.enemy as enemy
+import src.tower as tower
+import src.tile as tile
 import pygame
 from pygame.locals import *
 import os
-from button import button
-from vec2D import transform
+from src.button import button
+from src.vec2D import transform
 
 # pygame init
 pygame.init()
