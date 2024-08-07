@@ -14,28 +14,28 @@
 
 ## 防禦塔
 
-<img src = "basic_tower256.png" width="128"
+<img src = "./readme-images/basic_tower256.png" width="128"
   height="128">
 
 ### 基礎塔
 
 > 基礎塔的攻擊速度很快，並且升級相對便宜，可以在初期有效的幫助玩家抵禦敵人。
 
-<img src = "sniper_tower256.png" width="128"
+<img src = "./readme-images/sniper_tower256.png" width="128"
   height="128">
 
 ### 狙擊塔
 
 > 狙擊塔的攻擊速度很慢，但是他是唯一可以剝掉敵方護甲的防禦塔，擅長抵禦騎士(見敵人)。
 
-<img src = "cannon_tower256.png" width="128"
+<img src = "./readme-images/cannon_tower256.png" width="128"
   height="128">
 
 ### 炸彈塔
 
 > 炸彈塔可以提供範圍攻擊，同時也是DPS最高的防禦塔，攻擊護盾的同時可以傷害到敵人血量，擅長攻擊眼睛(見敵人)。
 
-<img src = "tesla_tower256.png" width="128"
+<img src = "./readme-images/tesla_tower256.png" width="128"
   height="128">
 
 ### 特斯拉
@@ -49,11 +49,11 @@
 <table>
 <td>
 <tr>
-<img src = "basic_enemy256.png" width="128"
+<img src = "./readme-images/basic_enemy256.png" width="128"
   height="128">
 </tr>
 <tr>
-<img src = "angry_basic256.png" width="128"
+<img src = "./readme-images/angry_basic256.png" width="128"
   height="128">
 </tr>
 </td>
@@ -66,11 +66,11 @@
 <table>
 <td>
 <tr>
-<img src = "evil_eye256.png" width="128"
+<img src = "./readme-images/evil_eye256.png" width="128"
   height="128">
 </tr>
 <tr>
-<img src = "chaos_eye256.png" width="128"
+<img src = "./readme-images/chaos_eye256.png" width="128"
   height="128">
 </tr>
 </td>
@@ -83,11 +83,11 @@
 <table>
 <td>
 <tr>
-<img src = "high_armor256.png" width="128"
+<img src = "./readme-images/high_armor256.png" width="128"
   height="128">
 </tr>
 <tr>
-<img src = "super_shield256.png" width="128"
+<img src = "./readme-images/super_shield256.png" width="128"
   height="128">
 </tr>
 </td>
@@ -106,4 +106,4 @@
 - 2023/7/22 新增 Boss 單位
 - 2023/7/21 Alpha 0.2 新增第四個塔 Tesla Tower 專門對付帶盾的敵人，並新增三種新的敵人。
 - 2023/7/20 遊戲封閉測試版 Alpha 0.1 完成。
-- 2023/7/12 啟動開發日
+- 2023/7/12 專案建立
