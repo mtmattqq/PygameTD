@@ -1510,7 +1510,7 @@ class acid_tower(tower):
         def deal_damage(self, enemy):
             self.pierce -= 1
             move = (enemy.pos - self.pos)
-            move.normalize()
+            move = move.normalize() if move.length() != 0 else pygame.Vector2(0, 0)
 
             if enemy.shield > 0:
                 enemy.shield = max(0, enemy.shield - self.damage)
@@ -2058,7 +2058,8 @@ class spread_tower(tower):
                 speed = bullet.velocity.length()
                 acceleration = en.location - bullet.pos
                 # print(acceleration)
-                acceleration = acceleration.normalize() * (100 * (delta_time / 1000))
+                acceleration = acceleration.normalize() * (100 * (delta_time / 1000)
+                                                           ) if acceleration.length() != 0 else pygame.Vector2(0, 0)
                 bullet.velocity += acceleration
                 bullet.velocity = bullet.velocity.normalize() * (speed)
             bullet.detect(enemys, boss)
