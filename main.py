@@ -47,6 +47,7 @@ FPS = 60
 MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 is_fullscreen = True
 volume = 100
+clock = pygame.time.Clock()
 
 def game_over():
     def click_start_button():
@@ -996,6 +997,7 @@ def level(level_now='basic_level.json'):
 
         display.blit(pygame.transform.scale(
             screen, display.get_size()), (0, 0))
+        pygame.display.set_caption(f'Basic TD Game {clock.get_fps()}')
         pygame.display.update()
 
         clock.tick(FPS)
