@@ -51,10 +51,10 @@ volume = 100
 def game_over():
     def click_start_button():
         return True
-    start_button = button('Start', pygame.vector2(resolution[0]/2-64, resolution[1]/2-64),
+    start_button = button('Start', pygame.Vector2(resolution[0]/2-64, resolution[1]/2-64),
                           [0, 0, 0], 128, 128,
                           ['start_button.png'], click_start_button)
-    start_button.pos = pygame.vector2(
+    start_button.pos = pygame.Vector2(
         resolution[0]/2-start_button.width/2,
         resolution[1]/2-start_button.height/2+50)
     title = 'Game Over'
@@ -62,7 +62,7 @@ def game_over():
     in_game = True
     while in_game:
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = pygame.vector2(mouse_pos[0], mouse_pos[1])
+        mouse_pos = pygame.Vector2(mouse_pos[0], mouse_pos[1])
 
         # event in pygame
         for event in pygame.event.get():
@@ -91,13 +91,13 @@ def game_over():
 def setting():
     global flags, screen, display, is_fullscreen, volume
     fullscreen_button = button(
-        'fullscreen', pygame.vector2(
+        'fullscreen', pygame.Vector2(
             resolution[0] / 2 - 128 + 100, resolution[1] / 2 - 16 - 50),
         [0, 0, 0], 256, 32,
         ['select_level.png']
     )
     set_volume_button = button(
-        'fullscreen', pygame.vector2(
+        'fullscreen', pygame.Vector2(
             resolution[0] / 2 - 16 - 100, resolution[1] / 2 - 16 + 50),
         [0, 0, 0], 32, 32,
         ['set_volume.png']
@@ -118,7 +118,7 @@ def setting():
     in_game = True
     while in_game:
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = pygame.vector2(mouse_pos[0], mouse_pos[1])
+        mouse_pos = pygame.Vector2(mouse_pos[0], mouse_pos[1])
 
         if is_set_volume_bar_pressed:
             mouse_pos.x
@@ -218,7 +218,7 @@ def find_path(map=[[]]):
                 not isv[next_stap[0]][next_stap[1]]
             ):
                 path.append(
-                    transform(pygame.vector2(pos_now[1], pos_now[0]), tile.TILE_SIZE))
+                    transform(pygame.Vector2(pos_now[1], pos_now[0]), tile.TILE_SIZE))
                 if map[next_stap[0]][next_stap[1]] == 1 or dfs(next_stap):
                     return True
                 path.pop()
@@ -226,7 +226,7 @@ def find_path(map=[[]]):
         return False
     if dfs(enemy_source):
         path.append(
-            transform(pygame.vector2(main_tower[1], main_tower[0]), tile.TILE_SIZE))
+            transform(pygame.Vector2(main_tower[1], main_tower[0]), tile.TILE_SIZE))
         return path
     else:
         return None
@@ -313,9 +313,9 @@ def level(level_now='basic_level.json'):
     enemys = []
 
     enemy_types = [
-        enemy.basic_enemy(pygame.vector2(800, 140), 0, 0, 0, 0, level_path),
-        enemy.evil_eye(pygame.vector2(800, 220), 0, 0, 0, 0, level_path),
-        enemy.high_armor(pygame.vector2(800, 300), 0, 0, 0, 0, level_path)
+        enemy.basic_enemy(pygame.Vector2(800, 140), 0, 0, 0, 0, level_path),
+        enemy.evil_eye(pygame.Vector2(800, 220), 0, 0, 0, 0, level_path),
+        enemy.high_armor(pygame.Vector2(800, 300), 0, 0, 0, 0, level_path)
     ]
     for en in enemy_types:
         en.location = en.pos
@@ -330,9 +330,9 @@ def level(level_now='basic_level.json'):
     ]
 
     boss_types = [
-        enemy.basic_boss(pygame.vector2(785, 80), 0, 0, 0, 10, [pygame.vector2(785, 80)]),
-        enemy.eye_boss(pygame.vector2(785, 140), 0, 0, 0, 10, [pygame.vector2(785, 140)]),
-        enemy.high_armor_boss(pygame.vector2(785, 200), 0, 0, 0, 10, [pygame.vector2(785, 200)])
+        enemy.basic_boss(pygame.Vector2(785, 80), 0, 0, 0, 10, [pygame.Vector2(785, 80)]),
+        enemy.eye_boss(pygame.Vector2(785, 140), 0, 0, 0, 10, [pygame.Vector2(785, 140)]),
+        enemy.high_armor_boss(pygame.Vector2(785, 200), 0, 0, 0, 10, [pygame.Vector2(785, 200)])
     ]
     boss = None
 
@@ -357,7 +357,7 @@ def level(level_now='basic_level.json'):
     # money
     natural_ingot = level_info['start_money']
     natural_ingot_button = button(
-        'Natural Ingot', pygame.vector2(785, 16),
+        'Natural Ingot', pygame.Vector2(785, 16),
         [0, 0, 0], 32, 32, ['natural_ingot16.png']
     )
 
@@ -366,14 +366,14 @@ def level(level_now='basic_level.json'):
     give_bonus_wait_time = 20000
     give_bonus_time = give_bonus_wait_time
     give_bonus_bar = button(
-        'Give_Bonus_Bar', pygame.vector2(945, 6),
+        'Give_Bonus_Bar', pygame.Vector2(945, 6),
         [0, 0, 0], 48, 48, ['hit_bar_red.png', 'hit_bar_blue.png']
     )
 
     # player health
     hit = level_info['start_hit']
     hit_button = button(
-        'Player Health', pygame.vector2(785, 48),
+        'Player Health', pygame.Vector2(785, 48),
         [0, 0, 0], 32, 32, ['main_tower.png']
     )
 
@@ -391,42 +391,42 @@ def level(level_now='basic_level.json'):
         return True
     buy_tower_buttons = [
         button(
-            80, pygame.vector2(785, 80),
+            80, pygame.Vector2(785, 80),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'basic_tower32.png'],
             buy_tower_buttons_onclick
         ),
 
         button(
-            150, pygame.vector2(845, 80),
+            150, pygame.Vector2(845, 80),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'sniper_tower32.png'],
             buy_tower_buttons_onclick
         ),
 
         button(
-            300, pygame.vector2(905, 80),
+            300, pygame.Vector2(905, 80),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'cannon_tower32.png'],
             buy_tower_buttons_onclick
         ),
 
         button(
-            400, pygame.vector2(785, 140),
+            400, pygame.Vector2(785, 140),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'tesla_tower32.png'],
             buy_tower_buttons_onclick
         ),
 
         button(
-            10000, pygame.vector2(845, 140),
+            10000, pygame.Vector2(845, 140),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'acid_tower64.png'],
             buy_tower_buttons_onclick
         ),
 
         button(
-            50000, pygame.vector2(905, 140),
+            50000, pygame.Vector2(905, 140),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'cannot_buy_tower.png', 'spread_tower64.png'],
             buy_tower_buttons_onclick
@@ -481,14 +481,14 @@ def level(level_now='basic_level.json'):
 
     # sent next wave
     sent_next_wave_button = button(
-        'sent_next_wave', pygame.vector2(775, 490),
+        'sent_next_wave', pygame.Vector2(775, 490),
         [0, 0, 0], 32, 32,
         ['start_button.png'],
         buy_tower_buttons_onclick
     )
 
     setting_button = button(
-        'setting', pygame.vector2(835, 490),
+        'setting', pygame.Vector2(835, 490),
         [0, 0, 0], 32, 32,
         ['setting_button.png']
     )
@@ -572,7 +572,7 @@ def level(level_now='basic_level.json'):
         game_timer += delta_time
 
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = pygame.vector2(mouse_pos[0], mouse_pos[1])
+        mouse_pos = pygame.Vector2(mouse_pos[0], mouse_pos[1])
 
         if game_timer > send_next_wave:
             wave += 1
@@ -794,24 +794,24 @@ def level(level_now='basic_level.json'):
                         new_tower = None
                         if ct == 1:
                             new_tower = tower.basic_tower(
-                                pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                                pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 2:
                             new_tower = tower.sniper_tower(
-                                pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                                pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 3:
                             new_tower = tower.cannon_tower(
-                                pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                                pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 4:
                             new_tower = tower.tesla_tower(
-                                pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                                pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 5:
                             new_tower = tower.acid_tower(
-                                pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                                pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                         elif ct == 6:
                             new_tower = tower.spread_tower(
-                                pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                                pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                         new_tower.place(
-                            pygame.vector2(selected_tile[1], selected_tile[0]))
+                            pygame.Vector2(selected_tile[1], selected_tile[0]))
                         towers.append(new_tower)
                         break
                     ct += 1
@@ -861,7 +861,7 @@ def level(level_now='basic_level.json'):
 
         if show_buy_tower or show_tower_info:
             tile_rect.center = transform(
-                pygame.vector2(selected_tile[1], selected_tile[0]),
+                pygame.Vector2(selected_tile[1], selected_tile[0]),
                 tile.TILE_SIZE
             ).get_tuple()
             color = pygame.Color(100, 120, 180, a=2)
@@ -932,22 +932,22 @@ def level(level_now='basic_level.json'):
                     new_tower = None
                     if ct == 0:
                         new_tower = tower.basic_tower(
-                            pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                            pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 1:
                         new_tower = tower.sniper_tower(
-                            pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                            pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 2:
                         new_tower = tower.cannon_tower(
-                            pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                            pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 3:
                         new_tower = tower.tesla_tower(
-                            pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                            pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 4:
                         new_tower = tower.acid_tower(
-                            pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                            pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
                     elif ct == 5:
                         new_tower = tower.spread_tower(
-                            pygame.vector2(selected_tile[1], selected_tile[0]), volume)
+                            pygame.Vector2(selected_tile[1], selected_tile[0]), volume)
 
                     pygame.draw.circle(
                         screen, [100, 200, 100], new_tower.location.get_tuple(),
@@ -1016,7 +1016,7 @@ def level_editor():
 
     title = 'Enter Level Name'
     level_name_button = button(
-        "", pygame.vector2(resolution[0]/2 - 256, resolution[1]/2 - 32),
+        "", pygame.Vector2(resolution[0]/2 - 256, resolution[1]/2 - 32),
         [0, 0, 0], 512, 64, ['select_level.png']
     )
 
@@ -1123,7 +1123,7 @@ def level_editor():
     # row col -> y, x
     selected_tile = [0, 0]
 
-    def editor_select_tile(mouse_pos=pygame.vector2(0, 0)):
+    def editor_select_tile(mouse_pos=pygame.Vector2(0, 0)):
         selected_tile = None
         tile_pos = [mouse_pos.y // 64, mouse_pos.x // 64]
 
@@ -1140,25 +1140,25 @@ def level_editor():
     show_tiles = False
     tile_buttons = [
         button(
-            0, pygame.vector2(785, 80),
+            0, pygame.Vector2(785, 80),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'white.png'],
         ),
 
         button(
-            0, pygame.vector2(845, 80),
+            0, pygame.Vector2(845, 80),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'main_tower.png'],
         ),
 
         button(
-            0, pygame.vector2(905, 80),
+            0, pygame.Vector2(905, 80),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'enemy_sourse.png'],
         ),
 
         button(
-            0, pygame.vector2(785, 140),
+            0, pygame.Vector2(785, 140),
             [0, 0, 0], 64, 64,
             ['can_buy_tower.png', 'road.png'],
         ),
@@ -1179,7 +1179,7 @@ def level_editor():
     for i in range(4):
         input_buttons.append(
             button(
-                input_button_text[i], pygame.vector2(780, 110 + shift_pos * i),
+                input_button_text[i], pygame.Vector2(780, 110 + shift_pos * i),
                 [0, 0, 0], 200, 25, ['select_level.png']
             )
         )
@@ -1189,7 +1189,7 @@ def level_editor():
     level_name_pos = 0
 
     save_button = button(
-        'save', pygame.vector2(775, 490),
+        'save', pygame.Vector2(775, 490),
         [0, 0, 0], 32, 32,
         ['save_button.png']
     )
@@ -1231,7 +1231,7 @@ def level_editor():
         game_timer += delta_time
 
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = pygame.vector2(mouse_pos[0], mouse_pos[1])
+        mouse_pos = pygame.Vector2(mouse_pos[0], mouse_pos[1])
 
         if error_reset_time > 0:
             error_reset_time -= delta_time
@@ -1319,7 +1319,7 @@ def level_editor():
 
         if show_tiles:
             tile_rect.center = transform(
-                pygame.vector2(selected_tile[1], selected_tile[0]),
+                pygame.Vector2(selected_tile[1], selected_tile[0]),
                 tile.TILE_SIZE
             ).get_tuple()
             color = pygame.Color(100, 120, 180, a=100)
@@ -1332,7 +1332,7 @@ def level_editor():
             for tl in tile_buttons:
                 tl.state = 0
                 tl.display(screen)
-                screen.blit(tl.images[1], (tl.pos + pygame.vector2(8, 8)).get_tuple())
+                screen.blit(tl.images[1], (tl.pos + pygame.Vector2(8, 8)).get_tuple())
         else:
             i = 0
             for btn in input_buttons:
@@ -1411,7 +1411,7 @@ def select_level():
     for i in range(level_per_page):
         select_level_button.append(
             button(
-                "", pygame.vector2(resolution[0]/2 - 256, 130 + shift_pos * i),
+                "", pygame.Vector2(resolution[0]/2 - 256, 130 + shift_pos * i),
                 [0, 0, 0], 512, 64, ['select_level.png']
             )
         )
@@ -1419,12 +1419,12 @@ def select_level():
     max_page = len(levels['file_name']) // level_per_page + 1
     level_num = len(levels['file_name'])
     next_page_button = button(
-        "", pygame.vector2(resolution[0]/2 + 256 - 128,
+        "", pygame.Vector2(resolution[0]/2 + 256 - 128,
                   130 + shift_pos * level_per_page),
         [0, 0, 0], 64, 64, ['next_page_button.png']
     )
     prev_page_button = button(
-        "", pygame.vector2(resolution[0]/2 - 256 + 64,
+        "", pygame.Vector2(resolution[0]/2 - 256 + 64,
                   130 + shift_pos * level_per_page),
         [0, 0, 0], 64, 64, ['next_page_button.png']
     )
@@ -1436,7 +1436,7 @@ def select_level():
     in_game = True
     while in_game:
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = pygame.vector2(mouse_pos[0], mouse_pos[1])
+        mouse_pos = pygame.Vector2(mouse_pos[0], mouse_pos[1])
 
         # event in pygame
         for event in pygame.event.get():
@@ -1499,6 +1499,29 @@ def init_user_settings():
     is_fullscreen = input['is_fullscreen']
     volume = input['volume']
 
+def create_menu_buttons():
+    def click_start_button():
+        return True
+    start_button = button('Start', pygame.Vector2(resolution[0]/2-64, resolution[1]/2-64),
+                          [0, 0, 0], 128, 128,
+                          ['start_button.png'], click_start_button)
+    start_button.pos = pygame.Vector2(
+        resolution[0] / 2 - start_button.width / 2,
+        resolution[1] / 2 - start_button.height / 2 + 50)
+    setting_button = button('setting', pygame.Vector2(resolution[0]/2-64, resolution[1]/2-64),
+                            [0, 0, 0], 128, 128,
+                            ['setting_button.png'], click_start_button)
+    setting_button.pos = pygame.Vector2(
+        (resolution[0] / 2) - setting_button.width / 2 + 150,
+        (resolution[1] / 2) - setting_button.height / 2 + 50)
+    level_editor_button = button('setting', pygame.Vector2(resolution[0]/2-64, resolution[1]/2-64),
+                                 [0, 0, 0], 128, 128,
+                                 ['level_editor_button.png'], click_start_button)
+    level_editor_button.pos = pygame.Vector2(
+        (resolution[0] / 2) - level_editor_button.width / 2 - 150,
+        (resolution[1] / 2) - level_editor_button.height / 2 + 50)
+    return (start_button, setting_button, level_editor_button)
+
 def main():
     init_user_settings()
 
@@ -1507,34 +1530,14 @@ def main():
     else:
         flags = DOUBLEBUF
     display = pygame.display.set_mode(resolution, flags, 32)
-
-    def click_start_button():
-        return True
-    start_button = button('Start', pygame.vector2(resolution[0]/2-64, resolution[1]/2-64),
-                          [0, 0, 0], 128, 128,
-                          ['start_button.png'], click_start_button)
-    start_button.pos = pygame.vector2(
-        resolution[0] / 2 - start_button.width / 2,
-        resolution[1] / 2 - start_button.height / 2 + 50)
-    setting_button = button('setting', pygame.vector2(resolution[0]/2-64, resolution[1]/2-64),
-                            [0, 0, 0], 128, 128,
-                            ['setting_button.png'], click_start_button)
-    setting_button.pos = pygame.vector2(
-        (resolution[0] / 2) - setting_button.width / 2 + 150,
-        (resolution[1] / 2) - setting_button.height / 2 + 50)
-    level_editor_button = button('setting', pygame.vector2(resolution[0]/2-64, resolution[1]/2-64),
-                                 [0, 0, 0], 128, 128,
-                                 ['level_editor_button.png'], click_start_button)
-    level_editor_button.pos = pygame.vector2(
-        (resolution[0] / 2) - level_editor_button.width / 2 - 150,
-        (resolution[1] / 2) - level_editor_button.height / 2 + 50)
-
     title = 'Basic TD'
+
+    start_button, setting_button, level_editor_button = create_menu_buttons()
 
     in_game = True
     while in_game:
         mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = pygame.vector2(mouse_pos[0], mouse_pos[1])
+        mouse_pos = pygame.Vector2(mouse_pos[0], mouse_pos[1])
 
         # event in pygame
         for event in pygame.event.get():

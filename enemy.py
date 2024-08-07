@@ -9,7 +9,7 @@ import random
 
 class enemy:
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         width=0, height=0,
         pictures=[''],
         hit=0, armor=0,
@@ -18,7 +18,7 @@ class enemy:
     ):
         # pygame.sprite.Sprite.__init__(self)
         self.pos = pos
-        self.relative_pos = pygame.vector2(
+        self.relative_pos = pygame.Vector2(
             random.randint(-15, 15), random.randint(-15, 15))
         self.location = pos + self.relative_pos
         self.height = height
@@ -31,7 +31,7 @@ class enemy:
         self.regenerate_shield_time = 0
         self.regenerate_shield_rate = 1000
         self.move_speed = move_speed
-        self.velocity = pygame.vector2(0, 0)
+        self.velocity = pygame.Vector2(0, 0)
         self.progress = 0
         self.alive = True
         self.path = path
@@ -62,7 +62,7 @@ class enemy:
         )
         return ret
 
-    def detect(self, pos=pygame.vector2(0, 0)):
+    def detect(self, pos=pygame.Vector2(0, 0)):
         self_pos = self.pos*TILE_SIZE
         if (
             pos.x < self_pos.x+self.width and
@@ -94,8 +94,8 @@ class enemy:
         self.velocity.change_mod(self.move_speed)
         # print(self.velocity.get_tuple())
         if (
-            dis(self.path[self.progress + 1] - self.pos, pygame.vector2(0, 0)) <=
-            dis(self.velocity * (delta_time/1000), pygame.vector2(0, 0))
+            dis(self.path[self.progress + 1] - self.pos, pygame.Vector2(0, 0)) <=
+            dis(self.velocity * (delta_time/1000), pygame.Vector2(0, 0))
         ):
             self.pos = self.path[self.progress + 1].copy()
             self.progress += 1
@@ -116,7 +116,7 @@ class enemy:
 
 class basic_enemy(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -174,7 +174,7 @@ class basic_enemy(enemy):
 
 class evil_eye(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -248,7 +248,7 @@ class evil_eye(enemy):
 
 class high_armor(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -322,7 +322,7 @@ class high_armor(enemy):
 
 class angry_basic(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -380,7 +380,7 @@ class angry_basic(enemy):
 
 class chaos_eye(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -454,7 +454,7 @@ class chaos_eye(enemy):
 
 class super_shield(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -528,7 +528,7 @@ class super_shield(enemy):
 
 class shielded_basic(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -586,7 +586,7 @@ class shielded_basic(enemy):
 
 class storm_eye(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -665,7 +665,7 @@ class storm_eye(enemy):
 
 class ultra_shield(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -739,7 +739,7 @@ class ultra_shield(enemy):
 
 class basic_boss(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -762,7 +762,7 @@ class basic_boss(enemy):
         )
 
         self.size = size
-        self.relative_pos = pygame.vector2(0, 0)
+        self.relative_pos = pygame.Vector2(0, 0)
         self.location = self.pos
         self.generate_time = 0
         self.generate_rate = 1500
@@ -826,7 +826,7 @@ class basic_boss(enemy):
 
 class eye_boss(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -851,7 +851,7 @@ class eye_boss(enemy):
 
         self.regenerate_shield_rate = 250
         self.size = size
-        self.relative_pos = pygame.vector2(0, 0)
+        self.relative_pos = pygame.Vector2(0, 0)
         self.location = self.pos
         self.generate_time = 0
         self.generate_rate = 0
@@ -913,7 +913,7 @@ class eye_boss(enemy):
 class high_armor_boss(enemy):
     class armor_shield(enemy):
         def __init__(
-            self, pos=pygame.vector2(0, 0),
+            self, pos=pygame.Vector2(0, 0),
             hit=0, armor=0,
             shield=0, move_speed=0,
             path=[]
@@ -935,11 +935,11 @@ class high_armor_boss(enemy):
 
             self.size = size
             self.anti_pierce = 100
-            self.relative_pos = pygame.vector2(0, 0)
+            self.relative_pos = pygame.Vector2(0, 0)
             self.location = self.pos
 
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -963,7 +963,7 @@ class high_armor_boss(enemy):
         )
 
         self.size = size
-        self.relative_pos = pygame.vector2(0, 0)
+        self.relative_pos = pygame.Vector2(0, 0)
         self.location = self.pos
         self.generate_time = 0
         self.generate_rate = 800
@@ -1037,7 +1037,7 @@ class high_armor_boss(enemy):
 
 class shielded_basic_boss(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -1060,7 +1060,7 @@ class shielded_basic_boss(enemy):
         )
 
         self.size = size
-        self.relative_pos = pygame.vector2(0, 0)
+        self.relative_pos = pygame.Vector2(0, 0)
         self.location = self.pos
         self.generate_time = 0
         self.generate_rate = 750
@@ -1124,7 +1124,7 @@ class shielded_basic_boss(enemy):
 
 class storm_eye_boss(enemy):
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -1149,7 +1149,7 @@ class storm_eye_boss(enemy):
 
         self.regenerate_shield_rate = 250
         self.size = size
-        self.relative_pos = pygame.vector2(0, 0)
+        self.relative_pos = pygame.Vector2(0, 0)
         self.location = self.pos
         self.generate_time = 0
         self.generate_rate = 0
@@ -1211,7 +1211,7 @@ class storm_eye_boss(enemy):
 class ultra_high_armor_boss(enemy):
     class armor_shield(enemy):
         def __init__(
-            self, pos=pygame.vector2(0, 0),
+            self, pos=pygame.Vector2(0, 0),
             hit=0, armor=0,
             shield=0, move_speed=0,
             path=[]
@@ -1233,11 +1233,11 @@ class ultra_high_armor_boss(enemy):
 
             self.size = size
             self.anti_pierce = 100
-            self.relative_pos = pygame.vector2(0, 0)
+            self.relative_pos = pygame.Vector2(0, 0)
             self.location = self.pos
 
     def __init__(
-        self, pos=pygame.vector2(0, 0),
+        self, pos=pygame.Vector2(0, 0),
         hit=0, armor=0,
         shield=0, move_speed=0,
         path=[]
@@ -1261,7 +1261,7 @@ class ultra_high_armor_boss(enemy):
         )
 
         self.size = size
-        self.relative_pos = pygame.vector2(0, 0)
+        self.relative_pos = pygame.Vector2(0, 0)
         self.location = self.pos
         self.generate_time = 0
         self.generate_rate = 200

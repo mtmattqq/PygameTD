@@ -10,7 +10,7 @@ def do_nothing():
 
 class button:
     def __init__(
-        self, text="click me", pos=pygame.vector2(0, 0),
+        self, text="click me", pos=pygame.Vector2(0, 0),
         color=[0, 0, 0], width=0, height=0,
         pictures=[''], action_onclick=do_nothing,
         action_highlight=do_nothing
@@ -34,7 +34,7 @@ class button:
         # self.rect = self.image.get_rect()
         # self.rect.topleft = pos
 
-    def detect(self, pos=pygame.vector2(0, 0)):
+    def detect(self, pos=pygame.Vector2(0, 0)):
         if (
             pos.x < self.pos.x+self.width and
             pos.x > self.pos.x and
@@ -48,7 +48,7 @@ class button:
         self.highlight = False
         return False
 
-    def click(self, pos=pygame.vector2(0, 0)):
+    def click(self, pos=pygame.Vector2(0, 0)):
         if (self.detect(pos)):
             return self.action_onclick()
 
