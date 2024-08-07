@@ -1,3 +1,4 @@
+from src.util import show_text
 import copy
 import json
 import random
@@ -34,14 +35,6 @@ pygame.display.set_icon(pygame.image.load(
     os.path.join(os.getcwd(), 'AppData', 'icon.png')))
 
 
-def show_text(text='', x=0, y=0, color=(0, 0, 0), size=0):
-    font = pygame.font.Font(os.path.join(
-        os.getcwd(), 'AppData', 'unifont.ttf'), size)
-    text = font.render(text, True, color)
-    textRect = text.get_rect()
-    textRect.topleft = (x-10, y-20)
-    screen.blit(text, textRect)
-
 # variables
 FPS = 60
 MOVEMENT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
@@ -49,12 +42,13 @@ is_fullscreen = True
 volume = 100
 clock = pygame.time.Clock()
 
+
 def game_over():
-    def click_start_button():
+    def do_nothing():
         return True
     start_button = button('Start', pygame.Vector2(resolution[0]/2-64, resolution[1]/2-64),
                           [0, 0, 0], 128, 128,
-                          ['start_button.png'], click_start_button)
+                          ['start_button.png'], do_nothing)
     start_button.pos = pygame.Vector2(
         resolution[0]/2-start_button.width/2,
         resolution[1]/2-start_button.height/2+50)
@@ -81,7 +75,7 @@ def game_over():
         # display
         screen.fill((200, 200, 200))
         start_button.display(screen)
-        show_text(title, 300, 175, (0, 0, 0), 98)
+        show_text(screen, title, 300, 175, (0, 0, 0), 98)
         display.blit(pygame.transform.scale(
             screen, display.get_size()), (0, 0))
         pygame.display.update()
@@ -150,13 +144,13 @@ def setting():
 
         # display
         screen.fill((245, 245, 245))
-        show_text(title, 330, 70, [0, 0, 0], 108)
+        show_text(screen, title, 330, 70, [0, 0, 0], 108)
         fullscreen_button.display(screen)
-        show_text('Fullscreen : ', 275, 237, [0, 0, 0], 36)
+        show_text(screen, 'Fullscreen : ', 275, 237, [0, 0, 0], 36)
         show_text(str(is_fullscreen), 580, 237, [0, 0, 0], 36)
 
-        show_text('Volume : ', 335, 337, [0, 0, 0], 36)
-        show_text('{:.0f}'.format(volume), 780, 337, [0, 0, 0], 36)
+        show_text(screen, 'Volume : ', 335, 337, [0, 0, 0], 36)
+        show_text(screen, '{:.0f}'.format(volume), 780, 337, [0, 0, 0], 36)
         set_volume_button.pos.x = resolution[0] / \
             2 - 16 - 20 + (volume * 256 / 100)
         pygame.draw.line(
@@ -231,25 +225,6 @@ def find_path(map=[[]]):
         return path
     else:
         return None
-    # while pos_now != main_tower :
-    #     ct += 1
-    #     if ct > 1000 :
-    #         return path
-    #     isv[pos_now[0]][pos_now[1]] = True
-    #     path.append(transform(vec2D(pos_now[1], pos_now[0]), tile.TILE_SIZE))
-    #     for d in MOVEMENT :
-    #         next_stap = [pos_now[0] + d[0], pos_now[1] + d[1]]
-    #         if(
-    #             next_stap[0] >= 0 and next_stap[1] >= 0 and
-    #             next_stap[0] < m and next_stap[1] < n and
-    #             (map[next_stap[0]][next_stap[1]] == 3 or
-    #              map[next_stap[0]][next_stap[1]] == 1) and
-    #             not isv[next_stap[0]][next_stap[1]]
-    #         ) :
-    #             pos_now = next_stap
-    #             break
-    # path.append(transform(vec2D(main_tower[1], main_tower[0]), tile.TILE_SIZE))
-    # return path
 
 
 def select_tile(
@@ -331,9 +306,12 @@ def level(level_now='basic_level.json'):
     ]
 
     boss_types = [
-        enemy.basic_boss(pygame.Vector2(785, 80), 0, 0, 0, 10, [pygame.Vector2(785, 80)]),
-        enemy.eye_boss(pygame.Vector2(785, 140), 0, 0, 0, 10, [pygame.Vector2(785, 140)]),
-        enemy.high_armor_boss(pygame.Vector2(785, 200), 0, 0, 0, 10, [pygame.Vector2(785, 200)])
+        enemy.basic_boss(pygame.Vector2(785, 80), 0, 0, 0,
+                         10, [pygame.Vector2(785, 80)]),
+        enemy.eye_boss(pygame.Vector2(785, 140), 0, 0, 0,
+                       10, [pygame.Vector2(785, 140)]),
+        enemy.high_armor_boss(pygame.Vector2(785, 200), 0,
+                              0, 0, 10, [pygame.Vector2(785, 200)])
     ]
     boss = None
 
@@ -824,7 +802,8 @@ def level(level_now='basic_level.json'):
                     if clicked_upgrade:
                         continue
                     if selected_tower.deconstruct_button.click(mouse_pos):
-                        tower_info[int(selected_tower.pos.y)][int(selected_tower.pos.x)] = 0
+                        tower_info[int(selected_tower.pos.y)
+                                   ][int(selected_tower.pos.x)] = 0
                         towers.remove(selected_tower)
                         natural_ingot += 80
                         selected_tower = None
@@ -883,17 +862,20 @@ def level(level_now='basic_level.json'):
             sent_next_wave_button.display(screen)
         setting_button.display(screen)
         show_text(
+            screen,
             'Next wave in {:.2f} s.'.format(
                 (send_next_wave - game_timer)/1000),
             790, 545, (0, 0, 0), 20
         )
         show_text(
+            screen,
             'Wave : {}'.format(wave),
             790, 570, (0, 0, 0), 20
         )
 
         natural_ingot_button.display(screen)
-        show_text(str(math.floor(natural_ingot)), 850, 40, (0, 0, 0), 20)
+        show_text(screen, str(math.floor(natural_ingot)),
+                  850, 40, (0, 0, 0), 20)
         # bonus
         give_bonus_bar.display(screen)
         bonus_bar_image = pygame.transform.scale(
@@ -907,7 +889,7 @@ def level(level_now='basic_level.json'):
         )
 
         hit_button.display(screen)
-        show_text(str(hit), 850, 72, (0, 0, 0), 20)
+        show_text(screen, str(hit), 850, 72, (0, 0, 0), 20)
 
         if show_buy_tower:
             ct = 0
@@ -926,6 +908,7 @@ def level(level_now='basic_level.json'):
                     line_buf = 25
                     for line in buy_tower_info[ct]:
                         show_text(
+                            screen,
                             line, 790, 300 + line_buf * idx,
                             [0, 0, 0], 20
                         )
@@ -977,18 +960,21 @@ def level(level_now='basic_level.json'):
             shift_pos = 80
             for i in range(ENEMY_TYPE):
                 show_text(
+                    screen,
                     'Hit : {:.1f}'.format(
                         enemy_base_info[i][0][0] + enemy_base_info[i][1][0] *
                         (enemy_level[i]**2)), 840, 140 + shift_pos * i,
                     [0, 0, 0], 20
                 )
                 show_text(
+                    screen,
                     'Shield : {:.1f}'.format(
                         enemy_base_info[i][0][2] + enemy_base_info[i][1][2] *
                         (enemy_level[i]**2)), 840, 165 + shift_pos * i,
                     [0, 0, 0], 20
                 )
                 show_text(
+                    screen,
                     'Armor : {:.1f}'.format(
                         enemy_base_info[i][0][1] + enemy_base_info[i][1][1] *
                         math.sqrt(enemy_level[i])), 840, 190 + shift_pos * i,
@@ -1075,11 +1061,11 @@ def level_editor():
         screen.fill((245, 245, 245))
 
         level_name_button.display(screen)
-        show_text(title, 250, 180, (0, 0, 0), 72)
-        show_text(new_level_name, 280, 270, (0, 0, 0), 64)
-        show_text('|', 262 + level_name_pos * 32, 270, (0, 0, 0), 64)
+        show_text(screen, title, 250, 180, (0, 0, 0), 72)
+        show_text(screen, new_level_name, 280, 270, (0, 0, 0), 64)
+        show_text(screen, '|', 262 + level_name_pos * 32, 270, (0, 0, 0), 64)
         if file_name_exist:
-            show_text('File Name Exists', 262, 350, (255, 50, 50), 64)
+            show_text(screen, 'File Name Exists', 262, 350, (255, 50, 50), 64)
         display.blit(pygame.transform.scale(
             screen, display.get_size()), (0, 0))
         pygame.display.update()
@@ -1345,50 +1331,59 @@ def level_editor():
                 i += 1
 
             show_text(
+                screen,
                 'Difficulty',
                 790, 100, [0, 0, 0], 20
             )
             show_text(
+                screen,
                 str(level_info['difficulty']),
                 795, 130, [0, 0, 0], 20
             )
 
             show_text(
+                screen,
                 'Initial Wave',
                 790, 160, [0, 0, 0], 20
             )
             show_text(
+                screen,
                 str(level_info['start_wave']),
                 795, 190, [0, 0, 0], 20
             )
 
             show_text(
+                screen,
                 'Initial Natural Ingot',
                 790, 220, [0, 0, 0], 20
             )
             show_text(
+                screen,
                 str(level_info['start_money']),
                 795, 250, [0, 0, 0], 20
             )
 
             show_text(
+                screen,
                 'Initial Hit',
                 790, 280, [0, 0, 0], 20
             )
             show_text(
+                screen,
                 str(level_info['start_hit']),
                 795, 310, [0, 0, 0], 20
             )
 
             if selected_input != None:
                 show_text(
+                    screen,
                     '|', 791 + 10 * level_name_pos,
                     130 + shift_pos * i, (0, 0, 0), 20
                 )
         save_button.display(screen)
 
         if is_error:
-            show_text('Error', 300, 175, (0, 0, 0), 108)
+            show_text(screen, 'Error', 300, 175, (0, 0, 0), 108)
 
         display.blit(pygame.transform.scale(
             screen, display.get_size()), (0, 0))
@@ -1422,12 +1417,12 @@ def select_level():
     level_num = len(levels['file_name'])
     next_page_button = button(
         "", pygame.Vector2(resolution[0]/2 + 256 - 128,
-                  130 + shift_pos * level_per_page),
+                           130 + shift_pos * level_per_page),
         [0, 0, 0], 64, 64, ['next_page_button.png']
     )
     prev_page_button = button(
         "", pygame.Vector2(resolution[0]/2 - 256 + 64,
-                  130 + shift_pos * level_per_page),
+                           130 + shift_pos * level_per_page),
         [0, 0, 0], 64, 64, ['next_page_button.png']
     )
     prev_page_button.images[0] = pygame.transform.flip(
@@ -1479,8 +1474,9 @@ def select_level():
 
         next_page_button.display(screen)
         prev_page_button.display(screen)
-        show_text(title, 300, 48, (0, 0, 0), 72)
+        show_text(screen, title, 300, 48, (0, 0, 0), 72)
         show_text(
+            screen,
             '{} / {}'.format(page + 1, max_page),
             500, 525, (0, 0, 0), 20
         )
@@ -1489,6 +1485,7 @@ def select_level():
         pygame.display.update()
         clock.tick(FPS)
     return
+
 
 def init_user_settings():
     global is_fullscreen, volume
@@ -1500,6 +1497,7 @@ def init_user_settings():
 
     is_fullscreen = input['is_fullscreen']
     volume = input['volume']
+
 
 def create_menu_buttons():
     def click_start_button():
@@ -1523,6 +1521,7 @@ def create_menu_buttons():
         (resolution[0] / 2) - level_editor_button.width / 2 - 150,
         (resolution[1] / 2) - level_editor_button.height / 2 + 50)
     return (start_button, setting_button, level_editor_button)
+
 
 def main():
     init_user_settings()
@@ -1565,12 +1564,13 @@ def main():
         start_button.display(screen)
         setting_button.display(screen)
         level_editor_button.display(screen)
-        show_text(title, 300, 175, (0, 0, 0), 108)
+        show_text(screen, title, 300, 175, (0, 0, 0), 108)
         display.blit(pygame.transform.scale(
             screen, display.get_size()), (0, 0))
         pygame.display.update()
         clock.tick(FPS)
     return
+
 
 if __name__ == '__main__':
     main()

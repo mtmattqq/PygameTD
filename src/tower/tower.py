@@ -4,17 +4,12 @@ import os
 from src.tile import TILE_SIZE
 import math
 from src.button import button
+from src.util import show_text
+
 
 def do_nothing():
     return
 
-def show_text(screen, text='', x=0, y=0, color=(0, 0, 0), size=0):
-    font = pygame.font.Font(os.path.join(
-        os.getcwd(), 'AppData', 'unifont.ttf'), size)
-    text = font.render(text, True, color)
-    textRect = text.get_rect()
-    textRect.topleft = (x-10, y-20)
-    screen.blit(text, textRect)
 
 class tower(pygame.sprite.Sprite):
     def __init__(
@@ -137,7 +132,7 @@ class tower(pygame.sprite.Sprite):
 
     def display_info(self, screen):
         self.deconstruct_button.display(screen)
-    
+
     def update(self, delta_time, enemys=[], boss=None):
         self.update_time_to_fire(delta_time)
         self.shoot(enemys, boss)
