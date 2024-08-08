@@ -2,6 +2,7 @@ from src.variables import *
 from src.button import button
 import json
 from src.util import show_text
+from pygame.locals import *
 
 def setting(screen, display):
     global flags, is_fullscreen, volume
@@ -58,7 +59,7 @@ def setting(screen, display):
                         flags = DOUBLEBUF
                     else:
                         is_fullscreen = True
-                        flags = DOUBLEBUF | SCALED | FULLSCREEN
+                        flags = DOUBLEBUF | FULLSCREEN
                     display = pygame.display.set_mode(resolution, flags, 32)
                 is_set_volume_bar_pressed = False
 

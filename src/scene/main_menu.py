@@ -44,14 +44,13 @@ def main_menu(screen, display):
     init_user_settings()
 
     if is_fullscreen:
-        flags = DOUBLEBUF | SCALED | FULLSCREEN
+        flags = DOUBLEBUF | FULLSCREEN
     else:
         flags = DOUBLEBUF
     display = pygame.display.set_mode(resolution, flags, 32)
     title = 'Basic TD'
 
     start_button, setting_button, level_editor_button = create_menu_buttons()
-    print('app start')
 
     in_game = True
     while in_game:
